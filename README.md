@@ -1,6 +1,6 @@
 # Mirai-Plugin-HRobot
 
-![](https://github.com/ShrBox/ACGPro/workflows/Java CI with Gradle/badge.svg)![](https://img.shields.io/badge/Author-Happysnaker-green.svg)
+![](https://github.com/ShrBox/ACGPro/workflows/Java%20CI%20with%20Gradle/badge.svg)  ![](https://img.shields.io/badge/Author-Happysnaker-green.svg)  ![](https://img.shields.io/badge/Name-HRobot-green.svg)
 
 mirai 群聊机器人插件，支持简单对话聊天，支持发送随机涩图(可指定tag)、美图、风景图等，支持随机鸡汤发送，支持坎公骑冠剑会战统计、前线报道、会战报表等功能，支持在线点歌，综合多个音乐平台发送最佳音乐(以卡片形式)，更多功能正在开发......
 
@@ -18,7 +18,7 @@ HRobot 目前已适配至 mcl-1.2.2 版本。
 
 > 在登录过程中，通常您需要将 mcl 提供给你的链接发送至手机QQ进行验证，对于某些需要滑动验证码的 QQ 而言，还需要在手机上下载对于 apk，apk 相关信息可参看 [mzdluo123/TxCaptchaHelper: 腾讯滑动验证码助手 (github.com)](https://github.com/mzdluo123/TxCaptchaHelper)
 
-
+如果您需要砍公骑冠剑相关功能，那么您必须配置相关信息，配置文件请移步[配置文件手册](https://github.com/happysnaker/mirai-plugin-HRobot/blob/master/CONFIG.md)
 
 ## 示例
 
@@ -44,10 +44,12 @@ HRobot 目前已适配至 mcl-1.2.2 版本。
 
 我不是生产者，我只是 API 的搬运工，由于 API 随时可能停用，故此插件可能随时出问题，请您持续关注此项目，一般情况下 API 失效都会第一时间解决。
 
-## 贡献
-
-提出你的创意，或者再此源代码上进行二次开发，开发相关手册可参考：
-
 ## 配置
 
-HRobot 支持配置文件，配置文件在 mcl/config/com.happysnaker.HRobot/config.json 中，您可以手动创建配置文件，不过建议您运行一次 mcl.cmd，这会自动生产配置文件，配置文件相关信息可参考：
+HRobot 支持配置文件，配置文件在 mcl/config/com.happysnaker.HRobot/config.json 中，您可以手动创建配置文件，不过建议您运行一次 mcl.cmd，这会自动生产配置文件，配置文件相关信息可参考：[配置手册](https://github.com/happysnaker/mirai-plugin-HRobot/blob/master/CONFIG.md)
+
+## 贡献
+
+提出你的创意，或者再此源代码上进行二次开发，开发相关手册可参考：[开发手册](https://github.com/happysnaker/mirai-plugin-HRobot/blob/master/CONFIG.md)
+
+
