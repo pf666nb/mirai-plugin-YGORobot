@@ -18,7 +18,9 @@ HRobot 目前已适配至 mcl-1.2.2 版本。
 
 > 在登录过程中，通常您需要将 mcl 提供给你的链接发送至手机QQ进行验证，对于某些需要滑动验证码的 QQ 而言，还需要在手机上下载对于 apk，apk 相关信息可参看 [mzdluo123/TxCaptchaHelper: 腾讯滑动验证码助手 (github.com)](https://github.com/mzdluo123/TxCaptchaHelper)
 
-如果您需要砍公骑冠剑相关功能，那么您必须配置相关信息，配置文件请移步[配置文件手册](https://github.com/happysnaker/mirai-plugin-HRobot/blob/master/CONFIG.md)
+如果你需要砍公骑冠剑相关功能，那么您必须配置相关信息，配置文件请移步[配置文件手册](https://github.com/happysnaker/mirai-plugin-HRobot/blob/master/CONFIG.md)
+
+如果你不会配置或者想先体验一下，可邮件联系我：happysnaker@qq.com，可以让机器人加上你的群。
 
 ## 示例
 
@@ -51,5 +53,4 @@ HRobot 支持配置文件，配置文件在 mcl/config/com.happysnaker.HRobot/co
 ## 贡献
 
 提出你的创意，或者再此源代码上进行二次开发，开发相关手册可参考：[开发手册](https://github.com/happysnaker/mirai-plugin-HRobot/blob/master/CONFIG.md)
-
 
