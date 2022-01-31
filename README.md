@@ -20,7 +20,7 @@ HRobot 目前已适配至 mcl-1.2.2 版本。
 
 如果你需要砍公骑冠剑相关功能，那么您必须配置相关信息，配置文件请移步[配置文件手册](https://github.com/happysnaker/mirai-plugin-HRobot/blob/master/CONFIG.md)
 
-如果你不会配置或者想先体验一下，可邮件联系我：happysnaker@qq.com，可以让机器人加上你的群。
+如果你不会配置或者想先体验一下，可邮件联系我：happysnaker@foxmail.com，可以让机器人加上你的群。
 
 ## 示例
 
