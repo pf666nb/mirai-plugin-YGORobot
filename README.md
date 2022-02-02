@@ -12,7 +12,7 @@ HRobot 目前已适配至 mcl-1.2.2 版本。
 
 然后前往[Releases · happysnaker/mirai-plugin-HRobot (github.com)](https://github.com/happysnaker/mirai-plugin-HRobot/releases)选择对应版本下载插件 jar 包 plugin-1.0-SNAPSHOT.mirai.jar，将该 jar 包移动至 mcl 文件下的 plugins 文件夹下，然后无须配置任何文件，点击 mcl.cmd 即可启动机器人，注意如果你是第一次下载，你必须先启动一次 mcl.cmd 才会有 plugins 相关文件夹生成。
 
-> Linux 下需要在当前文件下输入 mcl start 命令启动，注意必须要求具备 JVM 环境。
+> Linux 下需要在当前文件下输入 ./mcl 命令启动，注意必须要求具备 JVM 环境。
 
 启动后在命令行中键入：`login QQ账号 QQ密码` 即可登录机器人，更多信息请移步[mamoe/mirai: 高效率 QQ 机器人支持库 (github.com)](https://github.com/mamoe/mirai) 和  [iTXTech/mirai-console-loader: 模块化、轻量级且支持完全自定义的 mirai 加载器。 (github.com)](https://github.com/iTXTech/mirai-console-loader)
 
@@ -20,7 +20,7 @@ HRobot 目前已适配至 mcl-1.2.2 版本。
 
 如果你需要砍公骑冠剑相关功能，那么您必须配置相关信息，配置文件请移步[配置文件手册](https://github.com/happysnaker/mirai-plugin-HRobot/blob/master/CONFIG.md)
 
-如果你不会配置或者想先体验一下，可邮件联系我：happysnaker@foxmail.com，可以让机器人加上你的群。
+如果你不会配置或者想先体验一下，可提出对应 Issue 或邮件联系我：happysnaker@foxmail.com，可以让机器人加上你的群。
 
 ## 示例
 
@@ -52,5 +52,5 @@ HRobot 支持配置文件，配置文件在 mcl/config/com.happysnaker.HRobot/co
 
 ## 贡献
 
-提出你的创意，或者再此源代码上进行二次开发，开发相关手册可参考：[开发手册](https://github.com/happysnaker/mirai-plugin-HRobot/blob/master/CONFIG.md)
+提出你的创意，或者再此源代码上进行二次开发，开发相关手册可参考：[开发手册](https://github.com/happysnaker/mirai-plugin-HRobot/blob/master/DEV.md)
 
