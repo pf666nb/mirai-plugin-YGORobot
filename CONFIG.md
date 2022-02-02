@@ -1,5 +1,12 @@
 # 配置文件
 
+## 声明
+**请注意，1.0 版本插件存在一些问题，这包括：**
+1. 无法自动生成模板文件，这需要你手动复制下列模板到文件中。
+2. 在 Linux 下文件名存在错误，Linux 下配置文件在 config/com.happysnaker.HRobot\\config.json 中，而不是在 config/com.happysnaker.HRobot/config.json 中，这是 / 和 \\ 的区别，注意 \\ 为`\\`的转义字符，这意味着在命令行中必须输入(mcl目录下)：`cat config/com.happysnaker.HRobot\\config.json`才能查看对应文件，你必须要配置到 config/com.happysnaker.HRobot\\config.json 文件下才会起作用。
+
+**这些问题将在下个版本修复**
+
 ## 模板
 
 HRobot 支持配置文件，配置文件在 mcl/config/com.happysnaker.HRobot/config.json 中，您可以手动创建配置文件，不过建议您运行一次 mcl.cmd，这会自动生产配置文件 config.json，如下是配置文件的模板：
@@ -28,7 +35,7 @@ HRobot 支持配置文件，配置文件在 mcl/config/com.happysnaker.HRobot/co
 
 ## 介绍
 
-- menu：这是机器人的主菜单，当 @机器人 并发送 help 或者 帮助 时，我们会发送此菜单。
+- menu：这是机器人的主菜单，当 @机器人 并发送 help 或者 帮助 时，我们会发送此菜单，如果你想使用默认的菜单项，请擦除掉 menu 项(即删除 `"menu":"主菜单",` 一行)。
 
 - exclude： exclude 和 include 之间需选填一项而置另外一项为空，机器人不会处理 exclude 中的群，当  exclude 为空时，机器人会处理所有的群。
 
