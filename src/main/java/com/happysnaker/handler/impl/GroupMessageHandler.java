@@ -49,6 +49,7 @@ public class GroupMessageHandler extends AbstractMessageHandler {
      * @return 如果被 at 将返回去除 at 信息后的消息，否则什么也不做
      */
     protected String handlerContentIfBotBeAt(String content) {
+        if (qqs == null || qqs.isEmpty()) initBotQQ();
         for (String qq : qqs) {
             if (content.indexOf(at.replace("qq", qq)) != -1) {
                 return handlerContentIfMatches(content, atRegex);
@@ -66,6 +67,7 @@ public class GroupMessageHandler extends AbstractMessageHandler {
      * @return
      */
     protected boolean isAtBot(String content) {
+        if (qqs == null || qqs.isEmpty()) initBotQQ();
         for (String qq : qqs) {
             if (content.indexOf(at.replace("qq", qq)) != -1) {
                 return true;

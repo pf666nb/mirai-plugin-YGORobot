@@ -60,8 +60,6 @@ public class GtReportMessageHandler extends GroupMessageHandler {
         String cookie = null;
         String groupId = getGroupId(event);
         for (Map<String, String> gtConfig : gtConfigs) {
-            System.out.println("gtConfig = " + gtConfig);
-            System.out.println("groupId = " + groupId);
             String gid = gtConfig.getOrDefault("groupId", null);
             if (gid == null || gid.isEmpty() || gid.equals(groupId)) {
                 cookie = gtConfig.getOrDefault("gtCookie", null);

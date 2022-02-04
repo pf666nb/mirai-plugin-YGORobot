@@ -1,4 +1,4 @@
-
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     val kotlinVersion = "1.5.30"
@@ -18,5 +18,14 @@ repositories {
 
 dependencies{
     implementation("com.alibaba:fastjson:1.2.76")
+    implementation(kotlin("stdlib-jdk8"))
 }
 
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions {
+    jvmTarget = "1.8"
+}
+val compileTestKotlin: KotlinCompile by tasks
+compileTestKotlin.kotlinOptions {
+    jvmTarget = "1.8"
+}

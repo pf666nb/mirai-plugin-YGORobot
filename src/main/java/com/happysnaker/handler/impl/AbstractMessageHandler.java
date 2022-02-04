@@ -50,14 +50,18 @@ public abstract class AbstractMessageHandler implements MessageHandler {
     protected void error(String msg) {logger.error(msg);}
 
 
-    public AbstractMessageHandler() {
+    protected void initBotQQ() {
         List<Bot> bots = Bot.getInstances();
         List<String> qqs = new ArrayList<>();
         for (Bot bot : bots) {
-            System.out.println(bot.getId());
+            System.out.println("读取机器人QQ： " + bot.getId());
             qqs.add(String.valueOf(bot.getId()));
         }
-        this.qqs = List.of("3070058713");
+        this.qqs = qqs;
+    }
+
+    public AbstractMessageHandler() {
+
     }
 
 

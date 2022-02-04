@@ -13,6 +13,7 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,7 +66,7 @@ public class HRobotStarter {
         RobotConfig.dataFolder = plugin.getDataFolder();
 
 
-        File file = new File(RobotConfig.configFolder + "\\" + RobotConfig.mainConfigPathName);
+        File file = new File(RobotConfig.configFolder + "/" + RobotConfig.mainConfigPathName);
 
         Class c = RobotConfig.class;
         Field[] fields = c.getDeclaredFields();
@@ -79,19 +80,45 @@ public class HRobotStarter {
                 }
             }
             Map<String, Object> map = JSONObject.parseObject(sb.toString(), Feature.OrderedField);
-            for (Field field : fields) {
-                if (map.containsKey(field.getName())) {
-                    try {
-                        field.set(null, map.get(field.getName()));
-                    } catch (Exception e) {
+            if (map != null) {
+                for (Field field : fields) {
+                    if (map.containsKey(field.getName())) {
+                        try {
+                            field.set(null, map.get(field.getName()));
+                        } catch (Exception e) {
 //                        e.printStackTrace();
-                        // next
+                            // next
+                        }
                     }
-                }
 //                System.out.println("field.get(null) = " + field.get(null));
+                }
             }
         } else {
             file.createNewFile();
+            try (FileOutputStream fileOutputStream = new FileOutputStream(file, false)) {
+                String template = "{\n" +
+                        "\t\"menu\":\"主菜单\",\n" +
+                        "\t\"exclude\":[\"群号1\", \"群号2\"],\n" +
+                        "\t\"include\":[],\n" +
+                        "\t\"gtConfig\":[\n" +
+                        "\t\t{\n" +
+                        "\t\t\t\"groupId\":\"群号1\",\n" +
+                        "\t\t\t\"gtCookie\":\"cookie1\"\n" +
+                        "\t\t},\n" +
+                        "        {\n" +
+                        "\t\t\t\"groupId\":\"群号2\",\n" +
+                        "\t\t\t\"gtCookie\":\"cookie2\"\n" +
+                        "\t\t},\n" +
+                        "        {\n" +
+                        "\t\t\t\"groupId\":\"\",\n" +
+                        "\t\t\t\"gtCookie\":\"cookie3\"\n" +
+                        "\t\t}\n" +
+                        "\t]\n" +
+                        "}";
+              fileOutputStream.write(template.getBytes(StandardCharsets.UTF_8));
+            } catch (Exception e) {
+                RobotConfig.logger.info("配置文件填充错误，请手动配置");
+            }
 //            System.out.println("map = " + map);
         }
     }
@@ -99,6 +126,6 @@ public class HRobotStarter {
 
     private static void test(Object... args) {
 //        System.out.println("TongZhongApi.getSongUrl(\"Flower Dance\") = " + TongZhongApi.getSongUrl("老男孩"));
-        System.out.println(RobotConfig.menu);
+//        System.out.println("");
     }
 }
