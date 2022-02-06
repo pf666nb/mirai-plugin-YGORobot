@@ -2,12 +2,15 @@ package com.happysnaker.starter;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
+import com.happysnaker.api.PixivApi;
 import com.happysnaker.api.TongZhongApi;
 import com.happysnaker.config.RobotConfig;
+import com.happysnaker.handler.impl.GtReportMessageHandler;
 import com.happysnaker.proxy.MessageHandlerProxy;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
+import net.mamoe.mirai.message.data.SingleMessage;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -15,6 +18,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,9 +38,6 @@ public class HRobotStarter {
      * @param plugin
      */
     public static void Start(JavaPlugin plugin) {
-        // do test
-        test();
-
         // do patch
         Patch.patch();
 
@@ -54,6 +55,9 @@ public class HRobotStarter {
         GlobalEventChannel.INSTANCE.subscribeAlways(GroupMessageEvent.class, event -> {
             messageHandler.handleMessageEvent(event);
         });
+
+        // do test
+        test();
 
         // complete start
         plugin.getLogger().info("HRobot start successfully!");
@@ -100,6 +104,7 @@ public class HRobotStarter {
                         "\t\"menu\":\"主菜单\",\n" +
                         "\t\"exclude\":[\"群号1\", \"群号2\"],\n" +
                         "\t\"include\":[],\n" +
+                        "    \"pictureWithdrawalTime\": 10,\n" +
                         "\t\"gtConfig\":[\n" +
                         "\t\t{\n" +
                         "\t\t\t\"groupId\":\"群号1\",\n" +
@@ -125,7 +130,6 @@ public class HRobotStarter {
 
 
     private static void test(Object... args) {
-//        System.out.println("TongZhongApi.getSongUrl(\"Flower Dance\") = " + TongZhongApi.getSongUrl("老男孩"));
-//        System.out.println("");
+
     }
 }

@@ -24,11 +24,13 @@ public class RobotConfig {
 
     public static MiraiLogger logger;
 
+
+
     // ------------ 用户配置 ----------------
     /**
      * 主菜单，回复 help 或 帮助 获取
      */
-    public static String menu = "******** HHHH机器人 ********\n" +
+    public static String menu = "****** H机器人-1.2 ******\n" +
             "关键字：帮助 或 help\n\n" +
             "关键字：天气\n" +
             "   示例1：天气深圳\n\n" +
@@ -47,18 +49,20 @@ public class RobotConfig {
             "   示例1：成语一生一世\n\n" +
             "关键字：五笔/拼音\n" +
             "   示例1：好字的五笔/拼音\n\n" +
-            "**** 扩展功能1：GtReport ****\n\n" +
+            "**** 扩展功能1：GtReport ****\n" +
             "关键字：前线报道\n\n" +
             "关键字：会战报表\n\n" +
             "关键字：会战统计\n\n" +
-            "**** 扩展功能2：ImageShare ****\n\n" +
+            "**** 扩展功能2：ImageShare ****\n" +
             "关键字：鸡汤\n\n" +
             "关键字：神秘代码\n" +
             "   示例1：神秘代码\n" +
             "   示例2：神秘代码萝莉\n" +
             "   示例3：神秘代码 黑丝 萝莉\n\n" +
+            "关键字：涩图\n" +
+            "   示例1：涩图黑丝 萝莉\n\n" +
             "关键字：美图\n\n" +
-            "**** 扩展功能3：MusicShare ****\n\n" +
+            "**** 扩展功能3：MusicShare ****\n" +
             "关键字：音乐\n" +
             "   示例1：音乐克罗地亚狂想曲\n";
 
@@ -77,5 +81,10 @@ public class RobotConfig {
      * 包括的群
      */
     public static List<String> exclude = new ArrayList<>();
+
+    /**
+     * 涩图撤回时间，单位 s
+     */
+    public static int pictureWithdrawalTime = 30;
 
 }

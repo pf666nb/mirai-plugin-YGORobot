@@ -9,13 +9,14 @@
 
 ## 模板
 
-HRobot 支持配置文件，配置文件在 mcl/config/com.happysnaker.HRobot/config.json 中，您可以手动创建配置文件，不过建议您运行一次 mcl.cmd，这会自动生产配置文件 config.json，如下是配置文件的模板：
+HRobot 支持配置文件，配置文件在 mcl/config/com.happysnaker.HRobot/config.json 中，您可以手动创建配置文件，不过建议您运行一次 mcl.cmd，这会自动生产配置文件 config.json，如下是配置文件的模板（最新版插件）：
 
 ```json
 {
 	"menu":"主菜单",
 	"exclude":["群号1", "群号2"],
 	"include":[],
+    "pictureWithdrawalTime": 10,
 	"gtConfig":[
 		{
 			"groupId":"群号1",
@@ -42,6 +43,8 @@ HRobot 支持配置文件，配置文件在 mcl/config/com.happysnaker.HRobot/co
 - include： include 和 exclude 之间需选填一项而置另外一项为空，当  include 为空时，机器人会处理所有的群，当  include 不为空时，只有被 include 标识的群才会被处理。
 
   > 当你同时配置 exclude 和 include 所产生的语义是不确定的，你必须只配置一项。当你两项都不配置时，机器人会处理所有的群。
+
+- pictureWithdrawalTime：涩图发送后自动撤回的等待时长(秒)，该值必须为自然数。
 
 - gtConfig：砍公相关配置
 

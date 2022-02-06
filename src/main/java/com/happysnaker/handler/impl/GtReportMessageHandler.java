@@ -67,6 +67,7 @@ public class GtReportMessageHandler extends GroupMessageHandler {
             }
         }
         if (cookie != null && !cookie.isEmpty()) {
+//            System.out.println("cookie = " + cookie);
             String content = getContent(event);
             try {
                 if (content.contains(BATTLE_REPORT)) {

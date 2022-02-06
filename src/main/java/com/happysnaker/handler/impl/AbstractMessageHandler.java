@@ -273,6 +273,4 @@ public abstract class AbstractMessageHandler implements MessageHandler {
     protected List<SingleMessage> getImagesFromMessage(MessageChain chain) {
         return chain.stream().filter(Image.class::isInstance).collect(Collectors.toList());
     }
-
-
 }

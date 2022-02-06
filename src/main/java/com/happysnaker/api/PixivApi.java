@@ -47,4 +47,29 @@ public class PixivApi {
         }
     }
 
+
+    /**
+     * 根据 tag 获取 p '涩' 图片 pid
+     * @param tags
+     * @return
+     * @throws IOException
+     */
+    public static long getSeImagePid(List<String> tags) throws IOException {
+        String url = pidApi + "?r18=1";
+        if (tags != null) {
+            url += "&";
+            for (String tag : tags) {
+                url += "tag=" + URLEncoder.encode(tag, "UTF-8") + "&";
+            }
+            url = url.substring(0, url.length() - 1);
+        }
+        List<Map<String, Object>> map = (List<Map<String, Object>>) NetUtils.sendAndGetResponseMap(new URL(url), "GET", null, null).get("data");
+        try {
+            return (long) map.get(0).get("pid");
+        } catch (ClassCastException e) {
+            return (long) BaseUtils.intToDouble(map.get(0).get("pid"));
+        }
+    }
+
 }
+
