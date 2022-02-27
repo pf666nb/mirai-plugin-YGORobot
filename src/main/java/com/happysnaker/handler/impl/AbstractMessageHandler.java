@@ -535,9 +535,8 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
     public static void failApi(MessageEvent event, String errorMsg) {
         AbstractMessageHandler.service.execute(() -> {
             String filePath = ConfigUtil.getDataFilePath("error.log");
-            System.out.println("filePath = " + filePath);
             try {
-                NetUtil.writeToFile(new File(filePath), getLog(event) + "错误日志：" + errorMsg + "\n");
+                NetUtil.writeToFile(new File(filePath), getLog(event) + "\n：" + errorMsg + "\n");
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
@@ -545,6 +544,7 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
     }
 
     protected static String getLog(MessageEvent event) {
+        if (event == null) return "";
         String content = getContent(event);
         String sender = getSenderId(event);
         return "[" + sender + "::" + formatTime() + "] -> " + content;

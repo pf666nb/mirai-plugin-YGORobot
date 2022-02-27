@@ -54,7 +54,7 @@ public class KnowledgeSearchMessageHandler extends GroupMessageHandler {
         sb.append(map.get("desc") + "\n");
         sb.append(map.get("content") + "\n");
         if (map.get("image") != null && map.get("image") instanceof String) {
-            System.out.println("map.get(\"image\") = " + map.get("image"));
+//            System.out.println("map.get(\"image\") = " + map.get("image"));
             return buildMessageChainAsList(sb.toString(), uploadImage(event, new URL((String) map.get("image"))));
         }
         return buildMessageChainAsList(sb.toString());

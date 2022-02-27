@@ -4,37 +4,17 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
 import com.happysnaker.api.BaiduBaikeApi;
 import com.happysnaker.api.MiguApi;
-import com.happysnaker.api.TongZhongApi;
-import com.happysnaker.command.impl.AbstractCommandMessageHandler;
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.handler.impl.GroupMessageHandler;
-import com.happysnaker.handler.impl.GtReportMessageHandler;
 import com.happysnaker.proxy.MessageHandlerProxy;
 
-import com.happysnaker.utils.ChartUtil;
 import com.happysnaker.utils.*;
-import com.happysnaker.utils.PairUtil;
-import com.happysnaker.utils.StringUtil;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.event.GlobalEventChannel;
-import net.mamoe.mirai.event.Listener;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
-import net.mamoe.mirai.message.data.At;
-import net.mamoe.mirai.message.data.MessageChain;
-import net.mamoe.mirai.message.data.SingleMessage;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartUtilities;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
-import org.jfree.chart.plot.PiePlot;
-import org.jfree.data.general.DefaultPieDataset;
 
-import javax.imageio.ImageIO;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -65,7 +45,7 @@ public class HRobotStarter {
         }
 
         // init MessageHandler
-        messageHandler = new MessageHandlerProxy(true);
+        messageHandler = new MessageHandlerProxy();
 
         // subscribe group event
         GlobalEventChannel.INSTANCE.subscribeAlways(GroupMessageEvent.class, event -> {
@@ -76,7 +56,10 @@ public class HRobotStarter {
         test();
 
         // complete start
-        plugin.getLogger().info("HRobot start successfully!");
+        HRobotStartPrinter.printBanner();
+
+//         finally, try to check the version
+        HRobotVersionChecker.checkVersion();
     }
 
 

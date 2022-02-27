@@ -89,7 +89,7 @@ public class Permission {
      * @return
      */
     public static boolean hasGtAdmin(String qq) {
-        return getPermissionSet(qq).contains(SUPER_ADMINISTRATOR) || hasAdmin(qq);
+        return getPermissionSet(qq).contains(GT_ADMINISTRATOR) || hasAdmin(qq);
     }
 
 

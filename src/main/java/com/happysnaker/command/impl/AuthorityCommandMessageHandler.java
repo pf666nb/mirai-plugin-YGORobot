@@ -92,6 +92,10 @@ public class AuthorityCommandMessageHandler extends DefaultCommandMessageHandler
         String content = getPlantContent(event);
         String qq = content.replace(REMOVE_GROUP_ADMIN, "").trim();
         assertPermission(getSenderId(event), qq, event);
+        // 至少要求普通管理员
+        if (!Permission.hasAdmin(getSenderId(event))) {
+            throw new InsufficientPermissionsException();
+        }
         if (!RobotConfig.groupAdministrator.contains(qq)) {
             return buildMessageChainAsList("qq: " + qq + " 不是群管理员，此操作无任何动作");
         }
@@ -105,6 +109,10 @@ public class AuthorityCommandMessageHandler extends DefaultCommandMessageHandler
         String content = getPlantContent(event);
         String qq = content.replace(REMOVE_GT_ADMIN, "").trim();
         assertPermission(getSenderId(event), qq, event);
+        // 至少要求群管理员
+        if (!Permission.hasGroupAdmin(getSenderId(event))) {
+            throw new InsufficientPermissionsException();
+        }
         if (!RobotConfig.gtAdministrator.contains(qq)) {
             return buildMessageChainAsList("qq: " + qq + " 不是坎公管理员，此操作无任何动作");
         }
@@ -118,6 +126,10 @@ public class AuthorityCommandMessageHandler extends DefaultCommandMessageHandler
         String content = getPlantContent(event);
         String qq = content.replace(REMOVE_ADMIN, "").trim();
         assertPermission(getSenderId(event), qq, event);
+        // 至少要求超级管理员
+        if (!Permission.hasSuperAdmin(getSenderId(event))) {
+            throw new InsufficientPermissionsException();
+        }
         if (!RobotConfig.administrator.contains(qq)) {
             return buildMessageChainAsList("qq: " + qq + " 不是管理员，此操作无任何动作");
         }
@@ -131,6 +143,10 @@ public class AuthorityCommandMessageHandler extends DefaultCommandMessageHandler
         String content = getPlantContent(event);
         String qq = content.replace(GRANT_GT_ADMIN, "").trim();
         assertPermission(getSenderId(event), qq, event);
+        // 至少要求群管理员
+        if (!Permission.hasGroupAdmin(getSenderId(event))) {
+            throw new InsufficientPermissionsException();
+        }
         if (RobotConfig.gtAdministrator.contains(qq)) {
             return buildMessageChainAsList(qq + " 已是坎公管理员");
         }
@@ -144,6 +160,10 @@ public class AuthorityCommandMessageHandler extends DefaultCommandMessageHandler
         String content = getPlantContent(event);
         String qq = content.replace(GRANT_GROUP_ADMIN, "").trim();
         assertPermission(getSenderId(event), qq, event);
+        // 至少要求普通管理员
+        if (!Permission.hasAdmin(getSenderId(event))) {
+            throw new InsufficientPermissionsException();
+        }
         if (RobotConfig.groupAdministrator.contains(qq)) {
             return buildMessageChainAsList(qq + " 已是坎公管理员");
         }
@@ -157,6 +177,10 @@ public class AuthorityCommandMessageHandler extends DefaultCommandMessageHandler
         String content = getPlantContent(event);
         String qq = content.replace(GRANT_ADMIN, "").trim();
         assertPermission(getSenderId(event), qq, event);
+        // 至少要求超级管理员
+        if (!Permission.hasSuperAdmin(getSenderId(event))) {
+            throw new InsufficientPermissionsException();
+        }
         if (RobotConfig.administrator.contains(qq)) {
             return buildMessageChainAsList(qq + " 已是管理员");
         }

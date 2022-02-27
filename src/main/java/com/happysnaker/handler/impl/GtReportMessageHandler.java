@@ -235,7 +235,6 @@ public class GtReportMessageHandler extends GroupMessageHandler {
             } catch (IOException e) {
                 throw e;
             }
-            System.out.println("msg = " + msg);
             if (msg == null || ((String) msg.getOrDefault("message", "")).equals("服务器内部错误")) {
                 break;
             }
@@ -406,8 +405,6 @@ public class GtReportMessageHandler extends GroupMessageHandler {
             return new MessageChainBuilder().append("芜湖，发生错误了，错误原因 :" + e.getCause()).build();
         }
         Map<String, Object> memberData = p.getKey();
-        System.out.println("p = " + p);
-        System.out.println("memberData = " + memberData);
         Set<String> bossNames = p.getValue();
         if (!memberData.containsKey(username)) {
             return new MessageChainBuilder().append("未查询到用户名为 " + username + " 的用户，请检查玩家名是否正确，注意玩家名不得带空格").build();
@@ -491,8 +488,6 @@ public class GtReportMessageHandler extends GroupMessageHandler {
         for (String bossName : bossNames) {
             sb.append("对" + bossName + "造成伤害最高的是：" + getMostDamageUser(memberData, bossName) + "\n\n");
         }
-        System.out.println("sb = " + sb);
-        System.out.println("sortMap = " + sortMap);
         sb.append("总伤害最高的是：" + sortMap.get(sortMap.firstKey()).get(USER_NAME));
 //        System.out.println("sb = " + sb);
         return new MessageChainBuilder().append(sb.toString()).build();

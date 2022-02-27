@@ -1,11 +1,8 @@
 # 配置文件
 
-## 声明
-**请注意，1.0 版本插件存在一些问题，这包括：**
-1. 无法自动生成模板文件，这需要你手动复制下列模板到文件中。
-2. 在 Linux 下文件名存在错误，Linux 下配置文件在 config/com.happysnaker.HRobot\\config.json 中，而不是在 config/com.happysnaker.HRobot/config.json 中，这是 / 和 \\ 的区别，注意 \\ 为`\\`的转义字符，这意味着在命令行中必须输入(mcl目录下)：`cat config/com.happysnaker.HRobot\\config.json`才能查看对应文件，你必须要配置到 config/com.happysnaker.HRobot\\config.json 文件下才会起作用。
+请注意，1.0 版本插件在配置上存在一些问题，请前往 release 页上查看详情。
 
-**这些问题将在下个版本修复**
+获取坎公 cookie 教程请往下翻。
 
 ## 模板
 
@@ -42,7 +39,7 @@ HRobot 支持配置文件，配置文件在 mcl/config/com.happysnaker.HRobot/co
 
 - include： include 和 exclude 之间需选填一项而置另外一项为空，当  include 为空时，机器人会处理所有的群，当  include 不为空时，只有被 include 标识的群才会被处理。
 
-  > 当你同时配置 exclude 和 include 所产生的语义是不确定的，你必须只配置一项。当你两项都不配置时，机器人会处理所有的群。
+  当你同时配置 exclude 和 include 所产生的语义是不确定的，你必须只配置一项。当你两项都不配置时，机器人会处理所有的群。
 
 - pictureWithdrawalTime：涩图发送后自动撤回的等待时长(秒)，该值必须为自然数。
 
@@ -51,9 +48,11 @@ HRobot 支持配置文件，配置文件在 mcl/config/com.happysnaker.HRobot/co
   - groupId：对应的群，当不配置 groupId 或 groupId 为空时，说明匹配所有的群。
   - gtCookie：对应 bigfun 账号的 Cookie，该 cookie 对应 groupId。
 
-  > 例如在上述模板配置中，如果群 1 发送关键字“前线报道”，那么将会用 cookie1 进行查询，同理群 2 会使用 cookie2 进行查询，而群 3、群4、群N都会使用 cookie3 进行查询，这是因为 cookie3 对应的 groupId 为空，因此会匹配所有群。
-  >
-  > 如果 groupId 为空，请务必将其配置成最后一项(并且只有一个)，因为程序是顺序匹配的。
+  例如在上述模板配置中，如果群 1 发送关键字“前线报道”，那么将会用 cookie1 进行查询，同理群 2 会使用 cookie2 进行查询，而群 3、群4、群N都会使用 cookie3 进行查询，这是因为 cookie3 对应的 groupId 为空，因此会匹配所有群。
+  
+  如果 groupId 为空，请务必将其配置成最后一项(并且只有一个)，因为程序是顺序匹配的。
+  
+- 
 
 ## 获取砍公 cookie
 

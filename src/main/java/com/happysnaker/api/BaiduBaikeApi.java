@@ -1,5 +1,6 @@
 package com.happysnaker.api;
 
+import com.happysnaker.handler.impl.AbstractMessageHandler;
 import com.happysnaker.utils.NetUtil;
 import net.mamoe.mirai.message.data.MessageChain;
 
@@ -19,10 +20,11 @@ public class BaiduBaikeApi {
 
     public static Map<String, Object> search(String msg) {
         try {
-            URL url = new URL(api + URLEncoder.encode(msg));
+            URL url = new URL(api + URLEncoder.encode(msg, "UTF-8"));
             Map<String, Object> map = NetUtil.sendAndGetResponseMap(url, "GET", null, null);
             return map;
         } catch (Exception e) {
+            AbstractMessageHandler.failApi(null, e.getMessage());
             e.printStackTrace();
         }
         return null;

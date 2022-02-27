@@ -24,10 +24,10 @@ public class MiguApi {
     public static final String url = "http://app.pd.nf.migu.cn/MIGUM2.0/v1.0/content/sub/listenSong.do?toneFlag={formatType}&netType=00&userId=15548614588710179085069&ua=Android_migu&version=5.1&copyrightId=0&contentId={contentId}&resourceType={resourceType}&channel=0";
 
     public static final MusicShare search(String name) throws IOException {
-        String u = api.replace("SONGNAME", URLEncoder.encode(name));
+//        System.out.println("name = " + name);
+        String u = api.replace("SONGNAME", URLEncoder.encode(name,"UTF-8"));
         Map<String, Object> map = NetUtil.sendAndGetResponseMap(new URL(u), "GET", null, null);
 
-        System.out.println("map = " + map);
         Map<String, Object> m0 = (Map<String, Object>) map.get("songResultData");
         Map<String, Object> m1 = (Map<String, Object>) ((List)m0.get("result")).get(0);
         String id = (String) m1.get("id");
