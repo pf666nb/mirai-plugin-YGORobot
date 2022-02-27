@@ -1,6 +1,7 @@
 package com.happysnaker.exception;
 
 /**
+ * 当资源上传腾讯服务器失败时抛出
  * @author Happysnaker
  * @description
  * @date 2022/1/19

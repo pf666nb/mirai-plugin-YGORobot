@@ -6,7 +6,7 @@ import com.happysnaker.api.PixivApi;
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.exception.FileUploadException;
 import com.happysnaker.handler.handler;
-import com.happysnaker.utils.NetUtils;
+import com.happysnaker.utils.NetUtil;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.MessageReceipt;
@@ -35,6 +35,7 @@ public class ImageShareMessageHandler extends GroupMessageHandler {
     public final String landscapeImage = "风景图";
     public final String beautifulImage = "美图";
     public final String seImage = "涩图";
+    public final String seImagePlus = "高清涩图";
     public final String beautifulImageUrl = PixivApi.beautifulImageUrl;
     public final String chickenSoupUrl = PixivApi.chickenSoupUrl;
     public final String pixivSearchApi = PixivApi.pixivSearchApi;
@@ -47,6 +48,7 @@ public class ImageShareMessageHandler extends GroupMessageHandler {
         keywords.add(landscapeImage);
         keywords.add(beautifulImage);
         keywords.add(seImage);
+        keywords.add(seImagePlus);
     }
 
     @Override
@@ -54,91 +56,153 @@ public class ImageShareMessageHandler extends GroupMessageHandler {
         String content = getPlantContent(event);
         List<MessageChain> ans = new ArrayList<>();
         try {
+            // 鸡汤
             if (content.contains(chickenSoup)) {
                 ans.add(doParseChickenSoup(event));
             }
+
+            // 神秘代码
             if (content.startsWith(mysteriousImage)) {
-                List<String> tags = new ArrayList<>();
-                String[] strings = content.replace(mysteriousImage, "").split("\\s+");
-                for (String s : strings) {
-                    if (!s.isEmpty() && !s.equals(mysteriousImage)) {
-                        tags.add(s.trim());
-                    }
-                }
+                // 需要分割 tag
+                List<String> tags = getTags(content, mysteriousImage);
                 ans.add(doParseMysteriousImage(event, tags));
             }
-            if (content.startsWith(seImage)) {
-                List<String> tags = new ArrayList<>();
-                String[] strings = content.replace(seImage, "").split("\\s+");
-                for (String s : strings) {
-                    if (!s.isEmpty() && !s.equals(seImage)) {
-                        tags.add(s.trim());
-                    }
-                }
+
+            // 涩图 或 高清涩图
+            if (content.startsWith(seImage) || content.startsWith(seImagePlus)) {
+                String tem = content.startsWith(seImage) ? seImage : seImagePlus;
+                // 需要分割 tag
+                List<String> tags = getTags(content, tem);
                 /**
                  * 检测到涩图需要自动撤回，因此自定义逻辑处理，处理完返回 null，不需要抽象类的逻辑
                  */
-                MessageChain chain = doParseSeImage(event, tags);
+                MessageChain chain = doParseSeImage(event, tags, tem.equals(seImagePlus));
                 MessageReceipt<Contact> receipt = event.getSubject().sendMessage(chain);
-                receipt.recallIn(RobotConfig.pictureWithdrawalTime * 1000);
+                if (chain != null && chain.size() > 0 && chain.get(0) instanceof Image) {
+                    receipt.recallIn(RobotConfig.pictureWithdrawalTime * 1000);
+                }
                 return null;
             }
+
+
+            // 美图
             if (content.contains(beautifulImage)) {
                 ans.add(doParseBeautifulImage(event));
             }
+
+            // 风景图
             if (content.contains(landscapeImage)) {
                 ans.add(doParseLandscapeImage(event));
             }
         } catch (Exception e) {
             e.printStackTrace();
+            logError(event, e);
             // next
             ans.add(new MessageChainBuilder().append("意外地失去了与地球上的通信...\n错误原因：" + e.getCause().toString()).build());
         }
         return ans;
     }
 
+    /**
+     * 根据 plantContent 获取 tag
+     * @param content plantContent
+     * @param tem 关键词
+     * @return 返回去除关键词后分割空格检索出的 tags
+     */
+    private List<String> getTags(String content, String tem) {
+        List<String> tags = new ArrayList<>();
+        String[] strings = content.replace(tem, "").split("\\s+");
+        for (String s : strings) {
+            if (!s.isEmpty() && !s.equals(tem)) {
+                tags.add(s.trim());
+            }
+        }
+        return tags;
+    }
+
+    /**
+     * 获取风景图
+     * @param event
+     * @return
+     * @throws MalformedURLException
+     * @throws FileUploadException
+     */
     private MessageChain doParseLandscapeImage(MessageEvent event) throws MalformedURLException, FileUploadException {
         return new MessageChainBuilder()
-                .append(uploadImage(event,
-                        new URL(BingApi.getRandomImageUrl())))
+                .append(uploadImage(event, new URL(BingApi.getRandomImageUrl())))
                 .build();
     }
 
+    /**
+     * 获取美图
+     * @param event
+     * @return
+     * @throws MalformedURLException
+     * @throws FileUploadException
+     */
     private MessageChain doParseBeautifulImage(MessageEvent event) throws MalformedURLException, FileUploadException {
         return new MessageChainBuilder()
                 .append(uploadImage(event, new URL(beautifulImageUrl)))
                 .build();
     }
 
-    private MessageChain doParseSeImage(MessageEvent event, List<String> tags) throws IOException, FileUploadException {
+    /**
+     * 获取涩图
+     * @param event
+     * @param tags
+     * @param isPlus 是否是高清涩图
+     * @return
+     * @throws IOException
+     * @throws FileUploadException
+     */
+    private MessageChain doParseSeImage(MessageEvent event, List<String> tags, boolean isPlus) throws IOException, FileUploadException {
         long pid = PixivApi.getSeImagePid(tags);
+        if (pid == -1) {
+            return buildMessageChain("查无此图");
+        }
+        // 如果不是高清涩图加上 &web=true，表示请求一张更小的图片
+        String api = isPlus ? pixivSearchApi : pixivSearchApi + "&web=true";
         return new MessageChainBuilder()
-                .append(uploadImage(event, new URL(pixivSearchApi.replace("IMGID", String.valueOf(pid))))).build();
+                .append(uploadImage(event, new URL(
+                        api.replace("IMGID", String.valueOf(pid)))
+                )).build();
     }
 
+    /**
+     * 获取神秘代码
+     * @param event
+     * @param tags
+     * @return
+     * @throws IOException
+     * @throws FileUploadException
+     */
     private MessageChain doParseMysteriousImage(MessageEvent event, List<String> tags) throws IOException, FileUploadException {
         long pid = PixivApi.getImagePid(tags);
         return new MessageChainBuilder()
                 .append(uploadImage(event, new URL(pixivSearchApi.replace("IMGID", String.valueOf(pid))))).build();
     }
 
+    /**
+     * 获取鸡汤
+     * @param event
+     * @return
+     * @throws IOException
+     * @throws FileUploadException
+     */
     private MessageChain doParseChickenSoup(MessageEvent event) throws IOException, FileUploadException {
         return new MessageChainBuilder()
-                .append(NetUtils.sendAndGetResponseString(new URL(chickenSoupUrl), "GET", null, null))
+                .append(NetUtil.sendAndGetResponseString(new URL(chickenSoupUrl), "GET", null, null))
                 .append(uploadImage(event, new URL(beautifulImageUrl)))
                 .build();
     }
 
+    /**
+     * 不需要 @ 机器人，检测到以关键词开头的事件
+     * @param event
+     * @return
+     */
     @Override
     public boolean shouldHandle(MessageEvent event) {
-        if (isGroupMessageEvent(event)) {
-            String content = getPlantContent(event);
-            for (String keyword : keywords) {
-                if (content.startsWith(keyword)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return startWithKeywords(event, keywords);
     }
 }

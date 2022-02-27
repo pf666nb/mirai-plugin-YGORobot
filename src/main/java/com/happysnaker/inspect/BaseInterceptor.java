@@ -1,4 +1,4 @@
-package com.happysnaker.filter;
+package com.happysnaker.inspect;
 
 import com.happysnaker.config.RobotConfig;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
@@ -15,7 +15,7 @@ import java.util.Set;
  * @email happysnaker@foxmail.com
  */
 @checker
-public class BaseFilter implements Filter {
+public class BaseInterceptor implements Interceptor {
     private Set<String> exclude = new HashSet<>(RobotConfig.exclude);
     private Set<String> include = new HashSet<>(RobotConfig.include);
 
@@ -25,7 +25,7 @@ public class BaseFilter implements Filter {
      * @return
      */
     @Override
-    public boolean doFilter(MessageEvent event) {
+    public boolean intercept(MessageEvent event) {
         if (event == null) return true;
         String groupId = String.valueOf(((GroupMessageEvent) event).getGroup().getId());
         if (include.isEmpty()) {

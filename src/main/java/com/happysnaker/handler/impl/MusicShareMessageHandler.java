@@ -1,20 +1,20 @@
 package com.happysnaker.handler.impl;
 
+import com.happysnaker.api.MiguApi;
 import com.happysnaker.api.TongZhongApi;
 import com.happysnaker.handler.handler;
-import com.happysnaker.utils.NetUtils;
-import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.*;
-import net.mamoe.mirai.utils.ExternalResource;
-import sun.nio.ch.Net;
 
-import java.io.File;
-import java.net.URL;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
+ * 音乐分享
+ *
  * @author Happysnaker
  * @description
  * @date 2022/1/29
@@ -22,30 +22,57 @@ import java.util.List;
  */
 @handler(priority = 1)
 public class MusicShareMessageHandler extends GroupMessageHandler {
-    private String keyword = "音乐";
+    private Set<String> keywords = new HashSet<>();
+    private final String MUSIC_KEYWORD = "音乐";
+    private final String MIGU_MUSIC_KEYWORD = "咪咕";
+
+    public MusicShareMessageHandler() {
+        keywords.add(MUSIC_KEYWORD);
+        keywords.add(MIGU_MUSIC_KEYWORD);
+    }
 
     @Override
     protected List<MessageChain> getReplyMessage(MessageEvent event) {
+        String content = getPlantContent(event);
+        try {
+            if (content.startsWith(MUSIC_KEYWORD)) {
+                return music(event);
+            } else if (content.startsWith(MIGU_MUSIC_KEYWORD)) {
+                return miguMusic(event);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            logError(event, e);
+        }
+        return buildMessageChainAsList("出错了呢，换首歌试试吧！");
+    }
+
+    protected List<MessageChain> miguMusic(MessageEvent event) throws IOException {
+        String content = getPlantContent(event);
+        String name = content.substring(MIGU_MUSIC_KEYWORD.length()).trim();
+        return buildMessageChainAsList(MiguApi.search(name));
+    }
+
+    protected List<MessageChain> music(MessageEvent event) {
         List<MessageChain> ans = new ArrayList<>();
         String content = getPlantContent(event);
-        String name = content.substring(keyword.length()).trim();
+        String name = content.substring(MUSIC_KEYWORD.length()).trim();
         try {
             MusicShare music = TongZhongApi.getSongUrl(name);
             if (music != null) {
-                ans.add(new  MessageChainBuilder().append(music).build());
+                ans.add(new MessageChainBuilder().append(music).build());
+            } else {
+                ans.add(buildMessageChain("查无此歌"));
             }
         } catch (Exception e) {
-            error(e.getMessage());
-            ans.add(new  MessageChainBuilder().append("我炸了").build());
+            logError(event, e);
+            ans.add(new MessageChainBuilder().append("我炸了").build());
         }
         return ans;
     }
 
     @Override
     public boolean shouldHandle(MessageEvent event) {
-        if (isGroupMessageEvent(event)) {
-            return getPlantContent(event).startsWith(keyword);
-        }
-        return false;
+        return startWithKeywords(event, keywords);
     }
 }

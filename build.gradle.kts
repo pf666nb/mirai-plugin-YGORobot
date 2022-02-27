@@ -19,6 +19,8 @@ repositories {
 dependencies{
     implementation("com.alibaba:fastjson:1.2.76")
     implementation(kotlin("stdlib-jdk8"))
+    // https://mvnrepository.com/artifact/org.jfree/jfreechart
+    implementation("org.jfree:jfreechart:1.0.19")
 }
 
 val compileKotlin: KotlinCompile by tasks

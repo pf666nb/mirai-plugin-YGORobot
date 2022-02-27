@@ -1,8 +1,7 @@
 package com.happysnaker.api;
 
-import com.happysnaker.utils.NetUtils;
+import com.happysnaker.utils.NetUtil;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
 
@@ -17,7 +16,7 @@ public class BingApi {
 
     public static String getRandomImageUrl() {
         try {
-            Map<String, Object> map = (Map<String, Object>) NetUtils.sendAndGetResponseMap(new URL(url), "GET", null, null).get("data");
+            Map<String, Object> map = (Map<String, Object>) NetUtil.sendAndGetResponseMap(new URL(url), "GET", null, null).get("data");
             return (String) map.get("url");
         } catch (Exception e) {
             e.printStackTrace();

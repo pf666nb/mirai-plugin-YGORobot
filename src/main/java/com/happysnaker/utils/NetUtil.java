@@ -18,7 +18,7 @@ import java.util.Map;
  * @date 2022/1/16
  * @email happysnaker@foxmail.com
  */
-public class NetUtils {
+public class NetUtil {
 
     private static HttpURLConnection getUrlConnection(URL obj, String method, Map<String, String> heads, String postParam) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
@@ -46,7 +46,8 @@ public class NetUtils {
 
     /**
      * 发送 http 请求并获取回复信息，注意回复格式必须是 json，否则该函数无法正常工作
-     * @param obj URL
+     *
+     * @param obj       URL
      * @param method
      * @param heads
      * @param postParam body 参数，若无可填 null
@@ -63,6 +64,8 @@ public class NetUtils {
                 while ((line = reader.readLine()) != null) {
                     msg += line + "\n";
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             } finally {
                 conn.disconnect();
             }
@@ -77,7 +80,8 @@ public class NetUtils {
 
     /**
      * 发送 http 请求并获取回复信息，注意回复格式为原始二进制流
-     * @param obj URL
+     *
+     * @param obj       URL
      * @param method
      * @param heads
      * @param postParam body 参数，若无可填 null
@@ -96,7 +100,8 @@ public class NetUtils {
 
     /**
      * 发送 http 请求并获取回复信息，返回类型为 String 类型
-     * @param obj URL
+     *
+     * @param obj       URL
      * @param method
      * @param heads
      * @param postParam body 参数，若无可填 null
@@ -121,5 +126,11 @@ public class NetUtils {
         }
     }
 
-
+    public synchronized static void writeToFile(File file, String message) throws FileNotFoundException {
+        try (FileOutputStream out = new FileOutputStream(file, true)) {
+            out.write(message.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

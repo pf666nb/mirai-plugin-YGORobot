@@ -1,17 +1,16 @@
 package com.happysnaker.handler.impl;
 
 import com.happysnaker.config.RobotConfig;
+import com.happysnaker.exception.FileUploadException;
 import com.happysnaker.handler.handler;
-import com.happysnaker.utils.BaseUtils;
-import com.happysnaker.utils.NetUtils;
+import com.happysnaker.utils.*;
 import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.message.data.At;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
 
 import java.io.IOException;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -25,9 +24,15 @@ public class GtReportMessageHandler extends GroupMessageHandler {
     public static final String BATTLE_REPORT = "会战报表";
     public static final String FRONTLINE_REPORTING = "前线报道";
     public static final String BATTLE_STATISTICS = "会战统计";
+    public static final String WHO_NOT_SHOOT1 = "谁未出刀";
+    public static final String WHO_NOT_SHOOT2 = "谁没出刀";
+    public static final String URGE_KNIFE = "催刀";
+    public static final String URGE_KNIFE_ALL = "一键催刀";
+    public static final String CHECK_KNIFE = "查刀";
 
     private static final String BATTLE_REPORT_URL = "https://www.bigfun.cn/api/feweb?target=kan-gong-guild-report%2Fa&date=";
     public static final String FRONTLINE_REPORTING_URL = "https://www.bigfun.cn/api/feweb?target=kan-gong-guild-boss-info%2Fa";
+    public static final String GET_MEMBER_URL = "https://www.bigfun.cn/api/feweb?target=kan-gong-guild-log-filter/a";
 
     private Set<String> keywords;
 
@@ -52,45 +57,135 @@ public class GtReportMessageHandler extends GroupMessageHandler {
         keywords.add(BATTLE_REPORT);
         keywords.add(FRONTLINE_REPORTING);
         keywords.add(BATTLE_STATISTICS);
+        keywords.add(WHO_NOT_SHOOT1);
+        keywords.add(WHO_NOT_SHOOT2);
+        keywords.add(URGE_KNIFE);
+        keywords.add(URGE_KNIFE_ALL);
+        keywords.add(CHECK_KNIFE);
     }
 
+    /**
+     * 回复消息的接口
+     *
+     * @param event 经过 proxyContent 处理后的消息
+     * @return
+     */
     @Override
     protected List<MessageChain> getReplyMessage(MessageEvent event) {
-        List<Map<String, String>> gtConfigs = RobotConfig.gtConfig;
-        String cookie = null;
-        String groupId = getGroupId(event);
-        for (Map<String, String> gtConfig : gtConfigs) {
-            String gid = gtConfig.getOrDefault("groupId", null);
-            if (gid == null || gid.isEmpty() || gid.equals(groupId)) {
-                cookie = gtConfig.getOrDefault("gtCookie", null);
-                break;
-            }
-        }
+        String cookie = getCookie(getGroupId(event));
         if (cookie != null && !cookie.isEmpty()) {
-//            System.out.println("cookie = " + cookie);
-            String content = getContent(event);
+            String content = getPlantContent(event);
             try {
+                // 会战报表
                 if (content.contains(BATTLE_REPORT)) {
                     return List.of(doParseBattleReport(cookie));
-                } else if (content.contains(FRONTLINE_REPORTING)) {
+                }
+                // 前线报道
+                else if (content.contains(FRONTLINE_REPORTING)) {
                     return List.of(doParseFrontlineReporting(cookie));
-                } else if (content.contains(BATTLE_STATISTICS)) {
-                    return List.of(doParseBattleStatistics(cookie));
+                }
+                // 会战统计
+                else if (content.contains(BATTLE_STATISTICS)) {
+                    // 整体统计
+                    if (content.equals(BATTLE_STATISTICS)) {
+                        return List.of(doParseBattleStatistics(cookie));
+                    }
+                    // 对玩家统计
+                    return List.of(doParseBattleStatistics(cookie, content.replace(BATTLE_STATISTICS, "").trim(), event));
+                }
+                // 谁没出刀
+                else if (content.contains(WHO_NOT_SHOOT1) || content.contains(WHO_NOT_SHOOT2)) {
+                    return List.of(doParseCheck(cookie, event));
+                }
+                // 催刀
+                else if (content.contains(URGE_KNIFE)) {
+                    return List.of(doUrge(event, getNotDoPeople(cookie, event).getKey()));
+                }
+                // 一键催刀
+                else if (content.contains(URGE_KNIFE_ALL)) {
+                    // 一键催到会催未出满刀的所有人
+                    PairUtil<Set<String>, Set<String>> pair = getNotDoPeople(cookie, event);
+                    Set<String> param = pair.getKey();
+                    param.addAll(pair.getValue());
+                    return List.of(doUrge(event, param));
+                }
+                // 查刀
+                else if (content.contains(CHECK_KNIFE)) {
+                    return check(event, cookie);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+                logError(event, e);
                 return List.of(new MessageChainBuilder().append("发生了一条意料之外的错误").build());
             }
         }
         return List.of(new MessageChainBuilder().append("该群暂未配置相关信息").build());
     }
 
+    public List<MessageChain> check(MessageEvent event, String cookie) throws IOException, FileUploadException {
+        String content = getPlantContent(event).replace(CHECK_KNIFE, "");
+        final List<String> ms = StringUtil.splitSpaces(content);
+        Map<String, Object> msg = null;
+        List<String> dates = (List<String>) ((Map) NetUtil.sendAndGetResponseMap(new URL(GET_MEMBER_URL), "GET", getHeaders(cookie), null).get("data")).get("date");
+
+        List<PairUtil<String, List<PairUtil<String, Double>>>> datasets = new ArrayList<>();
+        Map<String, List<PairUtil<String, Double>>> map = new HashMap<>();
+
+        Collections.reverse(dates);
+        for (String date : dates) {
+            msg = NetUtil.sendAndGetResponseMap(new URL(BATTLE_REPORT_URL + date), "GET", getHeaders(cookie), null);
+            List<Map<String, Object>> datas = (List<Map<String, Object>>) msg.getOrDefault(DATA, new ArrayList<>());
+
+            Set<String> doneSet = new HashSet<>();
+            for (Map<String, Object> data : datas) {
+                String username = (String) data.get(USER_NAME);
+                doneSet.add(username);
+                List damageList = (List) data.get(DAMAGE_LIST);
+                map.putIfAbsent(username, new ArrayList<>());
+                if (damageList != null) {
+                    if (damageList.size() == TOTAL_COUNT) {
+                        map.get(username).add(PairUtil.of(date, 3.0));
+                    } else {
+                        // 出了但是未出满的仔
+                        map.get(username).
+                                add(PairUtil.of(date, (double) damageList.size()));
+                    }
+                } else {
+                    // 一刀没出
+                    map.get(username).add(PairUtil.of(date, 0.1));
+                }
+            }
+
+            for (String m : ms) {
+                map.putIfAbsent(m, new ArrayList<>());
+                if (!doneSet.contains(m)) {
+                    // 一刀没出
+                    map.get(m).add(PairUtil.of(date, 0.1));
+                }
+            }
+        }
+        for (String m : ms) {
+            if (m.contains(m)) {
+                datasets.add(PairUtil.of(m, map.get(m)));
+            }
+        }
+        String f = ChartUtil.generateHistogram(datasets, "查刀", "日期", "出刀数");
+        return buildMessageChainAsList(uploadImage(event, f));
+    }
+
+    /**
+     * 获取对 Boss 造成最大伤害的成员
+     *
+     * @param data
+     * @param bossName
+     * @return
+     */
     private String getMostDamageUser(Map<String, Object> data, String bossName) {
         long d = 0;
         String ans = "";
         for (Map.Entry<String, Object> it : data.entrySet()) {
             Map<String, Object> map = (Map<String, Object>) it.getValue();
-            long dmg = (long) ((Map)map.getOrDefault(bossName, new HashMap<>())).getOrDefault("totalDamage", 0l);
+            long dmg = (long) ((Map) map.getOrDefault(bossName, new HashMap<>())).getOrDefault("totalDamage", 0l);
             if (dmg > d) {
                 d = dmg;
                 ans = it.getKey();
@@ -99,28 +194,49 @@ public class GtReportMessageHandler extends GroupMessageHandler {
         return ans;
     }
 
-    public MessageChain doParseBattleStatistics(String cookie) {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Calendar calendar = Calendar.getInstance();
+
+    /**
+     * 获取对应群的 gt cookie
+     *
+     * @param groupId
+     * @return
+     */
+    private String getCookie(String groupId) {
+        List<Map<String, Object>> gtConfigs = RobotConfig.gtConfig;
+        String cookie = null;
+        // 获取对应群的 cookie
+        for (Map<String, Object> gtConfig : gtConfigs) {
+            String gid = (String) gtConfig.getOrDefault("groupId", null);
+            if (gid == null || gid.isEmpty() || gid.equals(groupId)) {
+                cookie = (String) gtConfig.getOrDefault("gtCookie", null);
+                break;
+            }
+        }
+        return cookie;
+    }
+
+    /**
+     * 获取会战分析接口的 map
+     *
+     * @param cookie
+     * @return Pair, key 是 memberData, val 是 bossNames
+     * @throws Exception
+     */
+    public PairUtil<Map<String, Object>, Set<String>> getParseBattleStatisticsMap(String cookie) throws Exception {
         String numberOfCuts = "count";
         String totalDamage = "totalDamage";
-
+        List<String> dates = (List<String>) ((Map) NetUtil.sendAndGetResponseMap(new URL(GET_MEMBER_URL), "GET", getHeaders(cookie), null).get("data")).get("date");
         Set<String> bossNames = new HashSet<>(4);
         Map<String, Object> memberData = new HashMap<>();
-        while (true) {
-
-            String date = dateFormat.format(calendar.getTime());
-
-
+        for (String date : dates) {
             Map<String, Object> msg = null;
             try {
-                msg = NetUtils.sendAndGetResponseMap(new URL(BATTLE_REPORT_URL + date), "GET", getHeaders(cookie), null);
+                msg = NetUtil.sendAndGetResponseMap(new URL(BATTLE_REPORT_URL + date), "GET", getHeaders(cookie), null);
             } catch (IOException e) {
-                e.printStackTrace();
-                continue;
+                throw e;
             }
-//            System.out.println("msg = " + msg);
-            if (msg == null || (int) msg.getOrDefault("code", 5) != 200 || ((String) msg.getOrDefault("message", "")).equals("服务器内部错误")) {
+            System.out.println("msg = " + msg);
+            if (msg == null || ((String) msg.getOrDefault("message", "")).equals("服务器内部错误")) {
                 break;
             }
 
@@ -135,7 +251,7 @@ public class GtReportMessageHandler extends GroupMessageHandler {
                 for (Map<String, Object> damage : damageList) {
                     String bossName = (String) damage.get(BOSS_NAME);
                     bossNames.add(bossName);
-                    long dmg = BaseUtils.intToLong(damage.get(DAMAGE));
+                    long dmg = NumUtil.intToLong(damage.get(DAMAGE));
                     // 首领统计
                     Map<String, Object> bossMap = (Map<String, Object>) member.getOrDefault(bossName, new HashMap<>());
                     bossMap.put(numberOfCuts, (long) bossMap.getOrDefault(numberOfCuts, 0l) + 1l);
@@ -148,8 +264,206 @@ public class GtReportMessageHandler extends GroupMessageHandler {
                 member.put(totalDamage, (long) member.getOrDefault(totalDamage, 0l) + tot);
                 memberData.put(userName, member);
             }
-            calendar.set(Calendar.HOUR_OF_DAY, -24);
+//            calendar.set(Calendar.HOUR_OF_DAY, -24);
         }
+        return new PairUtil<Map<String, Object>, Set<String>>(memberData, bossNames);
+    }
+
+
+    /**
+     * 催刀
+     *
+     * @param event
+     * @param names 催刀的成员
+     * @return
+     */
+    public MessageChain doUrge(MessageEvent event, Set<String> names) {
+        if (names == null || names.isEmpty()) {
+            return buildMessageChain("暂无未出刀成员，赞！");
+        }
+//        Set<String> gtMembers = (Set<String>) RobotConfig.gtConfig.get(1);
+        MessageChainBuilder builder = new MessageChainBuilder();
+        for (String name : names) {
+            Long id = getMemberId(event, name);
+            if (id > 0) {
+                At at = new At(id);
+                builder.add(at);
+            }
+        }
+        builder.add("\n" + "还不赶快去打公会战！\n\n" + "注：本功能处于实验阶段，使用的前提是玩家游戏内用户名必须完全等于QQ群内名称，且名称不准有空格，否则无效");
+        return builder.build();
+    }
+
+    /**
+     * 检查谁未出刀
+     *
+     * @param cookie
+     * @param event
+     * @return
+     */
+    public MessageChain doParseCheck(String cookie, MessageEvent event) {
+        PairUtil<Set<String>, Set<String>> pair = getNotDoPeople(cookie, event);
+        StringBuilder sb = new StringBuilder();
+        sb.append("以下用户暂未出刀：\n");
+        if (pair.getKey().size() != 0) {
+            for (String s : pair.getKey()) {
+                sb.append("  -" + s + "\n");
+            }
+        }
+        sb.append("未出刀用户总数：" + pair.getKey().size() + "\n\n");
+        sb.append("以下用户出了刀，但未出满三刀：\n");
+        if (pair.getValue().size() != 0) {
+            for (String s : pair.getValue()) {
+                sb.append("  -" + s + "\n");
+            }
+        }
+        sb.append("出了刀但未出满刀的用户总数：" + pair.getValue().size() + "\n\n");
+        sb.append("注：本功能处于实验阶段，使用的前提是玩家游戏内用户名必须完全等于QQ群内名称，且名称前后不准有空格，否则无效");
+        return new MessageChainBuilder().append(sb.toString()).build();
+    }
+
+    /**
+     * 获取 GT 公会的成员，如果没有配置或配置为空就返回 null
+     *
+     * @param event
+     * @return
+     */
+    private Set<String> getGtMembers(MessageEvent event) {
+        String groupId = getGroupId(event);
+        for (Map<String, Object> map : RobotConfig.gtConfig) {
+            String id = (String) map.getOrDefault("groupId", null);
+            if (id != null && id.equals(groupId)) {
+                if (!map.containsKey("members") || ((List) map.get("members")).isEmpty()) {
+                    return null;
+                }
+                return new HashSet<>((List<String>) map.get("members"));
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 获取未出刀的成员，如果没有配置工会成员，则默认所有群成员都是工会成员
+     *
+     * @param cookie
+     * @param event
+     * @return Pair，key 是没出刀的玩家集合，val 是出刀但是未出满刀的玩家
+     */
+    public PairUtil<Set<String>, Set<String>> getNotDoPeople(String cookie, MessageEvent event) {
+        // 获取配置成员
+        Set<String> members = getGtMembers(event);
+        // 如果没有配置，那么则是同群成员
+        if (members == null) {
+            members = new HashSet<>(getMembersGroupName(event));
+        }
+        Map<String, Object> msg = null;
+        try {
+            msg = NetUtil.sendAndGetResponseMap(new URL(BATTLE_REPORT_URL), "GET", getHeaders(cookie), null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Set<String> s = new HashSet<>();
+        Set<String> s1 = new HashSet<>();
+        Set<String> s2 = new HashSet<>();
+        List<Map<String, Object>> datas = (List<Map<String, Object>>) msg.getOrDefault(DATA, new ArrayList<>());
+        for (Map<String, Object> data : datas) {
+            String username = (String) data.get(USER_NAME);
+            List damageList = (List) data.get(DAMAGE_LIST);
+            if (damageList != null) {
+                if (damageList.size() == TOTAL_COUNT) {
+                    // 出满刀的仔
+                    s.add(username);
+                } else {
+                    // 出了但是未出满的仔
+                    s2.add(username);
+                }
+            }
+        }
+        for (String member : members) {
+            // 如果既没出满，又没不完全出刀，那么一定没出刀
+            if (!s.contains(member) && !s2.contains(member)) {
+                s1.add(member);
+            }
+        }
+        return new PairUtil<>(s1, s2);
+    }
+
+
+    /**
+     * 会战统计，对具体玩家的具体统计
+     *
+     * @param cookie
+     * @param username
+     * @return
+     */
+    public MessageChain doParseBattleStatistics(String cookie, String username, MessageEvent event) throws IOException, FileUploadException {
+        String numberOfCuts = "count";
+        String totalDamage = "totalDamage";
+        PairUtil<Map<String, Object>, Set<String>> p = null;
+        try {
+            p = getParseBattleStatisticsMap(cookie);
+        } catch (Exception e) {
+            return new MessageChainBuilder().append("芜湖，发生错误了，错误原因 :" + e.getCause()).build();
+        }
+        Map<String, Object> memberData = p.getKey();
+        System.out.println("p = " + p);
+        System.out.println("memberData = " + memberData);
+        Set<String> bossNames = p.getValue();
+        if (!memberData.containsKey(username)) {
+            return new MessageChainBuilder().append("未查询到用户名为 " + username + " 的用户，请检查玩家名是否正确，注意玩家名不得带空格").build();
+        }
+        Map<String, Object> map = (Map<String, Object>) memberData.get(username);
+
+        Map<String, Long> bossTotDamage = getBossTotalDamage(memberData, bossNames);
+        long t = bossTotDamage.getOrDefault(totalDamage, 0l);
+        StringBuilder sb = new StringBuilder();
+        sb.append("用户名：" + username + "\n");
+        sb.append("  总伤害：" + map.getOrDefault(totalDamage, 0) + "\n");
+        sb.append("  总出刀：" + map.getOrDefault(numberOfCuts, 0) + "\n");
+        sb.append("  总伤害占比：" + NumUtil.getPercentage((long) map.getOrDefault(totalDamage, 0), t) + "\n\n");
+        Map<String, Long> dataset1 = new HashMap<>();
+        Map<String, Long> dataset2 = new HashMap<>();
+
+        for (String bossName : bossNames) {
+
+            Map<String, Object> bossMap = (Map<String, Object>) map.getOrDefault(bossName, new HashMap<>());
+//            System.out.println("zz = " +  bossTotImage.getOrDefault(bossName, 0l));
+            sb.append("  " + bossName + "：\n");
+            sb.append("    对怪物总伤害：" + bossMap.getOrDefault(totalDamage, 0) + "\n");
+            sb.append("    对怪物总出刀：" + bossMap.getOrDefault(numberOfCuts, 0) + "\n");
+            sb.append("    对怪物伤害占比：" + NumUtil.getPercentage((long) bossMap.getOrDefault(totalDamage, 0l), bossTotDamage.getOrDefault(bossName, 0l)) + "\n");
+
+            dataset1.put(bossName, NumUtil.intToLong(bossMap.getOrDefault(numberOfCuts, 0l)));
+            dataset2.put(bossName, NumUtil.intToLong(bossMap.getOrDefault(totalDamage, 0l)));
+        }
+        sb.append("\n");
+        String s1 = ChartUtil.generateAPieChart(dataset1, username + " 的出刀情况");
+        String s2 = ChartUtil.generateAPieChart(dataset2, username + " 的输出情况");
+        return new MessageChainBuilder().
+                append(sb.toString()).
+                append(uploadImage(event, s1))
+                .append(uploadImage(event, s2))
+                .build();
+    }
+
+    /**
+     * 会战统计，总统计
+     *
+     * @param cookie
+     * @return
+     */
+    public MessageChain doParseBattleStatistics(String cookie) {
+        String numberOfCuts = "count";
+        String totalDamage = "totalDamage";
+        PairUtil<Map<String, Object>, Set<String>> p = null;
+        try {
+            p = getParseBattleStatisticsMap(cookie);
+        } catch (Exception e) {
+            return new MessageChainBuilder().append("芜湖，发生错误了，错误原因 :" + e.getCause()).build();
+        }
+        Map<String, Object> memberData = p.getKey();
+        Set<String> bossNames = p.getValue();
+
         StringBuffer sb = new StringBuffer();
         TreeMap<Long, Map<String, Object>> sortMap = new TreeMap<>((a, b) -> (int) (b - a));
 
@@ -177,15 +491,23 @@ public class GtReportMessageHandler extends GroupMessageHandler {
         for (String bossName : bossNames) {
             sb.append("对" + bossName + "造成伤害最高的是：" + getMostDamageUser(memberData, bossName) + "\n\n");
         }
+        System.out.println("sb = " + sb);
+        System.out.println("sortMap = " + sortMap);
         sb.append("总伤害最高的是：" + sortMap.get(sortMap.firstKey()).get(USER_NAME));
 //        System.out.println("sb = " + sb);
         return new MessageChainBuilder().append(sb.toString()).build();
     }
 
+    /**
+     * 前线报道
+     *
+     * @param cookie
+     * @return
+     */
     public MessageChain doParseFrontlineReporting(String cookie) {
         Map<String, Object> msg = null;
         try {
-            msg = NetUtils.sendAndGetResponseMap(new URL(FRONTLINE_REPORTING_URL), "GET", getHeaders(cookie), null);
+            msg = NetUtil.sendAndGetResponseMap(new URL(FRONTLINE_REPORTING_URL), "GET", getHeaders(cookie), null);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -199,7 +521,7 @@ public class GtReportMessageHandler extends GroupMessageHandler {
             sb.append("  属性：" + boss.get(TYPE) + "\n");
             sb.append("  总血量：" + boss.get(TOTAL_HP) + "\n");
             sb.append("  剩余血量：" + boss.get(REMAIN_HP) + "\n");
-            double percentage = BaseUtils.intToDouble(boss.get(REMAIN_HP)) / BaseUtils.intToDouble(boss.get(TOTAL_HP));
+            double percentage = NumUtil.intToDouble(boss.get(REMAIN_HP)) / NumUtil.intToDouble(boss.get(TOTAL_HP));
             String str = String.valueOf(percentage * 100);
             if (str.length() > 5) {
                 str = str.substring(0, 5);
@@ -210,10 +532,17 @@ public class GtReportMessageHandler extends GroupMessageHandler {
         return new MessageChainBuilder().append(sb.toString()).build();
     }
 
+
+    /**
+     * 会战报表
+     *
+     * @param cookie
+     * @return
+     */
     public MessageChain doParseBattleReport(String cookie) {
         Map<String, Object> msg = null;
         try {
-            msg = NetUtils.sendAndGetResponseMap(new URL(BATTLE_REPORT_URL), "GET", getHeaders(cookie), null);
+            msg = NetUtil.sendAndGetResponseMap(new URL(BATTLE_REPORT_URL), "GET", getHeaders(cookie), null);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -256,6 +585,28 @@ public class GtReportMessageHandler extends GroupMessageHandler {
         return new MessageChainBuilder().append(sb.toString()).build();
     }
 
+    private Map<String, Long> getBossTotalDamage(Map<String, Object> memberData, Set<String> bossNames) {
+        Map<String, Long> bossTotalDamage = new HashMap<>();
+        long t = 0;
+        String totalDamage = "totalDamage";
+        for (Map.Entry<String, Object> entry : memberData.entrySet()) {
+            Map<String, Object> m = (Map<String, Object>) entry.getValue();
+            t += (long) m.getOrDefault(totalDamage, 0);
+            for (String bossName : bossNames) {
+                Map<String, Object> bossMap = (Map<String, Object>) m.getOrDefault(bossName, new HashMap<>());
+                bossTotalDamage.put(bossName, bossTotalDamage.getOrDefault(bossName, 0l) + (long) (NumUtil.objectToLong(bossMap.getOrDefault(totalDamage, 0))));
+            }
+        }
+        bossTotalDamage.put(totalDamage, t);
+        return bossTotalDamage;
+    }
+
+    /**
+     * 获取 heads，添加 gt cookie
+     *
+     * @param cookie
+     * @return
+     */
     private Map getHeaders(String cookie) {
         Map heads = new HashMap(10);
         heads.put("Cookie", cookie);
@@ -263,24 +614,14 @@ public class GtReportMessageHandler extends GroupMessageHandler {
     }
 
     /**
-     * 检测到关键词回复，不需要 at 机器人
+     * 检测到关键词回复，不需要 at 机器人，只要以该关键词开头即可
      *
      * @param event
      * @return
      */
     @Override
     public boolean shouldHandle(MessageEvent event) {
-        if (isGroupMessageEvent(event)) {
-            String content;
-            if ((content = super.handlerContentIfBotBeAt(getContent(event))) != null) {
-                for (String keyword : keywords) {
-                    if (content.trim().equals(keyword)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+        return startWithKeywords(event, keywords);
     }
 }
 

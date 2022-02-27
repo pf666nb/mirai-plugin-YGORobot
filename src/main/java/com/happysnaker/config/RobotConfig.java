@@ -3,10 +3,7 @@ package com.happysnaker.config;
 import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Happysnaker
@@ -24,53 +21,32 @@ public class RobotConfig {
 
     public static MiraiLogger logger;
 
-
-
     // ------------ 用户配置 ----------------
     /**
      * 主菜单，回复 help 或 帮助 获取
      */
-    public static String menu = "****** H机器人-1.2 ******\n" +
-            "关键字：帮助 或 help\n\n" +
-            "关键字：天气\n" +
-            "   示例1：天气深圳\n\n" +
-            "关键字：翻译\n" +
-            "   示例1：翻译i love you\n" +
-            "   示例2：翻译我爱\n\n" +
-            "关键字：笑话\n\n" +
-            "关键字：歌词\n" +
-            "   示例1：歌词后来\n\n" +
-            "关键字：计算\n" +
-            "   示例1：计算1+1*2/3-4\n\n" +
-            "关键字：归属\n" +
-            "   示例1：归属127.0.0.1\n" +
-            "   示例2：归属13430108888\n\n" +
-            "关键字：成语\n" +
-            "   示例1：成语一生一世\n\n" +
-            "关键字：五笔/拼音\n" +
-            "   示例1：好字的五笔/拼音\n\n" +
-            "**** 扩展功能1：GtReport ****\n" +
-            "关键字：前线报道\n\n" +
-            "关键字：会战报表\n\n" +
-            "关键字：会战统计\n\n" +
-            "**** 扩展功能2：ImageShare ****\n" +
-            "关键字：鸡汤\n\n" +
-            "关键字：神秘代码\n" +
-            "   示例1：神秘代码\n" +
-            "   示例2：神秘代码萝莉\n" +
-            "   示例3：神秘代码 黑丝 萝莉\n\n" +
-            "关键字：涩图\n" +
-            "   示例1：涩图黑丝 萝莉\n\n" +
-            "关键字：美图\n\n" +
-            "**** 扩展功能3：MusicShare ****\n" +
-            "关键字：音乐\n" +
-            "   示例1：音乐克罗地亚狂想曲\n";
+    public static String menu;
 
+    /**
+     * 机器人管理员，索引 0 为超级管理员
+     */
+    public static List<String> administrator = new ArrayList<>();
+
+
+    /**
+     * 群管理员
+     */
+    public static List<String> groupAdministrator = new ArrayList<>();
+
+    /**
+     * 坎公管理员
+     */
+    public static List<String> gtAdministrator = new ArrayList<>();
 
     /**
      * 坎公配置
      */
-    public static List<Map<String, String>> gtConfig = new ArrayList<>();
+    public static List<Map<String, Object>> gtConfig = new ArrayList<>();
 
     /**
      * 需要排除的群
@@ -87,4 +63,13 @@ public class RobotConfig {
      */
     public static int pictureWithdrawalTime = 30;
 
+    /**
+     * 检测自定关键词的相似度，换句话说，当相似度达到 customKeywordSimilarity 时，即认为触发自定义关键词，此项范围: (0, 1.0]
+     */
+    public static double customKeywordSimilarity = 0.8;
+
+    /**
+     * 自定义关键词及回复，value 允许是一条 mirai 消息，这意味着回复消息可以是表情或者图片等，此 Map {key - val} 可能是 {自定义关键词 - 自定义回复}，也有可能是 {群号 - 嵌套的 Map}，因此自定义关键词不允许是 bot 的所有的群号，当 {key - val} 为 {群号 - 嵌套的 Map} 形式，说明此嵌套的 Map 只在特定群内生效
+     */
+    public static Map<String, Object> customKeyword = new HashMap<>();
 }

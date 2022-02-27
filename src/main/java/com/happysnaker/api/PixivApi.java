@@ -1,11 +1,9 @@
 package com.happysnaker.api;
 
-import com.happysnaker.utils.BaseUtils;
-import com.happysnaker.utils.NetUtils;
+import com.happysnaker.utils.NumUtil;
+import com.happysnaker.utils.NetUtil;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
@@ -39,11 +37,11 @@ public class PixivApi {
             }
             url = url.substring(0, url.length() - 1);
         }
-        List<Map<String, Object>> map = (List<Map<String, Object>>) NetUtils.sendAndGetResponseMap(new URL(url), "GET", null, null).get("data");
+        List<Map<String, Object>> map = (List<Map<String, Object>>) NetUtil.sendAndGetResponseMap(new URL(url), "GET", null, null).get("data");
         try {
             return (long) map.get(0).get("pid");
         } catch (ClassCastException e) {
-            return (long) BaseUtils.intToDouble(map.get(0).get("pid"));
+            return (long) NumUtil.intToDouble(map.get(0).get("pid"));
         }
     }
 
@@ -63,11 +61,14 @@ public class PixivApi {
             }
             url = url.substring(0, url.length() - 1);
         }
-        List<Map<String, Object>> map = (List<Map<String, Object>>) NetUtils.sendAndGetResponseMap(new URL(url), "GET", null, null).get("data");
+        List<Map<String, Object>> map = (List<Map<String, Object>>) NetUtil.sendAndGetResponseMap(new URL(url), "GET", null, null).get("data");
+        if (map == null || map.isEmpty()) {
+            return -1;
+        }
         try {
             return (long) map.get(0).get("pid");
         } catch (ClassCastException e) {
-            return (long) BaseUtils.intToDouble(map.get(0).get("pid"));
+            return (long) NumUtil.intToDouble(map.get(0).get("pid"));
         }
     }
 

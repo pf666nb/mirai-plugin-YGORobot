@@ -10,6 +10,8 @@ mirai 群聊机器人插件，支持发送涩图(可指定tag)、美图、风景
 
 建议您使用 mirai-console-loader 快速启动 mirai 机器人，下载地址：[Releases · iTXTech/mirai-console-loader (github.com)](https://github.com/iTXTech/mirai-console-loader/releases)，下载后解压文件。
 
+> 如果你是新手，不会安装 java 环境，
+
 经过测试，HRobot 适配 mcl-1.2.2、mcl-1.2.1 版本，更早版本暂未测试。
 
 前往[Releases · happysnaker/mirai-plugin-HRobot (github.com)](https://github.com/happysnaker/mirai-plugin-HRobot/releases)选择对应版本下载插件 jar 包 plugin-SNAPSHOT.mirai.jar，将该 jar 包移动至 mcl 文件下的 plugins 文件夹下，然后无须配置任何文件，点击 mcl.cmd 即可启动机器人，注意如果你是第一次下载，你必须先启动一次 mcl.cmd 才会有 plugins 相关文件夹生成。
@@ -40,6 +42,11 @@ mirai 群聊机器人插件，支持发送涩图(可指定tag)、美图、风景
 | 前线报道   | 前线报道               | 查看工会战前线Boss信息                                       |
 | 会战报表   | 会战报表               | 查看当日出刀情况                                             |
 | 会战统计   | 会战统计               | 统计本次会战所有参与玩家数据，包括对任一 Boss 的数据统计     |
+| 会战统计   | 会战统计好开心         | 统计玩家名为“好开心”的会战数据                               |
+| 谁未出刀   | 谁未出刀               | 查看今日谁没出刀，注意此功能必须要求群成员昵称完全等于游戏名 |
+| 谁没出刀   | 谁没出刀               | 同谁未出刀                                                   |
+| 催刀       | 催刀                   | 机器人 @ 所有未出刀的群成员并催刀，注意此功能必须要求群成员昵称完全等于游戏名 |
+| 一键催刀   | 一键催刀               | 机器人 @ 所有未出刀的群成员并催刀，相较于 催刀 而言，此功能还会 @ 出了刀但未出满的成员，注意此功能必须要求群成员昵称完全等于游戏名 |
 | 鸡汤       | 鸡汤                   | 发送随机鸡汤                                                 |
 | 美图       | 美图                   | 发送随机二刺螈美图                                           |
 | 风景图     | 风景图                 | 发送随机风景图                                               |

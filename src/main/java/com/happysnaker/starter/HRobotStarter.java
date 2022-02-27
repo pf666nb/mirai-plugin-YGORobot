@@ -2,22 +2,38 @@ package com.happysnaker.starter;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
-import com.happysnaker.api.PixivApi;
+import com.happysnaker.api.BaiduBaikeApi;
+import com.happysnaker.api.MiguApi;
 import com.happysnaker.api.TongZhongApi;
+import com.happysnaker.command.impl.AbstractCommandMessageHandler;
 import com.happysnaker.config.RobotConfig;
+import com.happysnaker.handler.impl.GroupMessageHandler;
 import com.happysnaker.handler.impl.GtReportMessageHandler;
 import com.happysnaker.proxy.MessageHandlerProxy;
+
+import com.happysnaker.utils.ChartUtil;
+import com.happysnaker.utils.*;
+import com.happysnaker.utils.PairUtil;
+import com.happysnaker.utils.StringUtil;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.event.GlobalEventChannel;
+import net.mamoe.mirai.event.Listener;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
+import net.mamoe.mirai.message.data.At;
+import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.SingleMessage;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
+import org.jfree.chart.plot.PiePlot;
+import org.jfree.data.general.DefaultPieDataset;
 
+import javax.imageio.ImageIO;
 import java.io.*;
 import java.lang.reflect.Field;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -49,9 +65,9 @@ public class HRobotStarter {
         }
 
         // init MessageHandler
-        messageHandler = new MessageHandlerProxy();
+        messageHandler = new MessageHandlerProxy(true);
 
-        // subscribe event
+        // subscribe group event
         GlobalEventChannel.INSTANCE.subscribeAlways(GroupMessageEvent.class, event -> {
             messageHandler.handleMessageEvent(event);
         });
@@ -64,11 +80,12 @@ public class HRobotStarter {
     }
 
 
-    private static void initRobotConfig(JavaPlugin plugin) throws IllegalAccessException, IOException {
-        RobotConfig.logger = plugin.getLogger();
-        RobotConfig.configFolder = plugin.getConfigFolder();
-        RobotConfig.dataFolder = plugin.getDataFolder();
-
+    public synchronized static void initRobotConfig(JavaPlugin plugin) throws IllegalAccessException, IOException {
+        if (plugin != null) {
+            RobotConfig.logger = plugin.getLogger();
+            RobotConfig.configFolder = plugin.getConfigFolder();
+            RobotConfig.dataFolder = plugin.getDataFolder();
+        }
 
         File file = new File(RobotConfig.configFolder + "/" + RobotConfig.mainConfigPathName);
 
@@ -90,36 +107,14 @@ public class HRobotStarter {
                         try {
                             field.set(null, map.get(field.getName()));
                         } catch (Exception e) {
-//                        e.printStackTrace();
-                            // next
                         }
                     }
-//                System.out.println("field.get(null) = " + field.get(null));
                 }
             }
         } else {
             file.createNewFile();
             try (FileOutputStream fileOutputStream = new FileOutputStream(file, false)) {
-                String template = "{\n" +
-                        "\t\"menu\":\"主菜单\",\n" +
-                        "\t\"exclude\":[\"群号1\", \"群号2\"],\n" +
-                        "\t\"include\":[],\n" +
-                        "    \"pictureWithdrawalTime\": 10,\n" +
-                        "\t\"gtConfig\":[\n" +
-                        "\t\t{\n" +
-                        "\t\t\t\"groupId\":\"群号1\",\n" +
-                        "\t\t\t\"gtCookie\":\"cookie1\"\n" +
-                        "\t\t},\n" +
-                        "        {\n" +
-                        "\t\t\t\"groupId\":\"群号2\",\n" +
-                        "\t\t\t\"gtCookie\":\"cookie2\"\n" +
-                        "\t\t},\n" +
-                        "        {\n" +
-                        "\t\t\t\"groupId\":\"\",\n" +
-                        "\t\t\t\"gtCookie\":\"cookie3\"\n" +
-                        "\t\t}\n" +
-                        "\t]\n" +
-                        "}";
+                String template = ConfigUtil.TEMPLATE;
               fileOutputStream.write(template.getBytes(StandardCharsets.UTF_8));
             } catch (Exception e) {
                 RobotConfig.logger.info("配置文件填充错误，请手动配置");
@@ -133,3 +128,5 @@ public class HRobotStarter {
 
     }
 }
+
+

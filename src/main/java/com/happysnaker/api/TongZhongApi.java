@@ -1,10 +1,9 @@
 package com.happysnaker.api;
 
-import com.happysnaker.utils.NetUtils;
+import com.happysnaker.utils.NetUtil;
 import net.mamoe.mirai.message.data.MusicKind;
 import net.mamoe.mirai.message.data.MusicShare;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -47,6 +46,7 @@ public class TongZhongApi {
 
     public static MusicShare getSongUrl(String keyword) {
         try {
+            System.out.println("keyword = " + keyword);
 //            MusicKind neteaseCloudMusic = MusicKind.NeteaseCloudMusic;
             List<Map<String, Object>> s1 = getSongs(keyword, url3);
             List<Map<String, Object>> s2 = getSongs(keyword, url4);
@@ -72,21 +72,23 @@ public class TongZhongApi {
                 String id = (String) song.get("originalId");
                 String platform = (String) song.get("platform");
                 String url = url2.replace("platform", platform).replace("id", id);
-                Map<String, Object> map = NetUtils.sendAndGetResponseMap(new URL(url), "GET", null, null);
-                if (!((String) map.get("status")).equals(ok)) {
-                    System.out.println(1);
-                    continue;
+                Map<String, Object> map = NetUtil.sendAndGetResponseMap(new URL(url), "GET", null, null);
+                String songUrl = null;
+                try {
+                    songUrl = (String) ((Map) map.get("data")).get("songSource");
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-//                System.out.println("song = " + song);
-                String songUrl = (String) ((Map) map.get("data")).get("songSource");
-                return new MusicShare(
-                        musicKindMap.get(platform),
-                        name,
-                        "HRobot 音乐分享",
-                        jumpMap.get(platform).replace("originalId", id),
-                        "http://p2.music.126.net/y19E5SadGUmSR8SZxkrNtw==/109951163785855539.jpg",
-                        songUrl
-                );
+                if (songUrl != null) {
+                    return new MusicShare(
+                            musicKindMap.get(platform),
+                            name,
+                            "HRobot 音乐分享",
+                            jumpMap.get(platform).replace("originalId", id),
+                            "http://p2.music.126.net/y19E5SadGUmSR8SZxkrNtw==/109951163785855539.jpg",
+                            songUrl
+                    );
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -97,7 +99,7 @@ public class TongZhongApi {
     private static List<Map<String, Object>> getSongs(String keyword, String url) throws Exception {
         Map<String, Object> res = null;
         try {
-            res = (Map<String, Object>) NetUtils.sendAndGetResponseMap(new URL(url + URLEncoder.encode(keyword, "UTF-8")), "GET", null, null);
+            res = (Map<String, Object>) NetUtil.sendAndGetResponseMap(new URL(url + URLEncoder.encode(keyword, "UTF-8")), "GET", null, null);
         } catch (Exception e) {
             return new ArrayList<>();
         }

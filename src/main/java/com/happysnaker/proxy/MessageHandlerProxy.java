@@ -1,16 +1,15 @@
 package com.happysnaker.proxy;
 
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.filter.Filter;
-import com.happysnaker.filter.checker;
+import com.happysnaker.inspect.Interceptor;
+import com.happysnaker.inspect.checker;
 import com.happysnaker.handler.MessageHandler;
-import com.happysnaker.wrapper.EventWrapper;
 import com.happysnaker.handler.handler;
-import com.sun.tools.doclint.Checker;
-import net.mamoe.mirai.event.events.BotPassiveEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -23,18 +22,18 @@ import java.util.jar.JarFile;
  */
 public class MessageHandlerProxy implements MessageHandler {
     // 扫描所有的类
-    public final String packageName = "";
+    public final String packageName = "com.happysnaker";
     private List<MessageHandler> handlers;
-    private List<Filter> filters;
+    private List<Interceptor> filters;
 
     /**
-     * 扫描 jar 包下的所有类，并添加 MessageHandler
+     * 扫描 jar 包下的所有类，并添加 MessageHandler 和
      */
-    public MessageHandlerProxy() {
+    public MessageHandlerProxy(boolean inTest) {
         handlers = new ArrayList<>();
         filters = new ArrayList<>();
         TreeMap<Integer, List<MessageHandler>> map = new TreeMap<>((a, b) -> b - a);
-        List<String> classes = getAllClasses(packageName);
+        List<String> classes = !inTest ? getAllClasses("") : getAllClassesInTest(packageName);
         for (String aClass : classes) {
             try {
                 Class c = Class.forName(aClass);
@@ -44,11 +43,9 @@ public class MessageHandlerProxy implements MessageHandler {
                     map.get(annotation.priority()).add((MessageHandler) c.getConstructor().newInstance());
                 }
                 if (c.isAnnotationPresent(checker.class)) {
-                    filters.add((Filter) c.getConstructor().newInstance());
+                    filters.add((Interceptor) c.getConstructor().newInstance());
                 }
             } catch (Exception e) {
-//                e.printStackTrace();
-//                System.out.println("e == " + e.getMessage());
                 // next
             } catch (Error e) {
 //                System.out.println("e = " + e);
@@ -56,11 +53,18 @@ public class MessageHandlerProxy implements MessageHandler {
             }
         }
 
+
+
         for (Map.Entry<Integer, List<MessageHandler>> it : map.entrySet()) {
             handlers.addAll(it.getValue());
         }
         RobotConfig.logger.info("HRobot handlers and filters loading finished, total " + handlers.size() + " handlers, " + filters.size() + " filters.");
     }
+
+    public MessageHandlerProxy() {
+        this(false);
+    }
+
 
     @Override
     public void handleMessageEvent(MessageEvent event) {
@@ -76,8 +80,8 @@ public class MessageHandlerProxy implements MessageHandler {
 
     @Override
     public boolean shouldHandle(MessageEvent event) {
-        for (Filter filter : filters) {
-            if (filter.doFilter(event)) {
+        for (Interceptor filter : filters) {
+            if (filter.intercept(event)) {
                 // 如果事件被指明过滤，则不回复
                 return false;
             }
@@ -108,6 +112,49 @@ public class MessageHandlerProxy implements MessageHandler {
         } catch (Exception e) {
 //            e.printStackTrace();
             System.out.println("e.getMessage() = " + e.getMessage());
+        }
+        return ans;
+    }
+
+
+
+
+    /**
+     * 扫描测试环境下的所有类
+     * @param p 包名
+     * @return 返回包名前缀为 p 的所有类
+     */
+    private List<String> getAllClassesInTest(String p)  {
+        p = p.replaceAll("\\.", "/");
+        List<String> ans = new ArrayList<>();
+        Enumeration<URL> urls = null;
+        try {
+            urls = getClass().getClassLoader().getResources(p);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        String path;
+        while (urls.hasMoreElements()) {
+            URL url = urls.nextElement();
+            File file = new File(url.getPath());
+            ans.addAll(dfs(file, "com"));
+        }
+        return ans;
+    }
+
+    private List<String> dfs(File file, String prefix) {
+        List<String> ans = new ArrayList<>();
+//        System.out.println("file = " + file.getName());
+        if (file.isDirectory()) {
+            for (File listFile : file.listFiles()) {
+                ans.addAll(dfs(listFile, prefix + "." + file.getName()));
+            }
+        } else {
+            if (file.getName().contains(".class")) {
+                String c = file.getName().substring(0, file.getName().indexOf(".class"));
+                c = prefix + "." + c;
+                ans.add(c);
+            }
         }
         return ans;
     }

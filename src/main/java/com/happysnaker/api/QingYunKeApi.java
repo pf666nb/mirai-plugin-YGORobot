@@ -1,6 +1,6 @@
 package com.happysnaker.api;
 
-import com.happysnaker.utils.NetUtils;
+import com.happysnaker.utils.NetUtil;
 
 import java.net.URL;
 import java.net.URLEncoder;
@@ -19,7 +19,7 @@ public class QingYunKeApi {
     public static String getMessage(String queryContent) {
         try {
             URL obj = new URL(url + "?key=free&appid=0&msg=" + URLEncoder.encode(queryContent, "UTF-8"));
-            Map map = NetUtils.sendAndGetResponseMap(obj, "GET", null, null);
+            Map map = NetUtil.sendAndGetResponseMap(obj, "GET", null, null);
             return ((String) map.get("content")).replaceAll("\\{br\\}", "\n");
         } catch (Exception e) {
             e.printStackTrace();
