@@ -64,26 +64,28 @@ public class ConfigUtil {
     }
 
 
-
-
-
-
-
-
-
-
-    public static final String TEMPLATE =
+    public static String TEMPLATE =
             "{\n" +
                     "    \"menu\":\"主菜单\",\n" +
                     "    \"administrator\":[\"超级管理员QQ号\", \"管理员QQ号\", \"管理员QQ号\"],\n" +
                     "    \"gtAdministrator\":[\"坎公管理员QQ号\", \"坎公管理员QQ号\"],\n" +
+                    "    \"groupAdministrator\":[\"群管理员QQ号\", \"群管理员QQ号\"],\n" +
+                    "    \"customKeywordSimilarity\": 0.8,\n" +
+                    "    \"customKeyword\":{\n" +
+                    "        \"全局关键字\":\"全局关键字回复\",\n" +
+                    "        \"#regex#全局正则表达式\":\"回复\",\n" +
+                    "        \"群号1\":{\n" +
+                    "            \"群内关键字\":\"群内关键字回复\"\n" +
+                    "         }\n" +
+                    "    },\n" +
                     "    \"exclude\":[\"群号1\", \"群号2\"],\n" +
                     "    \"include\":[],\n" +
                     "    \"pictureWithdrawalTime\": 30,\n" +
                     "    \"gtConfig\":[\n" +
                     "         {\n" +
                     "             \"groupId\":\"群号1\",\n" +
-                    "             \"gtCookie\":\"cookie1\"\n" +
+                    "             \"gtCookie\":\"cookie1\",\n" +
+                    "             \"members\":[\"成员1\", \"成员2\"]\n" +
                     "         },\n" +
                     "         {\n" +
                     "             \"groupId\":\"群号2\",\n" +
@@ -95,4 +97,5 @@ public class ConfigUtil {
                     "         }\n" +
                     "    ]\n" +
                     "}";
+//    String s = ""
 }

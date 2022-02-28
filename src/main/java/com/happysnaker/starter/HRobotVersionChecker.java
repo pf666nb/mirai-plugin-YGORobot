@@ -3,6 +3,7 @@ package com.happysnaker.starter;
 import com.alibaba.fastjson.JSONObject;
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.utils.NetUtil;
+import net.mamoe.mirai.message.data.MessageChain;
 
 import javax.swing.*;
 import java.io.File;
@@ -32,13 +33,20 @@ public class HRobotVersionChecker {
                 RobotConfig.logger.info("当前 HRobot 插件已为最新版");
                 return;
             }
+
+            String assetsUrl = (String) map.get("assets_url");
+            String res = NetUtil.sendAndGetResponseString(new URL(assetsUrl), "GET", null, null);
+            List<Map<String, Object>> lists = JSONObject.parseObject(res, List.class);
+            String downLoadUrl = (String) lists.get(0).get("browser_download_url");
+            String downloadName = (String) lists.get(0).get("name");
+
+            if (fileName.equals(downloadName)) {
+                RobotConfig.logger.info("当前 HRobot 插件已为最新版");
+                return;
+            }
+
             RobotConfig.logger.info("检测到新版本: " + latestVersion + ", 请前往 " + map.get("html_url") + " 查看详情");
             if (isWindows()) {
-                String assetsUrl = (String) map.get("assets_url");
-                String res = NetUtil.sendAndGetResponseString(new URL(assetsUrl), "GET", null, null);
-                List<Map<String, Object>> lists = JSONObject.parseObject(res, List.class);
-                String downLoadUrl = (String) lists.get(0).get("browser_download_url");
-                String downloadName = (String) lists.get(0).get("name");
                 int n = JOptionPane.showConfirmDialog(null, "新版本 " + latestVersion + " 可用于你的系统，是否自动更新？", "更新提示", JOptionPane.YES_NO_OPTION);
                 // 自动更新
                 if (n == 0) {
@@ -95,4 +103,7 @@ public class HRobotVersionChecker {
     public static boolean isWindows() {
         return System.getProperties().getProperty("os.name").toUpperCase().indexOf("WINDOWS") != -1;
     }
+
+
+
 }

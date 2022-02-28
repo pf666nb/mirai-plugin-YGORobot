@@ -36,7 +36,7 @@ public class ChartUtil {
                 if (listFile.isFile()) {
                     listFile.delete();
                 }
-             }
+            }
             System.out.println("已清理不要的图片");
         }
     }
@@ -78,7 +78,7 @@ public class ChartUtil {
             plot.setLabelGenerator(new StandardPieSectionLabelGenerator("{0}({1})/{2}"));
 
             //将内存中的图片写到本地硬盘
-            String path = directionPath  + UUID.randomUUID() + ".jpg";
+            String path = directionPath + UUID.randomUUID() + ".jpg";
             ChartUtilities.saveChartAsJPEG(new File(path), chart, 800, 400);
             return path;
         } catch (Exception e) {
@@ -87,12 +87,12 @@ public class ChartUtil {
         }
     }
 
-    public static String generateALineChart(List<PairUtil<String, List<PairUtil<String, Long>>>> datasets, String title, String rowTitle, String colTitle) throws IOException {
+    public static String generateALineChart(List<PairUtil<String, List<PairUtil<String, Double>>>> datasets, String title, String rowTitle, String colTitle) throws IOException {
         try {
             //种类数据集
             DefaultCategoryDataset ds = new DefaultCategoryDataset();
-            for (PairUtil<String, List<PairUtil<String, Long>>> dataset : datasets) {
-                for (PairUtil<String, Long> it : dataset.getValue()) {
+            for (PairUtil<String, List<PairUtil<String, Double>>> dataset : datasets) {
+                for (PairUtil<String, Double> it : dataset.getValue()) {
                     ds.setValue(it.getValue(), dataset.getKey(), it.getKey());
                 }
             }
@@ -119,11 +119,15 @@ public class ChartUtil {
             //设置范围轴(纵轴)字体
             plot.getRangeAxis().setLabelFont(font);
             //存储成图片
-            chart.setBackgroundImage(ImageIO.read(new URL("https://img.ixintu.com/download/jpg/201911/d57bee34508e4424145f0a376445edf0.jpg?x-oss-process=image/crop,x_0,y_0,w_960,h_1025")));
+            try {
+                chart.setBackgroundImage(ImageIO.read(new URL("https://img.ixintu.com/download/jpg/201911/d57bee34508e4424145f0a376445edf0.jpg?x-oss-process=image/crop,x_0,y_0,w_960,h_1025")));
 //            chart.setBackgroundImage(ImageIO.read(new File("D:/JFreeChart/背景图-白色.jpg")));
 
-            plot.setBackgroundImage(ImageIO.read(new URL("https://tse1-mm.cn.bing.net/th/id/R-C.055d9409e760c9b7d312035935ec9dd3?rik=oKLKEIOJLEjiaw&riu=http%3a%2f%2fpic31.photophoto.cn%2f20140613%2f0008020944439977_b.jpg&ehk=3JoY27qXd1Os6r9qPinZtuhBDtGL%2bCK9ZKVfG9tRbkU%3d&risl=&pid=ImgRaw&r=0")));
+                plot.setBackgroundImage(ImageIO.read(new URL("https://tse1-mm.cn.bing.net/th/id/R-C.055d9409e760c9b7d312035935ec9dd3?rik=oKLKEIOJLEjiaw&riu=http%3a%2f%2fpic31.photophoto.cn%2f20140613%2f0008020944439977_b.jpg&ehk=3JoY27qXd1Os6r9qPinZtuhBDtGL%2bCK9ZKVfG9tRbkU%3d&risl=&pid=ImgRaw&r=0")));
 
+            } catch (Exception e) {
+
+            }
             plot.setForegroundAlpha(1.0f);
             String path = directionPath + UUID.randomUUID() + ".jpg";
             ChartUtilities.saveChartAsJPEG(new File(path), chart, 800, 400);

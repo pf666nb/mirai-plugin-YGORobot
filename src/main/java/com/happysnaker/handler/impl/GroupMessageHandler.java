@@ -221,10 +221,7 @@ public class GroupMessageHandler extends AbstractMessageHandler {
         String help1 = "帮助", help2 = "help";
         if (help1.equals(content) || help2.equals(content)) {
             try {
-                return List.of(new MessageChainBuilder()
-                        .append(new PlainText(RobotConfig.menu))
-                        .append(uploadImage(event, new URL("https://tse4-mm.cn.bing.net/th/id/OIP-C.rHuc8SKa0wLVwCqqA27uIwHaEt?pid=ImgDet&rs=1")))
-                        .build());
+                return doHelp(event);
             } catch (FileUploadException | MalformedURLException e) {
                 e.printStackTrace();
             }

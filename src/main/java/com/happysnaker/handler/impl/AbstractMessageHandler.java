@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -333,7 +334,7 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @param m 多个 SingleMessage
      * @return 将多个 SingleMessage 组合成 MessageChain
      */
-    protected MessageChain buildMessageChain(Object... m) {
+    protected static MessageChain buildMessageChain(Object... m) {
         MessageChainBuilder builder = new MessageChainBuilder();
         for (Object s : m) {
             if (s instanceof String) {
@@ -372,7 +373,7 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @param url   网络图片 URL
      * @return net.mamoe.mirai.message.data.Image
      */
-    protected net.mamoe.mirai.message.data.Image uploadImage(MessageEvent event, URL url) throws FileUploadException {
+    protected static net.mamoe.mirai.message.data.Image uploadImage(MessageEvent event, URL url) throws FileUploadException {
         try {
             return ExternalResource.uploadAsImage(NetUtil.sendAndGetResponseStream(url, "GET", null, null), event.getSubject());
         } catch (IOException e) {
@@ -559,6 +560,7 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
 
     /**
      * 判断给定消息事件是否引用了一条消息
+     *
      * @param event
      * @return
      */
@@ -568,12 +570,40 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
 
     /**
      * 从消息事件中取出事件所引用的消息
+     *
      * @param event
      * @return
      * @throws NullPointerException 如果消息事件不包含引用
-     * @see #hasQuote(MessageEvent) 
+     * @see #hasQuote(MessageEvent)
      */
     protected MessageChain getQuoteMessageChain(MessageEvent event) {
         return getQuoteSource(event).getOriginalMessage();
+    }
+
+
+    public static List<MessageChain> doHelp(MessageEvent event) throws MalformedURLException, FileUploadException {
+        event.getSubject().sendMessage("正在上传帮助图片，此操作可能较慢，请稍等。如此操作出错，请前往 https://github.com/happysnaker/mirai-plugin-HRobot 查阅相关信息");
+        // 版本变更
+        Image image0 = uploadImage(event, new URL("https://happysnaker-1306579962.cos.ap-nanjing.myqcloud.com/img/typora/image-20220228125440601.png"));
+
+        List<MessageChain> ans = new ArrayList<>();
+        ans.add(buildMessageChain("—— HRobot v2.0-beta ——\n", image0));
+
+        String desc1 = "以下为表格关键字及示例，部分关键字需要 @ 机器人才有效。\n" +
+                "主页地址：https://github.com/happysnaker/mirai-plugin-HRobot\n";
+        Image image1 = uploadImage(event, new URL("https://happysnaker-1306579962.cos.ap-nanjing.myqcloud.com/img/typora/image-20220228130359523.png"));
+        Image image2 = uploadImage(event, new URL("https://happysnaker-1306579962.cos.ap-nanjing.myqcloud.com/img/typora/image-20220228131341431.png"));
+        Image image3 = uploadImage(event, new URL("https://happysnaker-1306579962.cos.ap-nanjing.myqcloud.com/img/typora/image-20220228131533107.png"));
+        ans.add(buildMessageChain(desc1, image1, image2, image3));
+
+        String desc2 = "以下为表格命令及示例，发送对应命令到群内即可识别，命令必须要以特殊前缀 # 开头。\n";
+        Image image4 = uploadImage(event, new URL("https://happysnaker-1306579962.cos.ap-nanjing.myqcloud.com/img/typora/image-20220228131050819.png"));
+        Image image5 = uploadImage(event, new URL("https://happysnaker-1306579962.cos.ap-nanjing.myqcloud.com/img/typora/image-20220228131128660.png"));
+        Image image6 = uploadImage(event, new URL("https://happysnaker-1306579962.cos.ap-nanjing.myqcloud.com/img/typora/image-20220228131229491.png"));
+        ans.add(buildMessageChain(desc2, image4, image5, image6));
+
+        String desc3 = "如果相关 BUG 或有更好的创意，请于 https://github.com/happysnaker/mirai-plugin-HRobot/issues 提出相关 ISSUE\n";
+        ans.add(buildMessageChain((Object) desc3));
+        return ans;
     }
 }

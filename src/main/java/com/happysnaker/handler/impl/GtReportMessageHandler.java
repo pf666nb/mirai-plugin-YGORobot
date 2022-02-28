@@ -123,7 +123,14 @@ public class GtReportMessageHandler extends GroupMessageHandler {
     }
 
     public List<MessageChain> check(MessageEvent event, String cookie) throws IOException, FileUploadException {
-        String content = getPlantContent(event).replace(CHECK_KNIFE, "");
+        String content = getPlantContent(event).replace(CHECK_KNIFE, "").trim();
+
+        boolean testLine = false;
+        if (content.startsWith("折线图")) {
+            content = content.replace("折线图", "").trim();
+            testLine = true;
+        }
+
         final List<String> ms = StringUtil.splitSpaces(content);
         Map<String, Object> msg = null;
         List<String> dates = (List<String>) ((Map) NetUtil.sendAndGetResponseMap(new URL(GET_MEMBER_URL), "GET", getHeaders(cookie), null).get("data")).get("date");
@@ -169,7 +176,7 @@ public class GtReportMessageHandler extends GroupMessageHandler {
                 datasets.add(PairUtil.of(m, map.get(m)));
             }
         }
-        String f = ChartUtil.generateHistogram(datasets, "查刀", "日期", "出刀数");
+        String f = testLine ? ChartUtil.generateALineChart(datasets, "查刀", "日期", "出刀数") : ChartUtil.generateHistogram(datasets, "查刀", "日期", "出刀数");
         return buildMessageChainAsList(uploadImage(event, f));
     }
 
@@ -502,14 +509,17 @@ public class GtReportMessageHandler extends GroupMessageHandler {
     public MessageChain doParseFrontlineReporting(String cookie) {
         Map<String, Object> msg = null;
         try {
+            System.out.println("cookie = " + cookie);
             msg = NetUtil.sendAndGetResponseMap(new URL(FRONTLINE_REPORTING_URL), "GET", getHeaders(cookie), null);
+            System.out.println("msg = " + msg);
         } catch (IOException e) {
             e.printStackTrace();
         }
         StringBuffer sb = new StringBuffer();
         sb.append("******前线报道******\n");
-        Map<String, Object> data = (Map<String, Object>) msg.getOrDefault(DATA, new ArrayList<>());
+        Map<String, Object> data = (Map<String, Object>) msg.getOrDefault(DATA, new HashMap<>());
         List<Map<String, Object>> bossList = (List<Map<String, Object>>) data.get(BOSS);
+
         for (Map<String, Object> boss : bossList) {
             sb.append(boss.get(NAME) + "：\n");
             sb.append("  等级：" + boss.get(LEVEL) + "\n");
@@ -576,7 +586,6 @@ public class GtReportMessageHandler extends GroupMessageHandler {
         sb.append("今日出刀数：" + c + "\n");
         sb.append("今日伤害最高玩家：" + maxDamageUser + "\n");
         sb.append("最高伤害：" + maxDamage);
-//        System.out.println(sb.toString());
         return new MessageChainBuilder().append(sb.toString()).build();
     }
 
