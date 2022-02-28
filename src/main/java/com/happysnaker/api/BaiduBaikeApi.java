@@ -19,6 +19,7 @@ public class BaiduBaikeApi {
     public static final String api = "http://jiuli.xiaoapi.cn/i/baidu_baike.php?msg=";
 
     public static Map<String, Object> search(String msg) {
+        msg = msg.trim();
         try {
             URL url = new URL(api + URLEncoder.encode(msg, "UTF-8"));
             Map<String, Object> map = NetUtil.sendAndGetResponseMap(url, "GET", null, null);

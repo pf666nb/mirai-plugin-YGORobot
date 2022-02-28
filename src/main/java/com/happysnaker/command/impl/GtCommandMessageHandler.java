@@ -120,6 +120,7 @@ public class GtCommandMessageHandler extends DefaultCommandMessageHandlerManager
     }
 
     public MessageChain doSeeGtMembers(MessageEvent event) throws InsufficientPermissionsException {
+        System.out.println("Permission.hasGtAdmin(getSenderId(event)) = " + Permission.hasGtAdmin(getSenderId(event)));
         if (!Permission.hasGtAdmin(getSenderId(event))) {
             throw new InsufficientPermissionsException();
         }

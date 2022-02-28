@@ -38,6 +38,9 @@ public class PixivApi {
             url = url.substring(0, url.length() - 1);
         }
         List<Map<String, Object>> map = (List<Map<String, Object>>) NetUtil.sendAndGetResponseMap(new URL(url), "GET", null, null).get("data");
+        if (map == null || map.isEmpty()) {
+            return -1;
+        }
         try {
             return (long) map.get(0).get("pid");
         } catch (ClassCastException e) {

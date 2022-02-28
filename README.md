@@ -10,6 +10,8 @@ mirai 群聊机器人插件，支持发送涩图(可指定tag)、美图、风景
 
 建议您使用 mirai-console-loader 快速启动 mirai 机器人，下载地址：[Releases · iTXTech/mirai-console-loader (github.com)](https://github.com/iTXTech/mirai-console-loader/releases)，下载后解压文件。
 
+> 网络上有很多教程，例如：[Mirai Console Loader的使用教程~ - 哔哩哔哩 (bilibili.com)](https://www.bilibili.com/read/cv9584210)
+
 如果你是新手，不会安装 java 环境，你可以使用安装器一键安装 java 环境 和 mcl，请移步：[mcl 一键安装](https://github.com/iTXTech/mcl-installer)
 
 经过测试，HRobot 适配 mcl-1.2.2、mcl-1.2.1 版本，更早版本暂未测试。

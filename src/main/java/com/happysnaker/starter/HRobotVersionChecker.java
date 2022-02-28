@@ -20,10 +20,11 @@ import java.util.Map;
  * @email happysnaker@foxmail.com
  */
 public class HRobotVersionChecker {
-    public static final String VERSION = "HRobot v2.0-beta";
+    public static final String VERSION = "HRobot v2.0-beta1";
     public static final String api = "https://api.github.com/repos/happysnaker/mirai-plugin-HRobot/releases/latest";
-    public static final String fileName = "plugin-v2.0-beta-SNAPSHOT.mirai.jar";
+    public static final String fileName = "plugin-2.0-beta1-SNAPSHOT.mirai.jar";
 
+    public static final String lastRelease = "plugin-1.2-SNAPSHOT.mirai.jar";
 
     public static void checkVersion() {
         try {
@@ -40,7 +41,7 @@ public class HRobotVersionChecker {
             String downLoadUrl = (String) lists.get(0).get("browser_download_url");
             String downloadName = (String) lists.get(0).get("name");
 
-            if (fileName.equals(downloadName)) {
+            if (lastRelease.equals(downloadName)) {
                 RobotConfig.logger.info("当前 HRobot 插件已为最新版");
                 return;
             }

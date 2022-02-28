@@ -178,6 +178,9 @@ public class ImageShareMessageHandler extends GroupMessageHandler {
      */
     private MessageChain doParseMysteriousImage(MessageEvent event, List<String> tags) throws IOException, FileUploadException {
         long pid = PixivApi.getImagePid(tags);
+        if (pid == -1) {
+            return buildMessageChain("查无此图");
+        }
         return new MessageChainBuilder()
                 .append(uploadImage(event, new URL(pixivSearchApi.replace("IMGID", String.valueOf(pid))))).build();
     }

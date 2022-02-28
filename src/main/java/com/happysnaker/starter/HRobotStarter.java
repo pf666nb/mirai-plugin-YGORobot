@@ -45,7 +45,7 @@ public class HRobotStarter {
         }
 
         // init MessageHandler
-        messageHandler = new MessageHandlerProxy(true);
+        messageHandler = new MessageHandlerProxy(false);
 
         // subscribe group event
         GlobalEventChannel.INSTANCE.subscribeAlways(GroupMessageEvent.class, event -> {
