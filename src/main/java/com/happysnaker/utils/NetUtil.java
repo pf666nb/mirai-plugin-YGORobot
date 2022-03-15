@@ -1,7 +1,7 @@
 package com.happysnaker.utils;
 
 import com.alibaba.fastjson.JSONObject;
-import sun.net.www.protocol.https.HttpsURLConnectionImpl;
+
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.*;

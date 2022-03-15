@@ -46,7 +46,10 @@ public class KnowledgeSearchMessageHandler extends GroupMessageHandler {
         if (map == null || (int)map.get("code") != 200) {
             return buildMessageChainAsList("检索失败，换个关键词试试吧", getQuoteReply(event));
         }
-        System.out.println("map = " + map);
+        String title = (String) map.get("title");
+        if (map.containsKey("久黎")) {
+            return buildMessageChainAsList("检索失败，换个关键词试试吧", getQuoteReply(event));
+        }
         StringBuilder sb = new StringBuilder();
         sb.append("标题：");
         sb.append(map.get("title") + "\n");
@@ -54,7 +57,6 @@ public class KnowledgeSearchMessageHandler extends GroupMessageHandler {
         sb.append(map.get("desc") + "\n");
         sb.append(map.get("content") + "\n");
         if (map.get("image") != null && map.get("image") instanceof String) {
-//            System.out.println("map.get(\"image\") = " + map.get("image"));
             return buildMessageChainAsList(sb.toString(), uploadImage(event, new URL((String) map.get("image"))));
         }
         return buildMessageChainAsList(sb.toString());

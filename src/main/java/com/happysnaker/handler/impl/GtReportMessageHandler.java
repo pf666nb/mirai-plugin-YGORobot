@@ -97,10 +97,6 @@ public class GtReportMessageHandler extends GroupMessageHandler {
                 else if (content.contains(WHO_NOT_SHOOT1) || content.contains(WHO_NOT_SHOOT2)) {
                     return List.of(doParseCheck(cookie, event));
                 }
-                // 催刀
-                else if (content.contains(URGE_KNIFE)) {
-                    return List.of(doUrge(event, getNotDoPeople(cookie, event).getKey()));
-                }
                 // 一键催刀
                 else if (content.contains(URGE_KNIFE_ALL)) {
                     // 一键催到会催未出满刀的所有人
@@ -108,6 +104,10 @@ public class GtReportMessageHandler extends GroupMessageHandler {
                     Set<String> param = pair.getKey();
                     param.addAll(pair.getValue());
                     return List.of(doUrge(event, param));
+                }
+                // 催刀
+                else if (content.contains(URGE_KNIFE)) {
+                    return List.of(doUrge(event, getNotDoPeople(cookie, event).getKey()));
                 }
                 // 查刀
                 else if (content.contains(CHECK_KNIFE)) {

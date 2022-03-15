@@ -4,8 +4,6 @@ import com.happysnaker.config.RobotConfig;
 import com.happysnaker.exception.CanNotSendMessageException;
 import com.happysnaker.handler.handler;
 import com.happysnaker.utils.StringUtil;
-import jdk.internal.joptsimple.util.RegexMatcher;
-import jdk.nashorn.internal.runtime.regexp.joni.Regex;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 
@@ -23,8 +21,6 @@ import java.util.regex.Pattern;
 @handler(priority = -1) // 优先度最低
 public class CustomKeywordMessageHandler extends GroupMessageHandler {
     public static final String REGEX_PREFIX = "#regex#";
-
-
 
     @Override
     protected List<MessageChain> getReplyMessage(MessageEvent event) {

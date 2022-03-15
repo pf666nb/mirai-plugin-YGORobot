@@ -20,11 +20,11 @@ import java.util.Map;
  * @email happysnaker@foxmail.com
  */
 public class HRobotVersionChecker {
-    public static final String VERSION = "HRobot v2.0-beta1";
+    public static final String VERSION = "HRobot v2.0";
     public static final String api = "https://api.github.com/repos/happysnaker/mirai-plugin-HRobot/releases/latest";
-    public static final String fileName = "plugin-2.0-beta1-SNAPSHOT.mirai.jar";
+    public static final String fileName = "plugin-2.0.mirai.jar";
 
-    public static final String lastRelease = "plugin-1.2-SNAPSHOT.mirai.jar";
+    public static final String lastRelease = "plugin-2.0-SNAPSHOT.mirai.jar";
 
     public static void checkVersion() {
         try {

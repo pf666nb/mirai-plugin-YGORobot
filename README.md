@@ -26,13 +26,11 @@ mirai 群聊机器人插件，支持发送涩图(可指定tag)、美图、风景
 
 如果你需要砍公骑冠剑相关功能，那么您必须配置相关信息，配置文件请移步 [配置文件手册](https://github.com/happysnaker/mirai-plugin-HRobot/blob/master/CONFIG.md)
 
-如果你不会配置或者想先体验一下，可提出对应 Issue 或 QQ 联系我：1637318597，可以让机器人加上你的群。
-
-> 由于发送过多涩图导致机器人被举报，因此不保证能加上群。
+> 更多功能正在开发，请 STAR 持续关注此项目
 
 ## 关键字示例
 
-**表格展示为最新版 v2.0-beta 插件功能，某些关键字需要 @ 机器人，而大部分关键字都无须 @，详情请查看下表中的“示例”，你可以在 [历史版本关键字及命令](./HISTORY_VERSION.md) 中找到历史版本对应信息。**
+**表格展示为最新版 v2.0 插件功能，某些关键字需要 @ 机器人，而大部分关键字都无须 @，详情请查看下表中的“示例”，你可以在 [历史版本关键字及命令](./HISTORY_VERSION.md) 中找到历史版本对应信息。**
 
 | 特殊关键字   | 示例                   | 功能                                                         |
 | ------------ | :--------------------- | ------------------------------------------------------------ |
@@ -121,4 +119,14 @@ HRobot 支持配置文件，配置文件在 mcl/config/com.happysnaker.HRobot/co
 
 ## 声明
 
-我不是生产者，我只是 API 的搬运工，由于 API 随时可能停用，故此插件可能随时出问题，请您持续关注此项目，一般情况下 API 失效都会第一时间解决。
+我不是生产者，我只是 API 的搬运工，由于 API 随时可能停用，故此插件可能随时出问题，请您 **star** 此项目，一般情况下 API 失效都会第一时间解决（☞指重新找一个 API）。
+
+所有使用 API 均为网络上免费 API，如下为主要使用的 API 列表：
+
+> - 智能聊天：[青云客智能聊天机器人API (qingyunke.com)](http://api.qingyunke.com/)
+> - 百度百科：[久黎API (xiaoapi.cn)](http://jiuli.xiaoapi.cn/)
+> - Bing 壁纸：[必应每日高清壁纸 - 精彩，从这里开始 (ioliu.cn)](https://bing.ioliu.cn/)
+> - 咪咕音乐：[咪咕音乐链接歌词封面接口API - 刘明野的博客 (liumingye.cn)](https://www.liumingye.cn/archives/304.html)
+> - 聚合音乐：[铜钟 - 在一处聆听所有音乐 (tonzhon.com)](https://tonzhon.com/)
+> - Pivix 涩图：[Lolicon API](https://api.lolicon.app/#/)
+> - 坎公骑冠剑：[坎公百宝袋-bigfun社区](https://www.bigfun.cn/tools/gt/)
