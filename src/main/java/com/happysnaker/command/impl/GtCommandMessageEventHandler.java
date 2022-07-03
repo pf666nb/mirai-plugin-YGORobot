@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * @email happysnaker@foxmail.com
  */
 @handler(priority = 1024)
-public class GtCommandMessageHandler extends DefaultCommandMessageHandlerManager {
+public class GtCommandMessageEventHandler extends DefaultCommandMessageEventHandlerManager {
     public static final String addGtMembersCommand = "添加坎公公会成员";
     public static final String clearGtMembersCommand = "清空坎公公会成员";
     public static final String setGtMembersCommand = "设置坎公公会成员";
@@ -27,13 +27,13 @@ public class GtCommandMessageHandler extends DefaultCommandMessageHandlerManager
     public static final String removeGtMembersCommand = "移除坎公公会成员";
     public static final String setGtCookieCommand = "设置坎公cookie";
 
-    public GtCommandMessageHandler() {
-        keywords.add(setGtCookieCommand);
-        keywords.add(setGtMembersCommand);
-        keywords.add(seeGtMembersCommand);
-        keywords.add(removeGtMembersCommand);
-        keywords.add(clearGtMembersCommand);
-        keywords.add(addGtMembersCommand);
+    public GtCommandMessageEventHandler() {
+        super.registerKeywords(setGtCookieCommand);
+        super.registerKeywords(setGtMembersCommand);
+        super.registerKeywords(seeGtMembersCommand);
+        super.registerKeywords(removeGtMembersCommand);
+        super.registerKeywords(clearGtMembersCommand);
+        super.registerKeywords(addGtMembersCommand);
     }
 
     @Override
@@ -157,7 +157,7 @@ public class GtCommandMessageHandler extends DefaultCommandMessageHandlerManager
         if (!Permission.hasAdmin(getSenderId(event))) {
             throw new InsufficientPermissionsException();
         }
-        String content = getPlantContent(event).replace(commandPrefix, "");
+        String content = getPlantContent(event).replace(RobotConfig.commandPrefix, "");
         content = content.trim();
         String[] strs = content.trim().split("\\s+");
         String groupId = strs[1];

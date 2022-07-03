@@ -2,44 +2,51 @@ package com.happysnaker.command.impl;
 
 import com.happysnaker.command.CommandHandler;
 import com.happysnaker.command.CommandHandlerManager;
+import com.happysnaker.config.RobotConfig;
+import com.happysnaker.context.Context;
 import com.happysnaker.exception.CanNotParseCommandException;
 import com.happysnaker.exception.InsufficientPermissionsException;
-import com.happysnaker.handler.impl.GroupMessageHandler;
+import com.happysnaker.handler.message.GroupMessageEventHandler;
+import com.happysnaker.utils.OfUtil;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 
 import java.util.List;
 
 /**
+ * 抽象命令处理类，命令处理者需继承此类，并实现 {@link #success(MessageEvent)} 和 {@link #fail(MessageEvent, Throwable)} 方法
  * @author Happysnaker
  * @description
  * @date 2022/2/15
  * @email happysnaker@foxmail.com
  */
-public abstract class AbstractCommandMessageHandler extends GroupMessageHandler implements CommandHandler, CommandHandlerManager {
+public abstract class AbstractCommandMessageEventHandler extends GroupMessageEventHandler implements CommandHandler, CommandHandlerManager {
+
+
 
     /**
-     * 命令必须以该前缀开头才会被处理
+     * 模板方法模式，命令处理的入口
+     * @param event 经过 proxyContent 处理后的消息
+     * @param ctx
+     * @return
      */
-    protected static final String commandPrefix = "#";
-
     @Override
-    protected List<MessageChain> getReplyMessage(MessageEvent event) {
+    public List<MessageChain> handleMessageEvent(MessageEvent event, Context ctx) {
         List<MessageChain> ans;
         try {
             ans = parseCommand(event);
         } catch (CanNotParseCommandException e) {
             fail(event, e);
-            return List.of(buildMessageChain(
+            return OfUtil.ofList(buildMessageChain(
                     "命令解析出错，错误原因：" + e.getMessage(), getQuoteReply(event)));
         } catch (InsufficientPermissionsException e) {
-            fail(event, "权限不足：");
-            return List.of(buildMessageChain(
+            recordFailLog(event, "权限不足：");
+            return OfUtil.ofList(buildMessageChain(
                     "对不起，您没有足够的权限，说明：" + e.getMessage(), getQuoteReply(event)));
         } catch (Exception e) {
             e.printStackTrace();
             fail(event, e);
-            return List.of(buildMessageChain(
+            return OfUtil.ofList(buildMessageChain(
                     "异常错误，错误原因：" + e.getMessage(), getQuoteReply(event)));
         }
         if (ans != null) {
@@ -55,8 +62,8 @@ public abstract class AbstractCommandMessageHandler extends GroupMessageHandler 
      * @return
      */
     @Override
-    protected String getPlantContent(MessageEvent event) {
-        return super.getPlantContent(event).replace(commandPrefix, "").trim();
+    public String getPlantContent(MessageEvent event) {
+        return super.getPlantContent(event).replaceFirst(RobotConfig.commandPrefix, "").trim();
     }
 
 
@@ -74,10 +81,9 @@ public abstract class AbstractCommandMessageHandler extends GroupMessageHandler 
      * @return
      */
     @Override
-    public boolean shouldHandle(MessageEvent event) {
-        return (super.getPlantContent(event).startsWith(commandPrefix));
+    public boolean shouldHandle(MessageEvent event, Context ctx) {
+        return (super.getPlantContent(event).startsWith(RobotConfig.commandPrefix));
     }
-
 
 
     /**
@@ -87,4 +93,6 @@ public abstract class AbstractCommandMessageHandler extends GroupMessageHandler 
      */
     @Override
     public abstract List<MessageChain> parseCommand(MessageEvent event) throws CanNotParseCommandException, InsufficientPermissionsException;
+
+
 }

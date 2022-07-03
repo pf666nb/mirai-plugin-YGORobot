@@ -1,5 +1,6 @@
 package com.happysnaker.command.impl;
 
+import com.happysnaker.config.RobotConfig;
 import com.happysnaker.exception.CanNotParseCommandException;
 import com.happysnaker.exception.InsufficientPermissionsException;
 import com.happysnaker.handler.handler;
@@ -9,8 +10,6 @@ import com.happysnaker.utils.ConfigUtil;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,17 +19,20 @@ import java.util.List;
  * @email happysnaker@foxmail.com
  */
 @handler(priority = 1024)
-public class SystemCommandMessageHandler extends DefaultCommandMessageHandlerManager {
+public class SystemCommandMessageEventHandler extends DefaultCommandMessageEventHandlerManager {
     public static final String reloadConfigCommand = "重载配置";
     public static final String saveConfigCommand = "保存配置";
     public static final String showConfigStatusCommand = "查看配置状态";
     public static final String showConfigLogCommand = "查看配置日志";
+    public static final String shutdown = "关机";
+    public static final String boot = "开机";
 
-    public SystemCommandMessageHandler() {
-        keywords.add(saveConfigCommand);
-        keywords.add(showConfigStatusCommand);
-        keywords.add(showConfigLogCommand);
-        keywords.add(reloadConfigCommand);
+    public SystemCommandMessageEventHandler() {
+        super.registerKeywords(saveConfigCommand);
+        super.registerKeywords(showConfigStatusCommand);
+        super.registerKeywords(showConfigLogCommand);
+        super.registerKeywords(reloadConfigCommand);
+        super.registerKeywords(shutdown).registerKeywords(boot);
     }
 
 
@@ -46,6 +48,10 @@ public class SystemCommandMessageHandler extends DefaultCommandMessageHandlerMan
                 return doShowConfigLogCommand(event);
             } else if (content.equals(reloadConfigCommand)) {
                 return doReloadConfigCommand(event);
+            } else if (content.equals(shutdown)) {
+                return doShutDown(event);
+            } else if (content.equals(boot)) {
+                return doBoot(event);
             }
         } catch (InsufficientPermissionsException e) {
             throw e;
@@ -55,10 +61,26 @@ public class SystemCommandMessageHandler extends DefaultCommandMessageHandlerMan
         return null;
     }
 
+    private List<MessageChain> doShutDown(MessageEvent event) throws InsufficientPermissionsException {
+        if (!Permission.hasSuperAdmin(getSenderId(event))) {
+            throw new InsufficientPermissionsException("您的权限不足，无法执行此操作");
+        }
+        RobotConfig.enableRobot = false;
+        return buildMessageChainAsList("走啦，期待下次见面!");
+    }
+
+    private List<MessageChain> doBoot(MessageEvent event) throws InsufficientPermissionsException {
+        if (!Permission.hasSuperAdmin(getSenderId(event))) {
+            throw new InsufficientPermissionsException("您的权限不足，无法执行此操作");
+        }
+        RobotConfig.enableRobot = true;
+        return buildMessageChainAsList("我又回来了！");
+    }
+
 
     public List<MessageChain> doReloadConfigCommand(MessageEvent event) throws InsufficientPermissionsException, CanNotParseCommandException {
         if (!Permission.hasAdmin(getSenderId(event))) {
-            throw new InsufficientPermissionsException();
+            throw new InsufficientPermissionsException("您的权限不足，无法执行此操作");
         }
         try {
             HRobotStarter.initRobotConfig(null);
@@ -70,7 +92,7 @@ public class SystemCommandMessageHandler extends DefaultCommandMessageHandlerMan
 
     public List<MessageChain> doShowConfigLogCommand(MessageEvent event) throws InsufficientPermissionsException {
         if (!Permission.hasAdmin(getSenderId(event))) {
-            throw new InsufficientPermissionsException();
+            throw new InsufficientPermissionsException("您的权限不足，无法执行此操作");
         }
         String log = checkLogStatus();
         return log == null ? buildMessageChainAsList("暂无日志") : buildMessageChainAsList(log);
@@ -78,7 +100,7 @@ public class SystemCommandMessageHandler extends DefaultCommandMessageHandlerMan
 
     public List<MessageChain> doShowConfigStatusCommand(MessageEvent event) throws InsufficientPermissionsException {
         if (!Permission.hasAdmin(getSenderId(event))) {
-            throw new InsufficientPermissionsException();
+            throw new InsufficientPermissionsException("您的权限不足，无法执行此操作");
         }
         int num = getSuccessNum();
         return num == 0 ? buildMessageChainAsList("The command tree is clean now") : buildMessageChainAsList("There are " + num + " command successfully be done，it may be dirty now, try to check the log!");
@@ -92,7 +114,7 @@ public class SystemCommandMessageHandler extends DefaultCommandMessageHandlerMan
      */
     public List<MessageChain> doSaveConfig(MessageEvent event) throws InsufficientPermissionsException, CanNotParseCommandException {
         if (!Permission.hasAdmin(getSenderId(event))) {
-            throw new InsufficientPermissionsException();
+            throw new InsufficientPermissionsException("您的权限不足，无法执行此操作");
         }
         try {
             ConfigUtil.writeConfig();

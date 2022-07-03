@@ -1,6 +1,6 @@
 package com.happysnaker.api;
 
-import com.happysnaker.utils.NetUtil;
+import com.happysnaker.utils.IOUtil;
 import net.mamoe.mirai.message.data.MusicKind;
 import net.mamoe.mirai.message.data.MusicShare;
 
@@ -72,7 +72,7 @@ public class TongZhongApi {
                 String id = (String) song.get("originalId");
                 String platform = (String) song.get("platform");
                 String url = url2.replace("platform", platform).replace("id", id);
-                Map<String, Object> map = NetUtil.sendAndGetResponseMap(new URL(url), "GET", null, null);
+                Map<String, Object> map = IOUtil.sendAndGetResponseMap(new URL(url), "GET", null, null);
                 String songUrl = null;
                 try {
                     songUrl = (String) ((Map) map.get("data")).get("songSource");
@@ -99,7 +99,7 @@ public class TongZhongApi {
     private static List<Map<String, Object>> getSongs(String keyword, String url) throws Exception {
         Map<String, Object> res = null;
         try {
-            res = (Map<String, Object>) NetUtil.sendAndGetResponseMap(new URL(url + URLEncoder.encode(keyword, "UTF-8")), "GET", null, null);
+            res = (Map<String, Object>) IOUtil.sendAndGetResponseMap(new URL(url + URLEncoder.encode(keyword, "UTF-8")), "GET", null, null);
         } catch (Exception e) {
             return new ArrayList<>();
         }

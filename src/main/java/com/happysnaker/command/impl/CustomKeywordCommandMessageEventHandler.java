@@ -2,10 +2,9 @@ package com.happysnaker.command.impl;
 
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.exception.CanNotParseCommandException;
-import com.happysnaker.exception.CanNotSendMessageException;
 import com.happysnaker.exception.InsufficientPermissionsException;
 import com.happysnaker.handler.handler;
-import com.happysnaker.handler.impl.CustomKeywordMessageHandler;
+import com.happysnaker.handler.message.CustomKeywordMessageEventHandler;
 import com.happysnaker.permission.Permission;
 import com.happysnaker.utils.PairUtil;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -23,7 +22,7 @@ import java.util.Set;
  * @email happysnaker@foxmail.com
  */
 @handler(priority = 1024)
-public class CustomKeywordCommandMessageHandler extends DefaultCommandMessageHandlerManager {
+public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessageEventHandlerManager {
     public static final String SET_KEYWORD = "设置关键字回复";
     public static final String SET_GROUP_KEYWORD = "设置群内关键字回复";
     public static final String REMOVE_KEYWORD = "移除关键字";
@@ -31,15 +30,17 @@ public class CustomKeywordCommandMessageHandler extends DefaultCommandMessageHan
     public static final String CLEAR_KEYWORD = "清空关键字";
     public static final String CLEAR_GROUP_KEYWORD = "清空群内关键字";
     public static final String CLEAR_ALL = "清空所有关键字";
+    public static final String SEE_GROUP_KEYWORD = "查看群内关键字";
 
-    public CustomKeywordCommandMessageHandler() {
-        keywords.add(SET_KEYWORD);
-        keywords.add(SET_GROUP_KEYWORD);
-        keywords.add(REMOVE_GROUP_KEYWORD);
-        keywords.add(REMOVE_KEYWORD);
-        keywords.add(CLEAR_KEYWORD);
-        keywords.add(CLEAR_GROUP_KEYWORD);
-        keywords.add(CLEAR_ALL);
+    public CustomKeywordCommandMessageEventHandler() {
+        super.registerKeywords(SET_KEYWORD);
+        super.registerKeywords(SET_GROUP_KEYWORD);
+        super.registerKeywords(REMOVE_GROUP_KEYWORD);
+        super.registerKeywords(REMOVE_KEYWORD);
+        super.registerKeywords(CLEAR_KEYWORD);
+        super.registerKeywords(CLEAR_GROUP_KEYWORD);
+        super.registerKeywords(CLEAR_ALL);
+        super.registerKeywords(SEE_GROUP_KEYWORD);
     }
 
     /**
@@ -71,6 +72,7 @@ public class CustomKeywordCommandMessageHandler extends DefaultCommandMessageHan
 
     /**
      * 设置全局关键字回复，至少需要管理员权限
+     *
      * @param event
      * @return
      * @throws CanNotParseCommandException
@@ -80,7 +82,7 @@ public class CustomKeywordCommandMessageHandler extends DefaultCommandMessageHan
             throw new InsufficientPermissionsException();
         }
         // 去除命令
-        String content = getContent(event).replace(commandPrefix + SET_KEYWORD, "").trim();
+        String content = getContent(event).replace(RobotConfig.commandPrefix + SET_KEYWORD, "").trim();
         PairUtil<String, String> pair;
         if (hasQuote(event)) {
             pair = PairUtil.of(content, getContent(getQuoteMessageChain(event)));
@@ -88,15 +90,22 @@ public class CustomKeywordCommandMessageHandler extends DefaultCommandMessageHan
             pair = getKeyVal(content);
         }
         RobotConfig.customKeyword.put(pair.getKey(), pair.getValue());
-        return buildMessageChainAsList("添加全局自定义关键字 " + pair.getKey().replace(CustomKeywordMessageHandler.REGEX_PREFIX, "") +  " 及回复成功！");
+        return buildMessageChainAsList("添加全局自定义关键字 " + pair.getKey().replace(CustomKeywordMessageEventHandler.REGEX_PREFIX, "") + " 及回复成功！");
     }
 
+    /**
+     * 设置群内关键字
+     * @param event
+     * @return
+     * @throws CanNotParseCommandException
+     * @throws InsufficientPermissionsException
+     */
     private List<MessageChain> setGroupKeyword(MessageEvent event) throws CanNotParseCommandException, InsufficientPermissionsException {
         if (!Permission.hasGroupAdmin(getSenderId(event))) {
-            throw new InsufficientPermissionsException();
+            throw new InsufficientPermissionsException("权限不足");
         }
         // 去除命名
-        String content = getContent(event).replace(commandPrefix + SET_GROUP_KEYWORD, "").trim();
+        String content = getContent(event).replace(RobotConfig.commandPrefix + SET_GROUP_KEYWORD, "").trim();
         PairUtil<String, String> pair;
         if (hasQuote(event)) {
             pair = PairUtil.of(content, getContent(getQuoteMessageChain(event)));
@@ -106,25 +115,40 @@ public class CustomKeywordCommandMessageHandler extends DefaultCommandMessageHan
         RobotConfig.customKeyword.putIfAbsent(getGroupId(event), new HashMap<>());
         Map<String, Object> gMap = (Map<String, Object>) RobotConfig.customKeyword.get(getGroupId(event));
         gMap.put(pair.getKey(), pair.getValue());
-        return buildMessageChainAsList("添加群内自定义关键字 " + pair.getKey().replace(CustomKeywordMessageHandler.REGEX_PREFIX, "") +  " 及回复成功！");
+        return buildMessageChainAsList("添加群内自定义关键字 " + pair.getKey().replace(CustomKeywordMessageEventHandler.REGEX_PREFIX, "") + " 及回复成功！");
     }
 
+
+    /**
+     * 移除全局
+     * @param event
+     * @return
+     * @throws CanNotParseCommandException
+     * @throws InsufficientPermissionsException
+     */
     private List<MessageChain> removeKeyword(MessageEvent event) throws CanNotParseCommandException, InsufficientPermissionsException {
         if (!Permission.hasAdmin(getSenderId(event))) {
             throw new InsufficientPermissionsException();
         }
-        String content = getContent(event).replace(commandPrefix + REMOVE_KEYWORD, "").trim();
+        String content = getContent(event).replace(RobotConfig.commandPrefix + REMOVE_KEYWORD, "").trim();
         if (RobotConfig.customKeyword.remove(content) == null) {
             return buildMessageChainAsList("不包含此全局关键字：" + content);
         }
         return buildMessageChainAsList("移除成功");
     }
 
+    /**
+     * 移除群内
+     * @param event
+     * @return
+     * @throws CanNotParseCommandException
+     * @throws InsufficientPermissionsException
+     */
     private List<MessageChain> removeGroupKeyword(MessageEvent event) throws CanNotParseCommandException, InsufficientPermissionsException {
         if (!Permission.hasGroupAdmin(getSenderId(event))) {
             throw new InsufficientPermissionsException();
         }
-        String content = getContent(event).replace(commandPrefix + REMOVE_GROUP_KEYWORD, "").trim();
+        String content = getContent(event).replace(RobotConfig.commandPrefix + REMOVE_GROUP_KEYWORD, "").trim();
         if (!RobotConfig.customKeyword.containsKey(getGroupId(event))) {
             return buildMessageChainAsList("此群暂无任何群内关键字配置");
         }
@@ -135,6 +159,14 @@ public class CustomKeywordCommandMessageHandler extends DefaultCommandMessageHan
         return buildMessageChainAsList("移除成功");
     }
 
+
+    /**
+     * 仅清空全局
+     * @param event
+     * @return
+     * @throws CanNotParseCommandException
+     * @throws InsufficientPermissionsException
+     */
     private List<MessageChain> clearKeyword(MessageEvent event) throws CanNotParseCommandException, InsufficientPermissionsException {
         if (!Permission.hasAdmin(getSenderId(event))) {
             throw new InsufficientPermissionsException();
@@ -150,6 +182,13 @@ public class CustomKeywordCommandMessageHandler extends DefaultCommandMessageHan
         return buildMessageChainAsList("已清空所有全局关键字");
     }
 
+    /**
+     * 清空群内
+     * @param event
+     * @return
+     * @throws CanNotParseCommandException
+     * @throws InsufficientPermissionsException
+     */
     private List<MessageChain> clearGroupKeyword(MessageEvent event) throws CanNotParseCommandException, InsufficientPermissionsException {
         if (!Permission.hasGroupAdmin(getSenderId(event))) {
             throw new InsufficientPermissionsException();
@@ -158,6 +197,13 @@ public class CustomKeywordCommandMessageHandler extends DefaultCommandMessageHan
         return buildMessageChainAsList("已清空群 " + getGroupId(event) + " 内的所有关键字");
     }
 
+    /**
+     * 清空全部
+     * @param event
+     * @return
+     * @throws CanNotParseCommandException
+     * @throws InsufficientPermissionsException
+     */
     private List<MessageChain> clearAll(MessageEvent event) throws CanNotParseCommandException, InsufficientPermissionsException {
         if (!Permission.hasSuperAdmin(getSenderId(event))) {
             throw new InsufficientPermissionsException();
@@ -167,6 +213,12 @@ public class CustomKeywordCommandMessageHandler extends DefaultCommandMessageHan
     }
 
 
+    /**
+     * 提取关键字及回复
+     * @param content
+     * @return
+     * @throws CanNotParseCommandException
+     */
     private PairUtil<String, String> getKeyVal(String content) throws CanNotParseCommandException {
         int l = content.indexOf('{');
         int r = content.indexOf('}');

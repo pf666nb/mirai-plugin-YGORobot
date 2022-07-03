@@ -1,20 +1,22 @@
 package com.happysnaker.starter;
 
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.parser.Feature;
-import com.happysnaker.api.BaiduBaikeApi;
-import com.happysnaker.api.MiguApi;
+import com.happysnaker.CustomRegistry;
 import com.happysnaker.config.RobotConfig;
+import com.happysnaker.config.RobotCronTask;
 import com.happysnaker.proxy.MessageHandlerProxy;
 
 import com.happysnaker.utils.*;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.Map;
 
 /**
@@ -33,83 +35,125 @@ public class HRobotStarter {
      *
      * @param plugin
      */
-    public static void Start(JavaPlugin plugin) {
-        // do patch
+    public static void Start(JavaPlugin plugin) throws Exception {
+        // 补丁
         Patch.patch();
 
-        // init config-data
+        // 第一步先初始化配置
         try {
             initRobotConfig(plugin);
         } catch (IllegalAccessException | IOException e) {
             e.printStackTrace();
         }
 
-        // init MessageHandler
-        messageHandler = new MessageHandlerProxy(false);
+        // 加载敏感词
+        loadSensitiveWord();
 
-        // subscribe group event
-        GlobalEventChannel.INSTANCE.subscribeAlways(GroupMessageEvent.class, event -> {
-            messageHandler.handleMessageEvent(event);
+        // 获取消息代理
+        messageHandler = new MessageHandlerProxy();
+
+        // 订阅消息事件
+        GlobalEventChannel instance = GlobalEventChannel.INSTANCE;
+        instance.subscribeAlways(GroupMessageEvent.class, event -> {
+            if (messageHandler.shouldHandle(event, null)) {
+                messageHandler.handleMessageEvent(event, null);
+            }
         });
 
-        // do test
+        // 订阅其他事件
+        CustomRegistry.registry(instance);
+
+
+        // 启动后台主线程
+        RobotCronTask.cron();
+
+        // 测试
         test();
 
-        // complete start
+        // 打印 banner
         HRobotStartPrinter.printBanner();
 
-//         finally, try to check the version
+        // 检查版本
         HRobotVersionChecker.checkVersion();
     }
 
-
+    /**
+     * 读取配置文件，初始化 RobotConfig
+     *
+     * @param plugin
+     * @throws IllegalAccessException
+     * @throws IOException
+     */
     public synchronized static void initRobotConfig(JavaPlugin plugin) throws IllegalAccessException, IOException {
+        Yaml yaml = new Yaml();
+
         if (plugin != null) {
             RobotConfig.logger = plugin.getLogger();
             RobotConfig.configFolder = plugin.getConfigFolder();
             RobotConfig.dataFolder = plugin.getDataFolder();
         }
 
-        File file = new File(RobotConfig.configFolder + "/" + RobotConfig.mainConfigPathName);
 
+        File file = new File(RobotConfig.configFolder + "/" + RobotConfig.mainConfigPathName);
         Class c = RobotConfig.class;
         Field[] fields = c.getDeclaredFields();
+        // 如果配置文件存在
         if (file.exists()) {
-            FileInputStream in = new FileInputStream(file);
-            StringBuilder sb = new StringBuilder();
-            try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
-                String tmp = null;
-                while ((tmp = bufferedReader.readLine()) != null) {
-                    sb.append(tmp);
-                }
+            RobotConfig.logger.info("正在初始化机器人配置");
+            Map<String, Object> map = null;
+            try (FileInputStream in = new FileInputStream(file)) {
+                map = yaml.loadAs(in, Map.class);
             }
-            Map<String, Object> map = JSONObject.parseObject(sb.toString(), Feature.OrderedField);
+            // 反射设置 RobotConfig
             if (map != null) {
                 for (Field field : fields) {
                     if (map.containsKey(field.getName())) {
                         try {
-                            field.set(null, map.get(field.getName()));
+                            if (map.get(field.getName()) != null)
+                                field.set(null, map.get(field.getName()));
                         } catch (Exception e) {
+
                         }
                     }
                 }
             }
-        } else {
+            RobotConfig.logger.info("配置初始化完成");
+        }
+
+        // 文件不存在，创建文件并填写模板
+        else {
             file.createNewFile();
             try (FileOutputStream fileOutputStream = new FileOutputStream(file, false)) {
                 String template = ConfigUtil.TEMPLATE;
-              fileOutputStream.write(template.getBytes(StandardCharsets.UTF_8));
+                fileOutputStream.write(template.getBytes(StandardCharsets.UTF_8));
+                RobotConfig.logger.info("成功创建配置文件，请您填写配置并重新启动");
             } catch (Exception e) {
                 RobotConfig.logger.info("配置文件填充错误，请手动配置");
             }
-//            System.out.println("map = " + map);
+        }
+    }
+
+    public static void loadSensitiveWord() throws IOException {
+        File file = new File(RobotConfig.configFolder + "/" + RobotConfig.sensitiveWordPathName);
+        RobotConfig.sensitiveWord = new HashSet<>();
+        if (file.exists()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String word = null;
+                while ((word = reader.readLine()) != null) {
+                    RobotConfig.sensitiveWord.add(word);
+                }
+            }
+        }
+
+        // 文件不存在，创建文件并填写模板
+        else {
+            file.createNewFile();
         }
     }
 
 
-    private static void test(Object... args) {
+    private final static void test(Object... args) throws Exception {
 
     }
 }
-
 

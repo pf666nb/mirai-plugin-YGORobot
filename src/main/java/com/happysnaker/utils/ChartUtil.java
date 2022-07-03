@@ -1,5 +1,7 @@
 package com.happysnaker.utils;
 
+import com.happysnaker.config.RobotConfig;
+import com.happysnaker.config.RobotCronTask;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -21,6 +23,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
+ * 图表实用类，为坎公骑冠剑生成会展报表，方法返回文件名
  * @author Happysnaker
  * @description
  * @date 2022/2/26
@@ -28,17 +31,23 @@ import java.util.UUID;
  */
 public class ChartUtil {
     static {
-        File file = new File(ConfigUtil.getDataFilePath("img"));
-        if (!file.exists() || !file.isDirectory()) {
-            file.mkdir();
-        } else {
-            for (File listFile : file.listFiles()) {
-                if (listFile.isFile()) {
-                    listFile.delete();
+        RobotConfig.logger.info("注册后台清理任务...");
+        RobotCronTask.addCronTask(new Runnable() {
+            @Override
+            public void run() {
+                File file = new File(ConfigUtil.getDataFilePath("img"));
+                if (!file.exists() || !file.isDirectory()) {
+                    file.mkdir();
+                } else {
+                    for (File listFile : file.listFiles()) {
+                        if (listFile.isFile()) {
+                            listFile.delete();
+                        }
+                    }
+                    RobotConfig.logger.info("已清理不要的图片");
                 }
             }
-            System.out.println("已清理不要的图片");
-        }
+        });
     }
 
     public static final String directionPath = ConfigUtil.getDataFilePath("img/");

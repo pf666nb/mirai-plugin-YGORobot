@@ -21,6 +21,12 @@ dependencies{
     implementation(kotlin("stdlib-jdk8"))
     // https://mvnrepository.com/artifact/org.jfree/jfreechart
     implementation("org.jfree:jfreechart:1.0.19")
+    // https://mvnrepository.com/artifact/org.reflections/reflections
+    implementation("org.reflections:reflections:0.9.11")
+    implementation("org.yaml:snakeyaml:1.25")
+    implementation("org.jsoup:jsoup:1.11.2")
+//    compile group: 'org.yaml', name: 'snakeyaml', version: '1.25'
+
 }
 
 val compileKotlin: KotlinCompile by tasks

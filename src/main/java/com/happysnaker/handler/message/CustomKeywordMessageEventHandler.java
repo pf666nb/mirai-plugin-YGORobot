@@ -1,7 +1,7 @@
-package com.happysnaker.handler.impl;
+package com.happysnaker.handler.message;
 
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.exception.CanNotSendMessageException;
+import com.happysnaker.context.Context;
 import com.happysnaker.handler.handler;
 import com.happysnaker.utils.StringUtil;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -18,46 +18,35 @@ import java.util.regex.Pattern;
  * @date 2022/2/22
  * @email happysnaker@foxmail.com
  */
-@handler(priority = -1) // 优先度最低
-public class CustomKeywordMessageHandler extends GroupMessageHandler {
+@handler(priority = 0)
+public class CustomKeywordMessageEventHandler extends GroupMessageEventHandler {
     public static final String REGEX_PREFIX = "#regex#";
 
     @Override
-    protected List<MessageChain> getReplyMessage(MessageEvent event) {
-        return null;
+    public List<MessageChain> handleMessageEvent(MessageEvent event, Context ctx) {
+        return buildMessageChainAsList(parseMiraiCode(ctx.getMessage()));
     }
 
     @Override
-    public boolean shouldHandle(MessageEvent event) {
+    public boolean shouldHandle(MessageEvent event, Context ctx) {
         Map<String, Object> keywordConfig = RobotConfig.customKeyword;
         if (getBotsAllGroupId().contains(getContent(event))) {
             return false;
         }
         String gid = getGroupId(event);
+        // 优先群内回复，获取群内的 Map 定义
         if (keywordConfig.containsKey(gid)) {
             String reply = (String) checkSimilarWord((Map<String, Object>) keywordConfig.get(gid), getContent(event));
             if (reply != null) {
-                try {
-                    sendMsg(parseMiraiCode(reply), event);
-                } catch (CanNotSendMessageException e) {
-                    e.printStackTrace();
-                    logError(event, e);
-                } finally {
-                    return true;
-                }
+                // 传递到 getReplyMessage 中执行
+                ctx.setMessage(reply);
+                return true;
             }
         }
         String reply = (String) checkSimilarWord(keywordConfig, getContent(event));
         if (reply != null) {
-            try {
-                sendMsg(parseMiraiCode(reply), event);
-//                return true;
-            } catch (CanNotSendMessageException e) {
-                e.printStackTrace();
-                logError(event, e);
-            } finally {
-                return true;
-            }
+            ctx.setMessage(reply);
+            return true;
         }
         return false;
     }

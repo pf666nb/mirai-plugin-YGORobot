@@ -1,6 +1,7 @@
-package com.happysnaker.handler.impl;
+package com.happysnaker.handler.message;
 
 import com.happysnaker.config.RobotConfig;
+import com.happysnaker.context.Context;
 import com.happysnaker.exception.FileUploadException;
 import com.happysnaker.handler.handler;
 import com.happysnaker.utils.*;
@@ -14,13 +15,15 @@ import java.net.URL;
 import java.util.*;
 
 /**
+ * 坎公报表
+ *
  * @author Happysnaker
  * @description
  * @date 2022/1/16
  * @email happysnaker@foxmail.com
  */
 @handler(priority = 1)
-public class GtReportMessageHandler extends GroupMessageHandler {
+public class GtReportMessageEventHandler extends GroupMessageEventHandler {
     public static final String BATTLE_REPORT = "会战报表";
     public static final String FRONTLINE_REPORTING = "前线报道";
     public static final String BATTLE_STATISTICS = "会战统计";
@@ -52,7 +55,7 @@ public class GtReportMessageHandler extends GroupMessageHandler {
     public static final String TYPE = "elemental_type_cn";
 
 
-    public GtReportMessageHandler() {
+    public GtReportMessageEventHandler() {
         keywords = new HashSet<>(16);
         keywords.add(BATTLE_REPORT);
         keywords.add(FRONTLINE_REPORTING);
@@ -68,34 +71,35 @@ public class GtReportMessageHandler extends GroupMessageHandler {
      * 回复消息的接口
      *
      * @param event 经过 proxyContent 处理后的消息
+     * @param ctx
      * @return
      */
     @Override
-    protected List<MessageChain> getReplyMessage(MessageEvent event) {
+    public List<MessageChain> handleMessageEvent(MessageEvent event, Context ctx) {
         String cookie = getCookie(getGroupId(event));
         if (cookie != null && !cookie.isEmpty()) {
             String content = getPlantContent(event);
             try {
                 // 会战报表
                 if (content.contains(BATTLE_REPORT)) {
-                    return List.of(doParseBattleReport(cookie));
+                    return OfUtil.ofList(doParseBattleReport(cookie));
                 }
                 // 前线报道
                 else if (content.contains(FRONTLINE_REPORTING)) {
-                    return List.of(doParseFrontlineReporting(cookie));
+                    return OfUtil.ofList(doParseFrontlineReporting(cookie));
                 }
                 // 会战统计
                 else if (content.contains(BATTLE_STATISTICS)) {
                     // 整体统计
                     if (content.equals(BATTLE_STATISTICS)) {
-                        return List.of(doParseBattleStatistics(cookie));
+                        return OfUtil.ofList(doParseBattleStatistics(cookie));
                     }
                     // 对玩家统计
-                    return List.of(doParseBattleStatistics(cookie, content.replace(BATTLE_STATISTICS, "").trim(), event));
+                    return OfUtil.ofList(doParseBattleStatistics(cookie, content.replace(BATTLE_STATISTICS, "").trim(), event));
                 }
                 // 谁没出刀
                 else if (content.contains(WHO_NOT_SHOOT1) || content.contains(WHO_NOT_SHOOT2)) {
-                    return List.of(doParseCheck(cookie, event));
+                    return OfUtil.ofList(doParseCheck(cookie, event));
                 }
                 // 一键催刀
                 else if (content.contains(URGE_KNIFE_ALL)) {
@@ -103,11 +107,11 @@ public class GtReportMessageHandler extends GroupMessageHandler {
                     PairUtil<Set<String>, Set<String>> pair = getNotDoPeople(cookie, event);
                     Set<String> param = pair.getKey();
                     param.addAll(pair.getValue());
-                    return List.of(doUrge(event, param));
+                    return OfUtil.ofList(doUrge(event, param));
                 }
                 // 催刀
                 else if (content.contains(URGE_KNIFE)) {
-                    return List.of(doUrge(event, getNotDoPeople(cookie, event).getKey()));
+                    return OfUtil.ofList(doUrge(event, getNotDoPeople(cookie, event).getKey()));
                 }
                 // 查刀
                 else if (content.contains(CHECK_KNIFE)) {
@@ -116,10 +120,10 @@ public class GtReportMessageHandler extends GroupMessageHandler {
             } catch (Exception e) {
                 e.printStackTrace();
                 logError(event, e);
-                return List.of(new MessageChainBuilder().append("发生了一条意料之外的错误").build());
+                return OfUtil.ofList(new MessageChainBuilder().append("发生了一条意料之外的错误").build());
             }
         }
-        return List.of(new MessageChainBuilder().append("该群暂未配置相关信息").build());
+        return OfUtil.ofList(new MessageChainBuilder().append("该群暂未配置相关信息").build());
     }
 
     public List<MessageChain> check(MessageEvent event, String cookie) throws IOException, FileUploadException {
@@ -133,14 +137,14 @@ public class GtReportMessageHandler extends GroupMessageHandler {
 
         final List<String> ms = StringUtil.splitSpaces(content);
         Map<String, Object> msg = null;
-        List<String> dates = (List<String>) ((Map) NetUtil.sendAndGetResponseMap(new URL(GET_MEMBER_URL), "GET", getHeaders(cookie), null).get("data")).get("date");
+        List<String> dates = (List<String>) ((Map) IOUtil.sendAndGetResponseMap(new URL(GET_MEMBER_URL), "GET", getHeaders(cookie), null).get("data")).get("date");
 
         List<PairUtil<String, List<PairUtil<String, Double>>>> datasets = new ArrayList<>();
         Map<String, List<PairUtil<String, Double>>> map = new HashMap<>();
 
         Collections.reverse(dates);
         for (String date : dates) {
-            msg = NetUtil.sendAndGetResponseMap(new URL(BATTLE_REPORT_URL + date), "GET", getHeaders(cookie), null);
+            msg = IOUtil.sendAndGetResponseMap(new URL(BATTLE_REPORT_URL + date), "GET", getHeaders(cookie), null);
             List<Map<String, Object>> datas = (List<Map<String, Object>>) msg.getOrDefault(DATA, new ArrayList<>());
 
             Set<String> doneSet = new HashSet<>();
@@ -232,13 +236,13 @@ public class GtReportMessageHandler extends GroupMessageHandler {
     public PairUtil<Map<String, Object>, Set<String>> getParseBattleStatisticsMap(String cookie) throws Exception {
         String numberOfCuts = "count";
         String totalDamage = "totalDamage";
-        List<String> dates = (List<String>) ((Map) NetUtil.sendAndGetResponseMap(new URL(GET_MEMBER_URL), "GET", getHeaders(cookie), null).get("data")).get("date");
+        List<String> dates = (List<String>) ((Map) IOUtil.sendAndGetResponseMap(new URL(GET_MEMBER_URL), "GET", getHeaders(cookie), null).get("data")).get("date");
         Set<String> bossNames = new HashSet<>(4);
         Map<String, Object> memberData = new HashMap<>();
         for (String date : dates) {
             Map<String, Object> msg = null;
             try {
-                msg = NetUtil.sendAndGetResponseMap(new URL(BATTLE_REPORT_URL + date), "GET", getHeaders(cookie), null);
+                msg = IOUtil.sendAndGetResponseMap(new URL(BATTLE_REPORT_URL + date), "GET", getHeaders(cookie), null);
             } catch (IOException e) {
                 throw e;
             }
@@ -257,7 +261,7 @@ public class GtReportMessageHandler extends GroupMessageHandler {
                 for (Map<String, Object> damage : damageList) {
                     String bossName = (String) damage.get(BOSS_NAME);
                     bossNames.add(bossName);
-                    long dmg = NumUtil.intToLong(damage.get(DAMAGE));
+                    long dmg = NumUtil.objectToLong(damage.get(DAMAGE));
                     // 首领统计
                     Map<String, Object> bossMap = (Map<String, Object>) member.getOrDefault(bossName, new HashMap<>());
                     bossMap.put(numberOfCuts, (long) bossMap.getOrDefault(numberOfCuts, 0l) + 1l);
@@ -296,7 +300,7 @@ public class GtReportMessageHandler extends GroupMessageHandler {
                 builder.add(at);
             }
         }
-        builder.add("\n" + "还不赶快去打公会战！\n\n" + "注：本功能处于实验阶段，使用的前提是玩家游戏内用户名必须完全等于QQ群内名称，且名称不准有空格，否则无效");
+        builder.add("\n" + "还不赶快去打公会战！\n\n" + "注：如未配置公会成员，此行为会将群内所有成员视为公会成员，这可能会导致多余@，如已配置，请保证公会成员名称完全等于群昵称");
         return builder.build();
     }
 
@@ -324,7 +328,7 @@ public class GtReportMessageHandler extends GroupMessageHandler {
             }
         }
         sb.append("出了刀但未出满刀的用户总数：" + pair.getValue().size() + "\n\n");
-        sb.append("注：本功能处于实验阶段，使用的前提是玩家游戏内用户名必须完全等于QQ群内名称，且名称前后不准有空格，否则无效");
+        sb.append("注：本功能使用的前提是玩家游戏内用户名必须完全等于QQ群内名称，否则无效");
         return new MessageChainBuilder().append(sb.toString()).build();
     }
 
@@ -364,7 +368,7 @@ public class GtReportMessageHandler extends GroupMessageHandler {
         }
         Map<String, Object> msg = null;
         try {
-            msg = NetUtil.sendAndGetResponseMap(new URL(BATTLE_REPORT_URL), "GET", getHeaders(cookie), null);
+            msg = IOUtil.sendAndGetResponseMap(new URL(BATTLE_REPORT_URL), "GET", getHeaders(cookie), null);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -431,14 +435,13 @@ public class GtReportMessageHandler extends GroupMessageHandler {
         for (String bossName : bossNames) {
 
             Map<String, Object> bossMap = (Map<String, Object>) map.getOrDefault(bossName, new HashMap<>());
-//            System.out.println("zz = " +  bossTotImage.getOrDefault(bossName, 0l));
             sb.append("  " + bossName + "：\n");
             sb.append("    对怪物总伤害：" + bossMap.getOrDefault(totalDamage, 0) + "\n");
             sb.append("    对怪物总出刀：" + bossMap.getOrDefault(numberOfCuts, 0) + "\n");
             sb.append("    对怪物伤害占比：" + NumUtil.getPercentage((long) bossMap.getOrDefault(totalDamage, 0l), bossTotDamage.getOrDefault(bossName, 0l)) + "\n");
 
-            dataset1.put(bossName, NumUtil.intToLong(bossMap.getOrDefault(numberOfCuts, 0l)));
-            dataset2.put(bossName, NumUtil.intToLong(bossMap.getOrDefault(totalDamage, 0l)));
+            dataset1.put(bossName, NumUtil.objectToLong(bossMap.getOrDefault(numberOfCuts, 0l)));
+            dataset2.put(bossName, NumUtil.objectToLong(bossMap.getOrDefault(totalDamage, 0l)));
         }
         sb.append("\n");
         String s1 = ChartUtil.generateAPieChart(dataset1, username + " 的出刀情况");
@@ -496,7 +499,6 @@ public class GtReportMessageHandler extends GroupMessageHandler {
             sb.append("对" + bossName + "造成伤害最高的是：" + getMostDamageUser(memberData, bossName) + "\n\n");
         }
         sb.append("总伤害最高的是：" + sortMap.get(sortMap.firstKey()).get(USER_NAME));
-//        System.out.println("sb = " + sb);
         return new MessageChainBuilder().append(sb.toString()).build();
     }
 
@@ -510,7 +512,7 @@ public class GtReportMessageHandler extends GroupMessageHandler {
         Map<String, Object> msg = null;
         try {
             System.out.println("cookie = " + cookie);
-            msg = NetUtil.sendAndGetResponseMap(new URL(FRONTLINE_REPORTING_URL), "GET", getHeaders(cookie), null);
+            msg = IOUtil.sendAndGetResponseMap(new URL(FRONTLINE_REPORTING_URL), "GET", getHeaders(cookie), null);
             System.out.println("msg = " + msg);
         } catch (IOException e) {
             e.printStackTrace();
@@ -526,14 +528,13 @@ public class GtReportMessageHandler extends GroupMessageHandler {
             sb.append("  属性：" + boss.get(TYPE) + "\n");
             sb.append("  总血量：" + boss.get(TOTAL_HP) + "\n");
             sb.append("  剩余血量：" + boss.get(REMAIN_HP) + "\n");
-            double percentage = NumUtil.intToDouble(boss.get(REMAIN_HP)) / NumUtil.intToDouble(boss.get(TOTAL_HP));
+            double percentage = NumUtil.objectToDouble(boss.get(REMAIN_HP)) / NumUtil.objectToDouble(boss.get(TOTAL_HP));
             String str = String.valueOf(percentage * 100);
             if (str.length() > 5) {
                 str = str.substring(0, 5);
             }
             sb.append("  剩余血量占比：" + str + "%\n\n");
         }
-//        System.out.println(sb.toString());
         return new MessageChainBuilder().append(sb.toString()).build();
     }
 
@@ -547,7 +548,7 @@ public class GtReportMessageHandler extends GroupMessageHandler {
     public MessageChain doParseBattleReport(String cookie) {
         Map<String, Object> msg = null;
         try {
-            msg = NetUtil.sendAndGetResponseMap(new URL(BATTLE_REPORT_URL), "GET", getHeaders(cookie), null);
+            msg = IOUtil.sendAndGetResponseMap(new URL(BATTLE_REPORT_URL), "GET", getHeaders(cookie), null);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -589,6 +590,12 @@ public class GtReportMessageHandler extends GroupMessageHandler {
         return new MessageChainBuilder().append(sb.toString()).build();
     }
 
+    /**
+     * 获取所有用户对怪物造成的伤害
+     * @param memberData
+     * @param bossNames
+     * @return
+     */
     private Map<String, Long> getBossTotalDamage(Map<String, Object> memberData, Set<String> bossNames) {
         Map<String, Long> bossTotalDamage = new HashMap<>();
         long t = 0;
@@ -598,7 +605,9 @@ public class GtReportMessageHandler extends GroupMessageHandler {
             t += (long) m.getOrDefault(totalDamage, 0);
             for (String bossName : bossNames) {
                 Map<String, Object> bossMap = (Map<String, Object>) m.getOrDefault(bossName, new HashMap<>());
-                bossTotalDamage.put(bossName, bossTotalDamage.getOrDefault(bossName, 0l) + (long) (NumUtil.objectToLong(bossMap.getOrDefault(totalDamage, 0))));
+                bossTotalDamage.put(
+                        bossName,
+                        bossTotalDamage.getOrDefault(bossName, 0l) + NumUtil.objectToLong(bossMap.getOrDefault(totalDamage, 0)));
             }
         }
         bossTotalDamage.put(totalDamage, t);
@@ -624,7 +633,7 @@ public class GtReportMessageHandler extends GroupMessageHandler {
      * @return
      */
     @Override
-    public boolean shouldHandle(MessageEvent event) {
+    public boolean shouldHandle(MessageEvent event, Context ctx) {
         return startWithKeywords(event, keywords);
     }
 }

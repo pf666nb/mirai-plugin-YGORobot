@@ -19,7 +19,7 @@ public class PairUtil<K, V> {
     }
 
     public static<K, V> List<PairUtil<K, V>> ofList(K key1, V val1, K key2, V val2, K key3, V val3) {
-        return List.of(PairUtil.of(key1, val1), PairUtil.of(key2, val2), PairUtil.of(key3, val3));
+        return OfUtil.ofList(PairUtil.of(key1, val1), PairUtil.of(key2, val2), PairUtil.of(key3, val3));
     }
 
     public void setKey(K key) {
@@ -34,6 +34,8 @@ public class PairUtil<K, V> {
         this.key = key;
         this.value = value;
     }
+
+
 
     @Override
     public boolean equals(Object o) {

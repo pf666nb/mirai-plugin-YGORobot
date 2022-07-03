@@ -2,8 +2,7 @@ package com.happysnaker.starter;
 
 import com.alibaba.fastjson.JSONObject;
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.utils.NetUtil;
-import net.mamoe.mirai.message.data.MessageChain;
+import com.happysnaker.utils.IOUtil;
 
 import javax.swing.*;
 import java.io.File;
@@ -20,23 +19,36 @@ import java.util.Map;
  * @email happysnaker@foxmail.com
  */
 public class HRobotVersionChecker {
-    public static final String VERSION = "HRobot v2.0";
+    /**
+     * 当前版本信息
+     */
+    public static final String VERSION = "HRobot v3.0";
+    /**
+     * 请求 API
+     */
     public static final String api = "https://api.github.com/repos/happysnaker/mirai-plugin-HRobot/releases/latest";
-    public static final String fileName = "plugin-2.0.mirai.jar";
-
-    public static final String lastRelease = "plugin-2.0-SNAPSHOT.mirai.jar";
+    /**
+     * 当前插件文件名
+     */
+    public static final String fileName = "plugin-3.0-SNAPSHOT.mirai.jar";
+    /**
+     * 先与或等于当前插件的最后一个稳定版本
+     */
+    public static final String lastRelease = "plugin-3.0-SNAPSHOT.mirai.jar";
 
     public static void checkVersion() {
         try {
-            Map<String, Object> map = NetUtil.sendAndGetResponseMap(new URL(api), "GET", null, null);
+            Map<String, Object> map = IOUtil.sendAndGetResponseMap(new URL(api), "GET", null, null);
             String latestVersion = (String) map.get("name");
+            System.out.println("latestVersion = " + latestVersion);
             if (latestVersion.equals(VERSION)) {
                 RobotConfig.logger.info("当前 HRobot 插件已为最新版");
                 return;
             }
 
             String assetsUrl = (String) map.get("assets_url");
-            String res = NetUtil.sendAndGetResponseString(new URL(assetsUrl), "GET", null, null);
+
+            String res = IOUtil.sendAndGetResponseString(new URL(assetsUrl), "GET", null, null);
             List<Map<String, Object>> lists = JSONObject.parseObject(res, List.class);
             String downLoadUrl = (String) lists.get(0).get("browser_download_url");
             String downloadName = (String) lists.get(0).get("name");
@@ -52,7 +64,7 @@ public class HRobotVersionChecker {
                 // 自动更新
                 if (n == 0) {
                     try {
-                        RobotConfig.logger.info("正在检索当前版本文件");
+                        RobotConfig.logger.info("正在检索当前版本文件： " + fileName);
                         String plugins = RobotConfig.dataFolder.getParentFile().getParentFile() + "/" + "plugins";
                         File file = new File(plugins);
                         File oldFile = null;
@@ -66,14 +78,20 @@ public class HRobotVersionChecker {
                             JOptionPane.showMessageDialog(null, "更新失败，未检测到当前版本插件，请手动尝试", "提示", JOptionPane.PLAIN_MESSAGE);
                             return;
                         }
-                        RobotConfig.logger.info("检索成功，开始下载新版本文件");
+                        RobotConfig.logger.info("检索成功，开始下载新版本文件，下载链接：" + downLoadUrl);
                         InputStream in = null;
-//                        System.out.println("downLoadUrl = " + downLoadUrl);
                         try {
-                            in = NetUtil.sendAndGetResponseStream(new URL(downLoadUrl), "GET", null, null, 1000 * 15);
+                            in = IOUtil.sendAndGetResponseStream(new URL(downLoadUrl), "GET", null, null, 1000 * 15);
+                            RobotConfig.logger.info("下载新版本完成，正在创建文件夹：" + plugins + "/" + downloadName);
                             File newFile = new File(plugins + "/" + downloadName);
-                            newFile.createNewFile();
-                            NetUtil.writeToFile(newFile, in);
+                            boolean b = newFile.createNewFile();
+                            if (b) {
+                                RobotConfig.logger.info("文件创建成功，正在写入文件...");
+                            } else {
+                                RobotConfig.logger.info("创建文件失败");
+                            }
+                            IOUtil.writeToFile(newFile, in);
+                            RobotConfig.logger.info("写入成功，请重启机器人");
                         } finally {
                             if (in != null) {
                                 in.close();
@@ -85,7 +103,8 @@ public class HRobotVersionChecker {
                         } else {
                             JOptionPane.showMessageDialog(null, "无法删除旧版本文件，请手动删除", "提示", JOptionPane.PLAIN_MESSAGE);
                         }
-                        JOptionPane.showMessageDialog(null, "更新成功，请重启 robot！", "提示", JOptionPane.PLAIN_MESSAGE);
+                        JOptionPane.showMessageDialog(null, "更新成功，请重启 robot 并手动删除旧版本文件", "提示", JOptionPane.PLAIN_MESSAGE);
+                        System.exit(200);
                         return;
                     } catch (SocketTimeoutException e) {
                         JOptionPane.showMessageDialog(null, "网络连接超时，请手动尝试", "提示", JOptionPane.PLAIN_MESSAGE);
@@ -104,7 +123,6 @@ public class HRobotVersionChecker {
     public static boolean isWindows() {
         return System.getProperties().getProperty("os.name").toUpperCase().indexOf("WINDOWS") != -1;
     }
-
 
 
 }

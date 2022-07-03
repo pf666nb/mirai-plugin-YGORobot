@@ -6,6 +6,7 @@ import java.io.File;
 import java.util.*;
 
 /**
+ * 机器人配置，调用者需直接调用此配置而非在本地线程保存，因为配置是可能被重载的
  * @author Happysnaker
  * @description
  * @date 2022/1/15
@@ -13,13 +14,36 @@ import java.util.*;
  */
 public class RobotConfig {
     // ------------ 系统配置 ----------------
-    public static String mainConfigPathName = "config.json";
+    /**
+     * 主配置文件名
+     */
+    public static String mainConfigPathName = "config.yaml";
 
+    /**
+     * 敏感词库
+     */
+    public static String sensitiveWordPathName = "sensitiveWord.txt";
+
+    /**
+     * 配置文件存放的目录路径
+     */
     public static File configFolder;
 
+    /**
+     * 数据存放的目录路径
+     */
     public static File dataFolder;
 
+    /**
+     * 日志
+     */
     public static MiraiLogger logger;
+
+
+    /**
+     * 是否启动机器人，可动态关闭开启，关闭后机器人不在接受任何消息（除了开启消息）
+     */
+    public volatile static boolean enableRobot = true;
 
     // ------------ 用户配置 ----------------
     /**
@@ -31,7 +55,6 @@ public class RobotConfig {
      * 机器人管理员，索引 0 为超级管理员
      */
     public static List<String> administrator = new ArrayList<>();
-
 
     /**
      * 群管理员
@@ -72,4 +95,61 @@ public class RobotConfig {
      * 自定义关键词及回复，value 允许是一条 mirai 消息，这意味着回复消息可以是表情或者图片等，此 Map {key - val} 可能是 {自定义关键词 - 自定义回复}，也有可能是 {群号 - 嵌套的 Map}，因此自定义关键词不允许是 bot 的所有的群号，当 {key - val} 为 {群号 - 嵌套的 Map} 形式，说明此嵌套的 Map 只在特定群内生效
      */
     public static Map<String, Object> customKeyword = new HashMap<>();
+
+    /**
+     * 命令前缀，任何命令需以此前缀开头，用以区分普通消息
+     */
+    public static String commandPrefix = "#";
+
+    /**
+     * 请求网络 API 的超时事件，以 ms 为单位
+     */
+    public static int timeout = 3000;
+
+    /**
+     * 发送鸡汤时有一定概率发送毒鸡汤，这个概率是 [0, 1] 之间的小数
+     */
+    public static double duChickenSoupProbability = 0.1;
+
+    /**
+     * 聊天是否需要 @ 机器人，如果此字段为 false，则任意消息机器人都会回复
+     */
+    public static boolean enableAt = true;
+
+    /**
+     * 自定义回复替代，可以将回复消息内的关键词替换为自定义语句
+     */
+    public static List<Map<String, String>> replyReplace = new ArrayList<>();
+
+    /**
+     * 需要自动审批的群，map 中 key 为群号，val 为验证消息
+     */
+    public static List<Map<String, String>> autoApproval = new ArrayList<>();
+
+    /**
+     * 敏感词库
+     */
+    public static Set<String> sensitiveWord = new HashSet<>();
+
+    /**
+     * 敏感词检测是是否忽略无意义的词
+     */
+    public static boolean skipIsMeaninglessWord = true;
+
+    public static int skipStep = 3;
+
+    /**
+     * 当检测到多少个敏感词后撤回该条消息
+     */
+    public static int withdrawalThreshold = 3;
+
+    /**
+     * 表示哪个群开启了敏感词检测
+     */
+    public static List<String> enableSensitiveWordDetection = new ArrayList<>();
+
+    /**
+     * 每天定时执行的任务，key 分别是 hour、minute、groupId、content、image、count，指示每天的几点几分向哪个群发送什么内容，内容是否需要附带一张美图，一共需要执行几次
+     */
+    public static List<Map<String, Object>> periodicTask = new ArrayList<>();
 }

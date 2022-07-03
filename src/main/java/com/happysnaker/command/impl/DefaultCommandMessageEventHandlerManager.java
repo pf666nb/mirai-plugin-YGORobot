@@ -1,19 +1,12 @@
 package com.happysnaker.command.impl;
 
+import com.happysnaker.context.Context;
 import com.happysnaker.exception.CanNotParseCommandException;
 import com.happysnaker.exception.InsufficientPermissionsException;
-import com.happysnaker.handler.handler;
-import com.happysnaker.handler.impl.AbstractMessageHandler;
-import com.happysnaker.utils.ConfigUtil;
-import com.happysnaker.utils.NetUtil;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,10 +21,17 @@ import java.util.Set;
  * @date 2022/2/23
  * @email happysnaker@foxmail.com
  */
-public class DefaultCommandMessageHandlerManager extends AbstractCommandMessageHandler implements Serializable {
+public class DefaultCommandMessageEventHandlerManager extends AbstractCommandMessageEventHandler implements Serializable {
     protected Set<String> keywords = new HashSet<>();
+
     private static StringBuilder log = new StringBuilder();
     private static int successNum = 0;
+
+
+    protected DefaultCommandMessageEventHandlerManager registerKeywords(String kw) {
+        keywords.add(kw);
+        return this;
+    }
 
     /**
      * 解析命令，子类必须实现
@@ -42,8 +42,10 @@ public class DefaultCommandMessageHandlerManager extends AbstractCommandMessageH
      */
     @Override
     public List<MessageChain> parseCommand(MessageEvent event) throws CanNotParseCommandException, InsufficientPermissionsException {
-        return null;
+        throw new CanNotParseCommandException();
     }
+
+
 
     /**
      * 子类使用命令刷新配置时请调用此方法
@@ -65,8 +67,9 @@ public class DefaultCommandMessageHandlerManager extends AbstractCommandMessageH
 
     @Override
     public void fail(MessageEvent event, String errorMsg) {
-        failApi(event, errorMsg);
+        recordFailLog(event, errorMsg);
     }
+
 
     protected String checkLogStatus() {
         return successNum > 0 ? log.toString() : null;
@@ -82,8 +85,8 @@ public class DefaultCommandMessageHandlerManager extends AbstractCommandMessageH
      * @return
      */
     @Override
-    public boolean shouldHandle(MessageEvent event) {
-        if (super.shouldHandle(event)) {
+    public boolean shouldHandle(MessageEvent event, Context ctx) {
+        if (super.shouldHandle(event, ctx)) {
             String content = getPlantContent(event);
             if (content != null) {
                 for (String keyword : keywords) {

@@ -1,28 +1,22 @@
-package com.happysnaker.handler.impl;
+package com.happysnaker.utils;
 
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.exception.CanNotParseCommandException;
+import com.happysnaker.config.RobotCronTask;
 import com.happysnaker.exception.CanNotSendMessageException;
 import com.happysnaker.exception.FileUploadException;
-import com.happysnaker.handler.MessageHandler;
-import com.happysnaker.utils.ConfigUtil;
-import com.happysnaker.utils.NetUtil;
-import com.happysnaker.utils.StringUtil;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
+import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
-import net.mamoe.mirai.message.MessageReceipt;
 import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.ExternalResource;
-import net.mamoe.mirai.utils.MiraiLogger;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Serializable;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -35,88 +29,51 @@ import java.util.stream.Collectors;
 /**
  * @author Happysnaker
  * @description
- * @date 2022/1/14
+ * @date 2022/6/30
  * @email happysnaker@foxmail.com
  */
-public abstract class AbstractMessageHandler implements MessageHandler, Serializable {
-    public final static ScheduledExecutorService service = Executors.newScheduledThreadPool(0);
-
+public class RobotUtil {
     public final String at = "[mirai:at:qq]";
-    public final String atRegex = "\\[mirai:at:\\d+\\]";
-    public final String atAllRegex = "\\[mirai:atall\\]";
-    public final String faceRegex = "\\{face:\\d+\\}";
-    public final String imageRegex = "\\[mirai:image:\\{\\w+-\\w+-\\w+-\\w+-\\w+\\}.\\w+\\]";
 
-    // 当前机器人的 qq 号，注意可能有多个 qq（多个机器人）
-    protected List<String> qqs = null;
-    protected MiraiLogger logger = RobotConfig.logger;
 
     /**
-     * 记录 info 日志，输出至控制台
+     * 用于消息处理失败时记录日志
      *
-     * @param msg
+     * @param event
+     * @param errorMsg
      */
-    protected void info(String msg) {
-        logger.info(msg);
+    public static void recordFailLog(MessageEvent event, String errorMsg) {
+        RobotCronTask.service.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                String filePath = ConfigUtil.getDataFilePath("error.log");
+                try {
+                    IOUtil.writeToFile(new File(filePath), getLog(event) + "\n错误日志：：" + errorMsg + "\n");
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, 0);
     }
 
-    /**
-     * 记录 debug 日志，输出至控制台
-     *
-     * @param msg
-     */
-    protected void debug(String msg) {
-        logger.debug(msg);
-    }
-
-
-    /**
-     * 记录 error 日志，输出至控制台
-     *
-     * @param msg
-     */
-    protected void error(String msg) {
-        logger.error(msg);
-    }
-
-
-    /**
-     * 记录 error 日志，输出至错误文件
-     *
-     * @param msg
-     */
-    protected void logError(MessageEvent event, String msg) {
-        failApi(event, msg);
-    }
-
-
-    /**
-     * 记录 error 日志，输出至错误文件
-     */
-    protected void logError(MessageEvent event, Throwable e) {
-        failApi(event, StringUtil.getErrorInfoFromException(e));
-    }
-
-
-    /**
-     * 读取运行时机器人的 QQ，并初始化 qqs
-     */
-    protected void initBotQQ() {
-        List<Bot> bots = Bot.getInstances();
-        List<String> qqs = new ArrayList<>();
-        for (Bot bot : bots) {
-            System.out.println("读取机器人QQ： " + bot.getId());
-            qqs.add(String.valueOf(bot.getId()));
+    public static String getLog(MessageEvent event) {
+        if (event == null) return "";
+        String content = getContent(event);
+        String sender = getSenderId(event);
+        if (!(event instanceof GroupMessageEvent)) {
+            return "[sender:" + sender + "-" + formatTime() + "] -> " + content;
         }
-        this.qqs = qqs;
+        long groupId = ((GroupMessageEvent) event).getGroup().getId();
+        return "[sender:" + sender + " - group:" + groupId + " - " + formatTime() + "] -> " + content;
     }
+
 
     /**
      * 读取机器人所有的群
      *
      * @return
      */
-    protected Set<String> getBotsAllGroupId() {
+    public static Set<String> getBotsAllGroupId() {
         List<Bot> bots = Bot.getInstances();
         Set<String> ans = new HashSet<>();
         for (Bot bot : bots) {
@@ -127,52 +84,6 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
         return ans;
     }
 
-    public AbstractMessageHandler() {
-
-    }
-
-
-    /**
-     * 将要回复的消息，子类需要实现
-     */
-    protected abstract List<MessageChain> getReplyMessage(MessageEvent event);
-
-    /**
-     * 具体的回复动作
-     *
-     * @param replyMessages
-     * @param contact
-     * @throws CanNotSendMessageException
-     */
-    private void reply(List<MessageChain> replyMessages, Contact contact) throws CanNotSendMessageException {
-        if (replyMessages == null) return;
-        try {
-            for (MessageChain replyMessage : replyMessages) {
-                if (replyMessage != null) {
-                    MessageReceipt<Contact> receipt = contact.sendMessage(replyMessage);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new CanNotSendMessageException("Can not send message: \""
-                    + replyMessages + "\", the contact is: " + contact + "\nCause by " + e.getCause().toString());
-        }
-    }
-
-
-    /**
-     * 处理一个新的消息事件
-     *
-     * @param messageEvent
-     */
-    @Override
-    public void handleMessageEvent(@NotNull MessageEvent messageEvent) {
-        try {
-            reply(getReplyMessage(messageEvent), messageEvent.getSubject());
-        } catch (CanNotSendMessageException e) {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * 对消息中的 {face:num} 表情进行解析，并将表情用实际的 Face 类替代，封装进 MessageChain 中，MessageChain 中仍然保持原消息中表情和其他消息的相对位置
@@ -180,8 +91,8 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @param text 要解析的文本
      * @return MessageChain
      */
-    protected MessageChain replaceFaceFromContent(String text) {
-        String regex = faceRegex;
+    public static MessageChain replaceFaceFromContent(String text) {
+        String regex = "\\{face:\\d+\\}";
         MessageChainBuilder messageChainBuilder = new MessageChainBuilder();
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(text);
@@ -216,7 +127,7 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @param event
      * @return mirai 编码消息
      */
-    protected static String getContent(MessageEvent event) {
+    public static String getContent(MessageEvent event) {
         if (event == null) {
             return null;
         }
@@ -230,7 +141,7 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @param chain
      * @return mirai 编码消息
      */
-    protected static String getContent(MessageChain chain) {
+    public static String getContent(MessageChain chain) {
         if (chain == null) {
             return null;
         }
@@ -243,20 +154,19 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @param content
      * @return
      */
-    protected MessageChain parseMiraiCode(String content) {
+    public static MessageChain parseMiraiCode(String content) {
         return MiraiCode.deserializeMiraiCode(content);
     }
 
 
     /**
-     * 从事件中提取消息，该消息仅包含文本内容，不包含任何 表情、图片、语音等
-     * 但是必须注意，at 和 at all 消息仍然以 mirai 编码形式被包含在内
+     * 从事件中提取消息，该消息仅包含纯文本内容
      *
      * @param event
      * @return 纯文本
      * @see #getContent
      */
-    protected String getPlantContent(MessageEvent event) {
+    public static String getOnlyPlainContent(MessageEvent event) {
         if (event == null) {
             return null;
         }
@@ -277,7 +187,7 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @param filename 图片文件路径名
      * @return net.mamoe.mirai.message.data.Image
      */
-    protected net.mamoe.mirai.message.data.Image uploadImage(MessageEvent event, String filename) throws FileUploadException {
+    public static net.mamoe.mirai.message.data.Image uploadImage(MessageEvent event, String filename) throws FileUploadException {
         try {
             return ExternalResource.uploadAsImage(new File(filename), event.getSubject());
         } catch (Exception e) {
@@ -293,7 +203,7 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @param regex   at 匹配的消息
      * @return 如果被 at 将返回去除 atMessage(所有的) 信息后的消息，否则返回 null
      */
-    protected String handlerContentIfMatches(String content, String regex) {
+    public static String handlerContentIfMatches(String content, String regex) {
         // 如果 split = 1，说明没有分割，即不包含该 regex
         if (content != null && content.split(regex).length != 1) {
             return content.replaceAll(regex, "").trim();
@@ -303,24 +213,12 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
 
 
     /**
-     * 如果消息中包含图片 mirai 信息，则去除它们
-     *
-     * @param content (MIRAI编码)
-     * @return 如果消息中包含图片信息，则去除它们，否则什么也不做
-     * @see AbstractMessageHandler#getPlantContent
-     */
-    protected String handlerContentIfContainsImage(String content) {
-        String ans;
-        return (ans = handlerContentIfMatches(content, imageRegex)) == null ? content : ans;
-    }
-
-    /**
      * 建造 MessageChain
      *
      * @param m 多个文本消息
      * @return 将多个文本消息结合成 MessageChain
      */
-    protected MessageChain buildMessageChain(String... m) {
+    public static MessageChain buildMessageChain(String... m) {
         MessageChainBuilder builder = new MessageChainBuilder();
         for (String s : m) {
             builder.append(s);
@@ -334,7 +232,7 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @param m 多个 SingleMessage
      * @return 将多个 SingleMessage 组合成 MessageChain
      */
-    protected static MessageChain buildMessageChain(Object... m) {
+    public static MessageChain buildMessageChain(Object... m) {
         MessageChainBuilder builder = new MessageChainBuilder();
         for (Object s : m) {
             if (s instanceof String) {
@@ -352,8 +250,19 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @param m 多个 SingleMessage
      * @return 将多个 SingleMessage 组合成 MessageChain List，List 的大小只为 1
      */
-    protected List<MessageChain> buildMessageChainAsList(Object... m) {
-        return List.of(buildMessageChain(m));
+    public static List<MessageChain> buildMessageChainAsList(Object... m) {
+        return OfUtil.ofList(buildMessageChain(m));
+    }
+
+
+    /**
+     * 建造 MessageChainList，参数是多个 MessageChain
+     *
+     * @param m 多个 MessageChain
+     * @return 将多个 MessageChain 组合成多条消息 MessageChain
+     */
+    public static List<MessageChain> buildMessageChainAsList(MessageChain... m) {
+        return OfUtil.ofList(m);
     }
 
     /**
@@ -362,8 +271,12 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @param event
      * @return
      */
-    protected static String getSenderId(MessageEvent event) {
+    public static String getSenderId(MessageEvent event) {
         return String.valueOf(event.getSender().getId());
+    }
+
+    public static long getSenderId2(MessageEvent event) {
+        return event.getSender().getId();
     }
 
     /**
@@ -373,12 +286,30 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @param url   网络图片 URL
      * @return net.mamoe.mirai.message.data.Image
      */
-    protected static net.mamoe.mirai.message.data.Image uploadImage(MessageEvent event, URL url) throws FileUploadException {
-        try {
-            return ExternalResource.uploadAsImage(NetUtil.sendAndGetResponseStream(url, "GET", null, null), event.getSubject());
+    public static net.mamoe.mirai.message.data.Image uploadImage(MessageEvent event, URL url) throws FileUploadException {
+        return uploadImage(event.getSubject(), url);
+    }
+
+
+    /**
+     * 网络图片并上传至腾讯服务器
+     *
+     * @param contact 要发送的对象
+     * @param url     网络图片 URL
+     * @return net.mamoe.mirai.message.data.Image
+     */
+    public static net.mamoe.mirai.message.data.Image uploadImage(Contact contact, URL url) throws FileUploadException {
+        try (InputStream stream = IOUtil.sendAndGetResponseStream(
+                url,
+                "GET",
+                null,
+                null
+        )) {
+            Image image = Contact.uploadImage(contact, stream);
+            return image;
         } catch (IOException e) {
             e.printStackTrace();
-            throw new FileUploadException("Can not upload the image from the url: " + url + "\nCause by " + e.getCause().toString());
+            throw new FileUploadException("can not upload the image from the url: " + url + ", cause by " + e.getCause().toString());
         }
     }
 
@@ -388,7 +319,7 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @param event
      * @return MessageSource
      */
-    protected MessageSource getQuoteSource(MessageEvent event) {
+    public static MessageSource getQuoteSource(MessageEvent event) {
         return event.getMessage().get(QuoteReply.Key).getSource();
     }
 
@@ -400,7 +331,7 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @return MessageSource
      * @see #buildMessageChain(Object...)
      */
-    protected QuoteReply getQuoteReply(MessageEvent event) {
+    public static QuoteReply getQuoteReply(MessageEvent event) {
         return new QuoteReply(event.getSource());
     }
 
@@ -411,27 +342,8 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @param chain
      * @return List&lt;SingleMessage&gt;，可以将 SingleMessage 强转为 Image 类
      */
-    protected List<SingleMessage> getImagesFromMessage(MessageChain chain) {
+    public static List<SingleMessage> getImagesFromMessage(MessageChain chain) {
         return chain.stream().filter(Image.class::isInstance).collect(Collectors.toList());
-    }
-
-    /**
-     * 检查事件消息是否以关键字开头
-     *
-     * @param event
-     * @param keywords
-     * @return
-     */
-    protected boolean startWithKeywords(MessageEvent event, Collection<String> keywords) {
-        String content = getPlantContent(event);
-        if (content != null) {
-            for (String keyword : keywords) {
-                if (content.startsWith(keyword)) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
 
@@ -442,7 +354,7 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @param event 消息事件
      * @return
      */
-    protected void sendMsg(List<MessageChain> msg, MessageEvent event) throws CanNotSendMessageException {
+    public static void sendMsg(List<MessageChain> msg, MessageEvent event) throws CanNotSendMessageException {
         sendMsg(msg, event.getSubject());
     }
 
@@ -454,20 +366,26 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @param event 消息事件
      * @return
      */
-    protected void sendMsg(MessageChain msg, MessageEvent event) throws CanNotSendMessageException {
-        sendMsg(List.of(msg), event.getSubject());
+    public static void sendMsg(MessageChain msg, MessageEvent event) throws CanNotSendMessageException {
+        sendMsg(OfUtil.ofList(msg), event.getSubject());
     }
 
 
     /**
-     * 发送消息，子类可以提前发送消息，而不必等到由 getReplyMessage 方法被调用，请注意，即使子类提前发送消息，getReplyMessage 仍然会被调用，不过子类可以在 getReplyMessage 方法内返回 null 值以表示不发送消息
+     * 发送多条消息，<strong>注意此方法并不能保证发送消息的顺序<strong/>
      *
      * @param msg     消息链
      * @param contact 发送对象
      * @return
      */
-    protected void sendMsg(List<MessageChain> msg, Contact contact) throws CanNotSendMessageException {
-        reply(msg, contact);
+    public static void sendMsg(List<MessageChain> msg, Contact contact) throws CanNotSendMessageException {
+        try {
+            for (MessageChain chain : msg) {
+                contact.sendMessage(chain);
+            }
+        } catch (Exception e) {
+            throw new CanNotSendMessageException(e.getMessage());
+        }
     }
 
 
@@ -479,12 +397,48 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @param autoRecall 自动撤回等待时间(毫秒)
      * @return
      */
-    protected void sendMsg(MessageChain msg, Contact contact, long autoRecall) throws CanNotSendMessageException {
+    public static void sendMsg(MessageChain msg, Contact contact, long autoRecall) throws CanNotSendMessageException {
         try {
             contact.sendMessage(msg).recallIn(autoRecall);
         } catch (Exception e) {
             throw new CanNotSendMessageException(e.getMessage());
         }
+    }
+
+
+    /**
+     * 提交一条每天定时发送的消息
+     *
+     * @param hour    0-23
+     * @param minute  0-60
+     * @param count 需要执行几次，大于等于 1
+     * @param message 消息
+     * @throws CanNotSendMessageException
+     */
+    public static void submitSendMsgTask(int hour, int minute, int count, MessageChain message, Contact contact) throws CanNotSendMessageException {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, hour);
+        calendar.set(Calendar.MINUTE, minute);
+        calendar.set(Calendar.SECOND, 0);
+        Date time = calendar.getTime();
+        if (time.before(new Date(System.currentTimeMillis()))) {
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+            time = calendar.getTime();
+        }
+        // 保存 count 的容器
+        final PairUtil<Integer, Object> pair = PairUtil.of(count, null);
+        RobotConfig.logger.info("下一次任务执行时间 = " + time);
+        RobotCronTask.service.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                contact.sendMessage(message);
+                pair.setKey(pair.getKey() - 1);
+                if (pair.getKey() <= 0) {
+                    this.cancel();
+                    RobotConfig.logger.info("定时任务执行次数达到阈值，已取消");
+                }
+            }
+        }, time, 1000 * 60 * 60 * 24 - 1000);
     }
 
 
@@ -496,14 +450,17 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @param waitTime 将要等待的事件
      * @return 返回 future，可以调用 future.cancel 以取消事件
      */
-    protected ScheduledFuture submitSendMsgTask(MessageChain msg, Contact contact, long waitTime) throws CanNotSendMessageException {
-        return service.schedule(() -> {
-            try {
-                sendMsg(Collections.singletonList(msg), contact);
-            } catch (CanNotSendMessageException e) {
-                e.printStackTrace();
+    public static void submitSendMsgTask(MessageChain msg, Contact contact, long waitTime) throws CanNotSendMessageException {
+        RobotCronTask.service.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    sendMsg(Collections.singletonList(msg), contact);
+                } catch (CanNotSendMessageException e) {
+                    e.printStackTrace();
+                }
             }
-        }, waitTime, TimeUnit.MILLISECONDS);
+        }, waitTime);
     }
 
 
@@ -516,42 +473,21 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @param waitTime  周期时间
      * @return 返回 future，可以调用 future.cancel 以取消事件
      */
-    protected ScheduledFuture submitSendMsgTaskAtFixRate(MessageChain msg, Contact contact, long initTTime, long waitTime) throws CanNotSendMessageException {
-        return service.scheduleAtFixedRate(() -> {
-            try {
-                sendMsg(Collections.singletonList(msg), contact);
-            } catch (CanNotSendMessageException e) {
-                e.printStackTrace();
+    public static void submitSendMsgTaskAtFixRate(MessageChain msg, Contact contact, long initTTime, long waitTime) throws CanNotSendMessageException {
+        RobotCronTask.service.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    sendMsg(Collections.singletonList(msg), contact);
+                } catch (CanNotSendMessageException e) {
+                    e.printStackTrace();
+                }
             }
-        }, initTTime, waitTime, TimeUnit.MILLISECONDS);
+        }, initTTime, waitTime);
     }
 
 
-    /**
-     * 全局可调用的通用 API，用于消息处理失败时记录日志
-     *
-     * @param event
-     * @param errorMsg
-     */
-    public static void failApi(MessageEvent event, String errorMsg) {
-        AbstractMessageHandler.service.execute(() -> {
-            String filePath = ConfigUtil.getDataFilePath("error.log");
-            try {
-                NetUtil.writeToFile(new File(filePath), getLog(event) + "\n：" + errorMsg + "\n");
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
-    protected static String getLog(MessageEvent event) {
-        if (event == null) return "";
-        String content = getContent(event);
-        String sender = getSenderId(event);
-        return "[" + sender + "::" + formatTime() + "] -> " + content;
-    }
-
-    protected static String formatTime() {
+    public static String formatTime() {
         Date d = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return sdf.format(d);
@@ -564,7 +500,7 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @param event
      * @return
      */
-    protected boolean hasQuote(MessageEvent event) {
+    public static boolean hasQuote(MessageEvent event) {
         return event.getMessage().get(QuoteReply.Key) != null;
     }
 
@@ -576,10 +512,18 @@ public abstract class AbstractMessageHandler implements MessageHandler, Serializ
      * @throws NullPointerException 如果消息事件不包含引用
      * @see #hasQuote(MessageEvent)
      */
-    protected MessageChain getQuoteMessageChain(MessageEvent event) {
+    public static MessageChain getQuoteMessageChain(MessageEvent event) {
         return getQuoteSource(event).getOriginalMessage();
     }
 
+
+    public static boolean equals(MessageSource source1, MessageSource source2) {
+        if (source1 == null && source2 == null) return true;
+        if (source1 == null || source2 == null) return false;
+        return source1.getFromId() == source2.getFromId()
+                && source1.getTargetId() == source2.getTargetId()
+                && source1.getTime() == source2.getTime();
+    }
 
     public static List<MessageChain> doHelp(MessageEvent event) throws MalformedURLException, FileUploadException {
         event.getSubject().sendMessage("正在上传帮助图片，此操作可能较慢，请稍等。如此操作出错，请前往 https://github.com/happysnaker/mirai-plugin-HRobot 查阅相关信息");

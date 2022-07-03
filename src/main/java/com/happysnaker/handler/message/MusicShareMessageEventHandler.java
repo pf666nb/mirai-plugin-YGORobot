@@ -1,7 +1,8 @@
-package com.happysnaker.handler.impl;
+package com.happysnaker.handler.message;
 
 import com.happysnaker.api.MiguApi;
 import com.happysnaker.api.TongZhongApi;
+import com.happysnaker.context.Context;
 import com.happysnaker.handler.handler;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.*;
@@ -21,18 +22,18 @@ import java.util.Set;
  * @email happysnaker@foxmail.com
  */
 @handler(priority = 1)
-public class MusicShareMessageHandler extends GroupMessageHandler {
+public class MusicShareMessageEventHandler extends GroupMessageEventHandler {
     private Set<String> keywords = new HashSet<>();
     private final String MUSIC_KEYWORD = "音乐";
     private final String MIGU_MUSIC_KEYWORD = "咪咕";
 
-    public MusicShareMessageHandler() {
+    public MusicShareMessageEventHandler() {
         keywords.add(MUSIC_KEYWORD);
         keywords.add(MIGU_MUSIC_KEYWORD);
     }
 
     @Override
-    protected List<MessageChain> getReplyMessage(MessageEvent event) {
+    public List<MessageChain> handleMessageEvent(MessageEvent event, Context ctx) {
         String content = getPlantContent(event);
         try {
             if (content.startsWith(MUSIC_KEYWORD)) {
@@ -72,7 +73,7 @@ public class MusicShareMessageHandler extends GroupMessageHandler {
     }
 
     @Override
-    public boolean shouldHandle(MessageEvent event) {
+    public boolean shouldHandle(MessageEvent event, Context ctx) {
         return startWithKeywords(event, keywords);
     }
 }

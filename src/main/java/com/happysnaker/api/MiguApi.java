@@ -1,11 +1,10 @@
 package com.happysnaker.api;
 
-import com.happysnaker.utils.NetUtil;
+import com.happysnaker.utils.IOUtil;
 import net.mamoe.mirai.message.data.MusicKind;
 import net.mamoe.mirai.message.data.MusicShare;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
@@ -26,8 +25,7 @@ public class MiguApi {
     public static final MusicShare search(String name) throws IOException {
 //        System.out.println("name = " + name);
         String u = api.replace("SONGNAME", URLEncoder.encode(name,"UTF-8"));
-        Map<String, Object> map = NetUtil.sendAndGetResponseMap(new URL(u), "GET", null, null);
-
+        Map<String, Object> map = IOUtil.sendAndGetResponseMap(new URL(u), "GET", null, null);
         Map<String, Object> m0 = (Map<String, Object>) map.get("songResultData");
         Map<String, Object> m1 = (Map<String, Object>) ((List)m0.get("result")).get(0);
         String id = (String) m1.get("id");
@@ -43,9 +41,10 @@ public class MiguApi {
                 MusicKind.MiguMusic,
                 songName,
                 singer  + "(请点击右侧按钮直接播放)",
-                "http://music.migu.cn/v2/music/song/" + id,
+                "http://music.migu.cn/v2/music/song/",
                 picUrl,
                 u0
         );
+//        "1".replace()
     }
 }

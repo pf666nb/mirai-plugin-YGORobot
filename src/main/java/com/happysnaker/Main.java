@@ -21,6 +21,11 @@ public final class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        HRobotStarter.Start(this);
+        try {
+            HRobotStarter.Start(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(500);
+        }
     }
 }

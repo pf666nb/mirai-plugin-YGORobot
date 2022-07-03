@@ -1,7 +1,7 @@
 package com.happysnaker.api;
 
 import com.happysnaker.utils.NumUtil;
-import com.happysnaker.utils.NetUtil;
+import com.happysnaker.utils.IOUtil;
 
 import java.io.IOException;
 import java.net.URL;
@@ -17,10 +17,18 @@ import java.util.Map;
  * @email happysnaker@foxmail.com
  */
 public class PixivApi {
-    public static final String pidApi = "https://api.lolicon.app/setu/v2";
+    /**
+     * 能用 HTTP 的就用 HTTP，HTTPS 性能比较低，实验比较大
+     */
+    public static final String pidApi = "http://api.lolicon.app/setu/v2";
     public static final String beautifulImageUrl = "https://api.sunweihu.com/api/sjbz/api.php";
-    public static final String chickenSoupUrl = "https://chp.shadiao.app/api.php";
-    public static final String pixivSearchApi = "https://pximg2.rainchan.win/img?img_id=IMGID";
+    public static final String chickenSoupUrl = "https://api.shadiao.app/chp/";
+    public static final String duChickenSoupUrl = "https://api.shadiao.app/du";
+    public static final String pixivSearchApi = "http://pximg.rainchan.win/img?img_id=IMGID";
+    public static final String randomUrl = "http://pximg.rainchan.win/img";
+
+
+
 
     /**
      * 根据 tag 获取 p 站图片 pid
@@ -37,14 +45,14 @@ public class PixivApi {
             }
             url = url.substring(0, url.length() - 1);
         }
-        List<Map<String, Object>> map = (List<Map<String, Object>>) NetUtil.sendAndGetResponseMap(new URL(url), "GET", null, null).get("data");
+        List<Map<String, Object>> map = (List<Map<String, Object>>) IOUtil.sendAndGetResponseMap(new URL(url), "GET", null, null).get("data");
         if (map == null || map.isEmpty()) {
             return -1;
         }
         try {
             return (long) map.get(0).get("pid");
         } catch (ClassCastException e) {
-            return (long) NumUtil.intToDouble(map.get(0).get("pid"));
+            return (long) NumUtil.objectToDouble(map.get(0).get("pid"));
         }
     }
 
@@ -64,14 +72,14 @@ public class PixivApi {
             }
             url = url.substring(0, url.length() - 1);
         }
-        List<Map<String, Object>> map = (List<Map<String, Object>>) NetUtil.sendAndGetResponseMap(new URL(url), "GET", null, null).get("data");
+        List<Map<String, Object>> map = (List<Map<String, Object>>) IOUtil.sendAndGetResponseMap(new URL(url), "GET", null, null).get("data");
         if (map == null || map.isEmpty()) {
             return -1;
         }
         try {
             return (long) map.get(0).get("pid");
         } catch (ClassCastException e) {
-            return (long) NumUtil.intToDouble(map.get(0).get("pid"));
+            return (long) NumUtil.objectToDouble(map.get(0).get("pid"));
         }
     }
 

@@ -1,6 +1,7 @@
-package com.happysnaker.handler.impl;
+package com.happysnaker.handler.message;
 
-import com.happysnaker.api.BaiduBaikeApi;
+import com.happysnaker.api.BaiKeApi;
+import com.happysnaker.context.Context;
 import com.happysnaker.exception.FileUploadException;
 import com.happysnaker.handler.handler;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -19,18 +20,18 @@ import java.util.Map;
  * @email happysnaker@foxmail.com
  */
 @handler
-public class KnowledgeSearchMessageHandler extends GroupMessageHandler {
+public class KnowledgeSearchMessageEventHandler extends GroupMessageEventHandler {
     public static final String BAIDU_BAIKE = "百度百科";
 
     private HashSet<String> keywords = new HashSet<>();
 
-    public KnowledgeSearchMessageHandler() {
+    public KnowledgeSearchMessageEventHandler() {
         keywords.add(BAIDU_BAIKE);
     }
 
 
     @Override
-    protected List<MessageChain> getReplyMessage(MessageEvent event) {
+    public List<MessageChain> handleMessageEvent(MessageEvent event, Context ctx) {
         try {
             return parseBaidu(event);
         } catch (Exception e) {
@@ -42,12 +43,8 @@ public class KnowledgeSearchMessageHandler extends GroupMessageHandler {
 
     protected List<MessageChain> parseBaidu(MessageEvent event) throws MalformedURLException, FileUploadException {
         String content = getPlantContent(event).replace(BAIDU_BAIKE, "");
-        Map<String, Object> map = BaiduBaikeApi.search(content);
-        if (map == null || (int)map.get("code") != 200) {
-            return buildMessageChainAsList("检索失败，换个关键词试试吧", getQuoteReply(event));
-        }
-        String title = (String) map.get("title");
-        if (map.containsKey("久黎")) {
+        Map<String, String> map = BaiKeApi.search(content);
+        if (map == null) {
             return buildMessageChainAsList("检索失败，换个关键词试试吧", getQuoteReply(event));
         }
         StringBuilder sb = new StringBuilder();
@@ -63,7 +60,7 @@ public class KnowledgeSearchMessageHandler extends GroupMessageHandler {
     }
 
     @Override
-    public boolean shouldHandle(MessageEvent event) {
+    public boolean shouldHandle(MessageEvent event, Context ctx) {
         return startWithKeywords(event, keywords);
     }
 }

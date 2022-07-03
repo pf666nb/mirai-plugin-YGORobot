@@ -8,9 +8,6 @@ import com.happysnaker.permission.Permission;
 import com.happysnaker.utils.StringUtil;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
-import net.mamoe.mirai.message.data.MessageChainBuilder;
-import net.mamoe.mirai.message.data.MessageSource;
-import net.mamoe.mirai.message.data.QuoteReply;
 
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +20,7 @@ import java.util.Map;
  * @email happysnaker@foxmail.com
  */
 @handler(priority = 1024)
-public class AuthorityCommandMessageHandler extends DefaultCommandMessageHandlerManager {
+public class AuthorityCommandMessageEventHandler extends DefaultCommandMessageEventHandlerManager {
     public static final String GRANT_ADMIN = "授予管理员权限";
     public static final String GRANT_GT_ADMIN = "授予坎公管理员权限";
     public static final String GRANT_GROUP_ADMIN = "授予群管理员权限";
@@ -34,14 +31,14 @@ public class AuthorityCommandMessageHandler extends DefaultCommandMessageHandler
 
     public static final Map<Integer, String> permissionMap = new HashMap<>();
 
-    public AuthorityCommandMessageHandler() {
-        keywords.add(GRANT_ADMIN);
-        keywords.add(GRANT_GT_ADMIN);
-        keywords.add(SEE_PERMISSION);
-        keywords.add(REMOVE_GT_ADMIN);
-        keywords.add(REMOVE_ADMIN);
-        keywords.add(REMOVE_GROUP_ADMIN);
-        keywords.add(GRANT_GROUP_ADMIN);
+    public AuthorityCommandMessageEventHandler() {
+        super.registerKeywords(GRANT_ADMIN);
+        super.registerKeywords(GRANT_GT_ADMIN);
+        super.registerKeywords(SEE_PERMISSION);
+        super.registerKeywords(REMOVE_GT_ADMIN);
+        super.registerKeywords(REMOVE_ADMIN);
+        super.registerKeywords(REMOVE_GROUP_ADMIN);
+        super.registerKeywords(GRANT_GROUP_ADMIN);
 
         permissionMap.put(Permission.SUPER_ADMINISTRATOR, "超级管理员");
         permissionMap.put(Permission.ADMINISTRATOR, "普通管理员");

@@ -1,6 +1,6 @@
 package com.happysnaker.api;
 
-import com.happysnaker.utils.NetUtil;
+import com.happysnaker.utils.IOUtil;
 
 import java.net.URL;
 import java.util.Map;
@@ -12,11 +12,11 @@ import java.util.Map;
  * @email happysnaker@foxmail.com
  */
 public class BingApi {
-    static String url = "https://bing.ioliu.cn/v1/rand?type=json";
+    public static String url = "https://bing.ioliu.cn/v1/rand?type=json";
 
     public static String getRandomImageUrl() {
         try {
-            Map<String, Object> map = (Map<String, Object>) NetUtil.sendAndGetResponseMap(new URL(url), "GET", null, null).get("data");
+            Map<String, Object> map = (Map<String, Object>) IOUtil.sendAndGetResponseMap(new URL(url), "GET", null, null).get("data");
             return (String) map.get("url");
         } catch (Exception e) {
             e.printStackTrace();
