@@ -152,4 +152,14 @@ public class RobotConfig {
      * 每天定时执行的任务，key 分别是 hour、minute、groupId、content、image、count，指示每天的几点几分向哪个群发送什么内容，内容是否需要附带一张美图，一共需要执行几次
      */
     public static List<Map<String, Object>> periodicTask = new ArrayList<>();
+
+    /**
+     * 颜色开关
+     */
+    public static boolean colorSwitch = true;
+
+    /**
+     * 俄罗斯轮盘赌，key 分别是 totalNum, realNum, base，含义可参考配置文件
+     */
+    public static Map<String, Object> russianRoulette = new HashMap<>();
 }

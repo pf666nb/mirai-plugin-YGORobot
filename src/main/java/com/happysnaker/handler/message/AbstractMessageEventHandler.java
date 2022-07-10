@@ -1,7 +1,7 @@
 package com.happysnaker.handler.message;
 
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.config.RobotCronTask;
+import com.happysnaker.cron.RobotCronTask;
 import com.happysnaker.context.Context;
 import com.happysnaker.handler.MessageEventHandler;
 import com.happysnaker.utils.*;

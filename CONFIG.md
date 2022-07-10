@@ -6,6 +6,7 @@
 ## 模板
 
 - [v3.0 配置文件模板](./version/v3.0_config.md)
+- [v3.1 配置文件模板](./version/v3.1_config.md)
 - [更早版本配置文件模板](./V2&V1_CONFIG.md)
 
 ## 获取砍公 cookie

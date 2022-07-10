@@ -1,7 +1,8 @@
 package com.happysnaker.utils;
 
+import com.happysnaker.api.PixivApi;
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.config.RobotCronTask;
+import com.happysnaker.cron.RobotCronTask;
 import com.happysnaker.exception.CanNotSendMessageException;
 import com.happysnaker.exception.FileUploadException;
 import net.mamoe.mirai.Bot;
@@ -21,7 +22,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -325,14 +325,19 @@ public class RobotUtil {
 
     /**
      * 设置引用回复，如果失败，则返回 null<br/>
-     * 如果想回复某消息，你可以这样做：chainBuilder.append(getQuoteReply(e))<br/>或者调用父类方法：buildMessageChain(msg, getQuoteReply(e)) 以构造一条消息链
+     * 如果想回复某消息，你可以这样做：chainBuilder.append(getQuoteReply(e))<br/>或者调用父类方法：buildMessageChain(getQuoteReply(e), msg) 以构造一条消息链<br/>或者使用 getQuoteReply 方法回复一条简单文本信息
      *
      * @param event
      * @return MessageSource
      * @see #buildMessageChain(Object...)
+     * @see #quoteReply(MessageEvent, String) 
      */
     public static QuoteReply getQuoteReply(MessageEvent event) {
-        return new QuoteReply(event.getSource());
+        return new QuoteReply(event.getMessage());
+    }
+    
+    public static MessageChain quoteReply(MessageEvent event, String msg) {
+        return buildMessageChain(getQuoteReply(event), msg);
     }
 
 
@@ -409,13 +414,14 @@ public class RobotUtil {
     /**
      * 提交一条每天定时发送的消息
      *
-     * @param hour    0-23
-     * @param minute  0-60
-     * @param count 需要执行几次，大于等于 1
-     * @param message 消息
+     * @param hour      0-23
+     * @param minute    0-60
+     * @param count     需要执行几次，大于等于 1
+     * @param plusImage
+     * @param message   消息
      * @throws CanNotSendMessageException
      */
-    public static void submitSendMsgTask(int hour, int minute, int count, MessageChain message, Contact contact) throws CanNotSendMessageException {
+    public static void submitSendMsgTask(int hour, int minute, int count, boolean plusImage, MessageChain message, Contact contact) throws CanNotSendMessageException {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, hour);
         calendar.set(Calendar.MINUTE, minute);
@@ -431,14 +437,26 @@ public class RobotUtil {
         RobotCronTask.service.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                contact.sendMessage(message);
+                MessageChain msg = message;
+                if (plusImage) {
+                    try {
+                        msg = message.plus(RobotUtil.uploadImage(
+                                contact, new URL(PixivApi.beautifulImageUrl)
+                        ));
+                    } catch (FileUploadException e) {
+                        e.printStackTrace();
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    }
+                }
+                contact.sendMessage(msg);
                 pair.setKey(pair.getKey() - 1);
                 if (pair.getKey() <= 0) {
                     this.cancel();
                     RobotConfig.logger.info("定时任务执行次数达到阈值，已取消");
                 }
             }
-        }, time, 1000 * 60 * 60 * 24 - 1000);
+        }, time, 1000 * 60 * 60 * 24 - 100);
     }
 
 

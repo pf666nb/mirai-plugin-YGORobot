@@ -2,6 +2,7 @@ package com.happysnaker.handler.message;
 
 import com.happysnaker.api.BaiKeApi;
 import com.happysnaker.context.Context;
+import com.happysnaker.exception.CanNotSendMessageException;
 import com.happysnaker.exception.FileUploadException;
 import com.happysnaker.handler.handler;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -41,11 +42,11 @@ public class KnowledgeSearchMessageEventHandler extends GroupMessageEventHandler
         }
     }
 
-    protected List<MessageChain> parseBaidu(MessageEvent event) throws MalformedURLException, FileUploadException {
+    protected List<MessageChain> parseBaidu(MessageEvent event) throws MalformedURLException, FileUploadException, CanNotSendMessageException {
         String content = getPlantContent(event).replace(BAIDU_BAIKE, "");
         Map<String, String> map = BaiKeApi.search(content);
         if (map == null) {
-            return buildMessageChainAsList("检索失败，换个关键词试试吧", getQuoteReply(event));
+            return buildMessageChainAsList(getQuoteReply(event), "检索失败，换个关键词试试吧");
         }
         StringBuilder sb = new StringBuilder();
         sb.append("标题：");

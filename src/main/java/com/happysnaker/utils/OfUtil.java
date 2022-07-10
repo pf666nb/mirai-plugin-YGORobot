@@ -33,4 +33,13 @@ public class OfUtil {
         map.put(k1, v1);
         return map;
     }
+
+
+    public static<K, V> Map<K, V> ofMap(List<K> keys, List<V> vals) {
+        Map<K, V> map = new HashMap<>();
+        for (int i = 0; i < keys.size(); i++) {
+            map.put(keys.get(i), vals.get(i));
+        }
+        return map;
+    }
 }

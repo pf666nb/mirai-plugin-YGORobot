@@ -36,7 +36,9 @@ public class ConfigUtil {
             "withdrawalThreshold",
             "enableSensitiveWordDetection",
             "skipStep",
-            "periodicTask"
+            "periodicTask",
+            "colorSwitch",
+            "russianRoulette"
     );
 
 

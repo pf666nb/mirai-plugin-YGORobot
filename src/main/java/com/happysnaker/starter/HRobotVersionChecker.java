@@ -22,7 +22,7 @@ public class HRobotVersionChecker {
     /**
      * 当前版本信息
      */
-    public static final String VERSION = "HRobot v3.0";
+    public static final String VERSION = "HRobot v3.1";
     /**
      * 请求 API
      */
@@ -30,11 +30,11 @@ public class HRobotVersionChecker {
     /**
      * 当前插件文件名
      */
-    public static final String fileName = "plugin-3.0-SNAPSHOT.mirai.jar";
+    public static final String fileName = "plugin-3.1-SNAPSHOT.mirai.jar";
     /**
      * 先与或等于当前插件的最后一个稳定版本
      */
-    public static final String lastRelease = "plugin-3.0-SNAPSHOT.mirai.jar";
+    public static final String lastRelease = "plugin-3.1-SNAPSHOT.mirai.jar";
 
     public static void checkVersion() {
         try {
@@ -103,7 +103,7 @@ public class HRobotVersionChecker {
                         } else {
                             JOptionPane.showMessageDialog(null, "无法删除旧版本文件，请手动删除", "提示", JOptionPane.PLAIN_MESSAGE);
                         }
-                        JOptionPane.showMessageDialog(null, "更新成功，请重启 robot 并手动删除旧版本文件", "提示", JOptionPane.PLAIN_MESSAGE);
+                        JOptionPane.showMessageDialog(null, "更新成功，请重启 robot 使版本插件生效", "提示", JOptionPane.PLAIN_MESSAGE);
                         System.exit(200);
                         return;
                     } catch (SocketTimeoutException e) {

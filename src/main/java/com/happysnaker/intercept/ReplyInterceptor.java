@@ -37,8 +37,10 @@ public class ReplyInterceptor implements Interceptor {
             boolean v = false;
             for (Map<String, String> map : RobotConfig.replyReplace) {
                 for (Map.Entry<String, String> it : map.entrySet()) {
-                    content = content.replace(it.getKey(), it.getValue());
-                    v = true;
+                    if (content.contains(it.getKey())) {
+                        content = content.replace(it.getKey(), it.getValue());
+                        v = true;
+                    }
                 }
             }
             ans.add(v ? RobotUtil.parseMiraiCode(content) : chain);

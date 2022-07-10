@@ -20,12 +20,14 @@ import java.util.List;
  */
 @handler(priority = 1024)
 public class SystemCommandMessageEventHandler extends DefaultCommandMessageEventHandlerManager {
-    public static final String reloadConfigCommand = "重载配置";
-    public static final String saveConfigCommand = "保存配置";
-    public static final String showConfigStatusCommand = "查看配置状态";
-    public static final String showConfigLogCommand = "查看配置日志";
-    public static final String shutdown = "关机";
-    public static final String boot = "开机";
+    public static String reloadConfigCommand = "重载配置";
+    public static String saveConfigCommand = "保存配置";
+    public static String showConfigStatusCommand = "查看配置状态";
+    public static String showConfigLogCommand = "查看配置日志";
+    public static String shutdown = "关机";
+    public static String boot = "开机";
+    public static String openSe = "开启涩图";
+    public static String closeSe = "关闭涩图";
 
     public SystemCommandMessageEventHandler() {
         super.registerKeywords(saveConfigCommand);
@@ -33,6 +35,7 @@ public class SystemCommandMessageEventHandler extends DefaultCommandMessageEvent
         super.registerKeywords(showConfigLogCommand);
         super.registerKeywords(reloadConfigCommand);
         super.registerKeywords(shutdown).registerKeywords(boot);
+        super.registerKeywords(openSe).registerKeywords(closeSe);
     }
 
 
@@ -52,6 +55,10 @@ public class SystemCommandMessageEventHandler extends DefaultCommandMessageEvent
                 return doShutDown(event);
             } else if (content.equals(boot)) {
                 return doBoot(event);
+            } else if (content.equals(openSe)) {
+                return doOpenSe(event);
+            } else if (content.equals(closeSe)) {
+                return doCloseSe(event);
             }
         } catch (InsufficientPermissionsException e) {
             throw e;
@@ -59,6 +66,22 @@ public class SystemCommandMessageEventHandler extends DefaultCommandMessageEvent
             throw new CanNotParseCommandException(e);
         }
         return null;
+    }
+
+    private List<MessageChain> doOpenSe(MessageEvent event) throws InsufficientPermissionsException {
+        if (!Permission.hasSuperAdmin(getSenderId(event))) {
+            throw new InsufficientPermissionsException("您的权限不足，无法执行此操作");
+        }
+        RobotConfig.colorSwitch = true;
+        return buildMessageChainAsList("已开启颜色图片");
+    }
+
+    private List<MessageChain> doCloseSe(MessageEvent event) throws InsufficientPermissionsException {
+        if (!Permission.hasSuperAdmin(getSenderId(event))) {
+            throw new InsufficientPermissionsException("您的权限不足，无法执行此操作");
+        }
+        RobotConfig.colorSwitch = false;
+        return buildMessageChainAsList("已关闭颜色图片");
     }
 
     private List<MessageChain> doShutDown(MessageEvent event) throws InsufficientPermissionsException {

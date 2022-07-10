@@ -88,13 +88,12 @@ public class SensitiveWordInterceptor implements Interceptor {
             if (containsSensitiveWord(str, i)) {
                 count++;
                 if (count >= RobotConfig.withdrawalThreshold) {
-                    MessageSource.recall(event.getSource());
                     MessageChain chain = RobotUtil.buildMessageChain(
                             new At(event.getSender().getId()),
                             "\n警告，你的发言违反了群内相关规定，请不要发布色情及政治相关言论"
                     );
                     event.getSubject().sendMessage(chain);
-
+                    MessageSource.recall(event.getSource());
                     return true;
                 }
             }

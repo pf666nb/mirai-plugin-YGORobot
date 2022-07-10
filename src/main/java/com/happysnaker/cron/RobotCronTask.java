@@ -1,13 +1,12 @@
-package com.happysnaker.config;
+package com.happysnaker.cron;
 
 import com.happysnaker.api.PixivApi;
-import com.happysnaker.exception.CanNotSendMessageException;
+import com.happysnaker.config.RobotConfig;
 import com.happysnaker.utils.RobotUtil;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.message.data.MessageChain;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -41,6 +40,7 @@ public class RobotCronTask {
         }, 0, PERIOD_MINUTE * 1000 * 60);
     }
 
+
     /**
      * 执行定期任务，此方法必须得等到机器人初始化完成后调用
      */
@@ -62,13 +62,7 @@ public class RobotCronTask {
             for (Bot instance : instances) {
                 if (instance.getGroups().contains(gid)) {
                     Contact contact = instance.getGroups().getOrFail(gid);
-                    if (image) {
-                        message = message.plus(RobotUtil.uploadImage(
-                                contact, new URL(PixivApi.beautifulImageUrl)
-                        ));
-                        image = false;
-                    }
-                    RobotUtil.submitSendMsgTask(hour, minute, count, message, contact);
+                    RobotUtil.submitSendMsgTask(hour, minute, count, image, message, contact);
                 }
             }
         }

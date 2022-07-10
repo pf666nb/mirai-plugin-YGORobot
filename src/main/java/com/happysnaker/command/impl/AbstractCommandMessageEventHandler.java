@@ -37,17 +37,17 @@ public abstract class AbstractCommandMessageEventHandler extends GroupMessageEve
             ans = parseCommand(event);
         } catch (CanNotParseCommandException e) {
             fail(event, e);
-            return OfUtil.ofList(buildMessageChain(
-                    "命令解析出错，错误原因：" + e.getMessage(), getQuoteReply(event)));
+            return OfUtil.ofList(buildMessageChain(getQuoteReply(event),
+                    "命令解析出错，错误原因：" + e.getMessage()));
         } catch (InsufficientPermissionsException e) {
             recordFailLog(event, "权限不足：");
-            return OfUtil.ofList(buildMessageChain(
-                    "对不起，您没有足够的权限，说明：" + e.getMessage(), getQuoteReply(event)));
+            return OfUtil.ofList(buildMessageChain(getQuoteReply(event),
+                    "对不起，您没有足够的权限，说明：" + e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             fail(event, e);
-            return OfUtil.ofList(buildMessageChain(
-                    "异常错误，错误原因：" + e.getMessage(), getQuoteReply(event)));
+            return OfUtil.ofList(buildMessageChain(getQuoteReply(event),
+                    "异常错误，错误原因：" + e.getMessage()));
         }
         if (ans != null) {
             success(event);

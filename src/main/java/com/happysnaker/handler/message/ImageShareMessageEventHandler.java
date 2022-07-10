@@ -72,10 +72,11 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
                 String tem = content.startsWith(seImage) ? seImage : seImagePlus;
                 // 需要分割 tag
                 List<String> tags = getTags(content, tem);
-                 //检测到涩图需要自动撤回，因此自定义逻辑处理，处理完返回 null，不需要抽象类的逻辑
+                //检测到涩图需要自动撤回，因此自定义逻辑处理，处理完返回 null，不需要抽象类的逻辑
                 MessageChain chain = doParseSeImage(event, tags, tem.equals(seImagePlus));
-                MessageReceipt<Contact> receipt = event.getSubject().sendMessage(chain);
-                if (chain != null && chain.size() > 0 && chain.get(0) instanceof Image) {
+
+                if (chain != null && !chain.isEmpty() && chain.get(0) instanceof Image) {
+                    MessageReceipt<Contact> receipt = event.getSubject().sendMessage(chain);
                     receipt.recallIn(RobotConfig.pictureWithdrawalTime * 1000);
                 } else {
                     throw new Exception("无法获取涩图...");
@@ -159,6 +160,9 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
      * @throws FileUploadException
      */
     private MessageChain doParseSeImage(MessageEvent event, List<String> tags, boolean isPlus) throws IOException, FileUploadException {
+        if (!RobotConfig.colorSwitch) {
+            return null;
+        }
         long pid = PixivApi.getSeImagePid(tags);
         if (pid == -1) {
             return buildMessageChain("查无此图");

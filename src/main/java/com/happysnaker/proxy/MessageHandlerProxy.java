@@ -74,7 +74,6 @@ public class MessageHandlerProxy implements MessageEventHandler {
 
     @Override
     public boolean shouldHandle(MessageEvent event, Context ctx) {
-        System.out.println("event = " + event);
         for (Interceptor filter : interceptors) {
             if (filter.interceptBefore(event)) {
                 // 如果事件被指明过滤，则不回复
