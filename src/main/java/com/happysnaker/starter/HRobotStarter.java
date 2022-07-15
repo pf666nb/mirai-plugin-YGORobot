@@ -1,8 +1,11 @@
 package com.happysnaker.starter;
 
 import com.happysnaker.CustomRegistry;
+import com.happysnaker.api.PneumoniaApi;
+import com.happysnaker.api.TongZhongApi;
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.cron.RobotCronTask;
+import com.happysnaker.handler.message.PneumoniaMessageEventHandler;
 import com.happysnaker.proxy.MessageHandlerProxy;
 
 import com.happysnaker.utils.*;
@@ -93,12 +96,12 @@ public class HRobotStarter {
 
 
         File file = new File(RobotConfig.configFolder + "/" + RobotConfig.mainConfigPathName);
-        Class c = RobotConfig.class;
+        Class<RobotConfig> c = RobotConfig.class;
         Field[] fields = c.getDeclaredFields();
         // 如果配置文件存在
         if (file.exists()) {
             RobotConfig.logger.info("正在初始化机器人配置");
-            Map<String, Object> map = null;
+            Map map = null;
             try (FileInputStream in = new FileInputStream(file)) {
                 map = yaml.loadAs(in, Map.class);
             }
@@ -146,12 +149,13 @@ public class HRobotStarter {
         // 文件不存在，创建文件并填写模板
         else {
             file.createNewFile();
+            RobotConfig.logger.info("创建敏感词库文件！");
         }
     }
 
 
-    private final static void test(Object... args) throws Exception {
-
+    private static void test(Object... args) throws Exception {
+        TongZhongApi.getSongUrl("Five Hundred miles");
     }
 }
 

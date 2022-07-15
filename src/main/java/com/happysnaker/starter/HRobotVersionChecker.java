@@ -98,6 +98,8 @@ public class HRobotVersionChecker {
                             }
                         }
                         RobotConfig.logger.info("文件下载成功！");
+                        System.gc();
+                        Thread.sleep(2000);
                         if (oldFile.delete()) {
                             RobotConfig.logger.info("旧版本插件已成功从您的电脑中移除.");
                         } else {

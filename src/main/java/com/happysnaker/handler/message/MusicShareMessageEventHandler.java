@@ -23,7 +23,7 @@ import java.util.Set;
  */
 @handler(priority = 1)
 public class MusicShareMessageEventHandler extends GroupMessageEventHandler {
-    private Set<String> keywords = new HashSet<>();
+    private final Set<String> keywords = new HashSet<>();
     private final String MUSIC_KEYWORD = "音乐";
     private final String MIGU_MUSIC_KEYWORD = "咪咕";
 

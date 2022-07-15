@@ -50,7 +50,7 @@ public class PeriodCommandMessageEventHandler extends DefaultCommandMessageEvent
             if (count == 0) {
                 count = Integer.MAX_VALUE;
                 RobotConfig.periodicTask.add(
-                        OfUtil.ofMap(OfUtil.ofList("hour", "minute", "groupId", "count", "image", "content"), OfUtil.ofList(hour, minute, getGroupId(event), count, image == 1, keyVal.getValue())
+                        OfUtil.ofMap(OfUtil.ofList("hour", "minute", "groupId", "count", "image", "content"), OfUtil.ofList(hour, minute, getGroupId(event), 0, image == 1, keyVal.getValue())
                         )
                 );
             }

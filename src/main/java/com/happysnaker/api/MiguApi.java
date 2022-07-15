@@ -16,6 +16,7 @@ import java.util.Map;
  * @date 2022/2/26
  * @email happysnaker@foxmail.com
  */
+@Deprecated
 public class MiguApi {
     public static final String api = "http://pd.musicapp.migu.cn/MIGUM3.0/v1.0/content/search_all.do?&ua=Android_migu&version=5.0.1&text=SONGNAME&pageNo=1&pageSize=1&searchSwitch={%22song%22:1,%22album%22:0,%22singer%22:0,%22tagSong%22:0,%22mvSong%22:0,%22songlist%22:0,%22bestShow%22:1}";
 

@@ -24,6 +24,14 @@ public class StringUtil {
        return ans;
    }
 
+   public static String reverse(String str) {
+       StringBuilder sb = new StringBuilder();
+       for (int i = str.length() - 1; i >= 0; i--) {
+           sb.append(str.charAt(i));
+       }
+       return sb.toString();
+   }
+
     public static int getEditDistance(String word1, String word2) {
         int n1= word1.length(), n2 = word2.length();
         int[][] dp = new int[n1 + 1][n2 + 1];

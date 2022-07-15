@@ -2,10 +2,13 @@ package com.happysnaker.utils;
 
 import com.alibaba.fastjson.JSONObject;
 import com.happysnaker.config.RobotConfig;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
 
 /**
@@ -95,8 +98,8 @@ public class ConfigUtil {
      */
     public synchronized static void writeConfig() throws Exception {
         File file = new File(getConfigFilePath());
-        try (OutputStream outputStream = new FileOutputStream(file)) {
-            new Yaml().dump(getConfigMap(), new OutputStreamWriter(outputStream));
+        try (OutputStream outputStream = Files.newOutputStream(file.toPath())) {
+            new Yaml().dump(getConfigMap(), new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));
         }
     }
 

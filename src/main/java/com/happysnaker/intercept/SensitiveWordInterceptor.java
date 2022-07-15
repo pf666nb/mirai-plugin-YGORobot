@@ -1,18 +1,12 @@
 package com.happysnaker.intercept;
 
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.context.Context;
-import com.happysnaker.handler.handler;
-import com.happysnaker.handler.message.GroupMessageEventHandler;
-import com.happysnaker.utils.OfUtil;
 import com.happysnaker.utils.RobotUtil;
-import com.sun.org.apache.bcel.internal.generic.RETURN;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.At;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageSource;
-import net.mamoe.mirai.message.data.QuoteReply;
 
 import java.util.*;
 
