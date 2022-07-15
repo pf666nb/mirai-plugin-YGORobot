@@ -22,7 +22,7 @@ public class HRobotVersionChecker {
     /**
      * 当前版本信息
      */
-    public static final String VERSION = "HRobot v3.1";
+    public static final String VERSION = "HRobot v3.2";
     /**
      * 请求 API
      */
@@ -30,11 +30,11 @@ public class HRobotVersionChecker {
     /**
      * 当前插件文件名
      */
-    public static final String fileName = "plugin-3.1-SNAPSHOT.mirai.jar";
+    public static final String fileName = "plugin-3.2-SNAPSHOT.mirai.jar";
     /**
      * 先与或等于当前插件的最后一个稳定版本
      */
-    public static final String lastRelease = "plugin-3.1-SNAPSHOT.mirai.jar";
+    public static final String lastRelease = "plugin-3.2-SNAPSHOT.mirai.jar";
 
     public static void checkVersion() {
         try {

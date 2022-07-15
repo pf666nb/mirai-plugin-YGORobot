@@ -20,7 +20,7 @@ public class HRobotStartPrinter {
             "|   | '  ,/ :   ' | \\.'\\   \\  / |   | '/ : \\   \\  /   ;  :    ; \n" +
             ";   : ;--'  :   : :-'   `----'  |   :    |  `----'    |  ,   /  \n" +
             "|   ,/      |   |.'             /    \\  /              ---`-'       \n" +
-            "'---'       `---'               `-'----'                            v3.1";
+            "'---'       `---'               `-'----'                            v3.2";
 
     public static void printBanner() {
         System.out.println(banner);
