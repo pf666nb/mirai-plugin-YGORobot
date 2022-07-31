@@ -1,11 +1,9 @@
 package com.happysnaker.starter;
 
 import com.happysnaker.CustomRegistry;
-import com.happysnaker.api.PneumoniaApi;
 import com.happysnaker.api.TongZhongApi;
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.cron.RobotCronTask;
-import com.happysnaker.handler.message.PneumoniaMessageEventHandler;
 import com.happysnaker.proxy.MessageHandlerProxy;
 
 import com.happysnaker.utils.*;
@@ -19,6 +17,7 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * 主启动类
@@ -112,23 +111,24 @@ public class HRobotStarter {
                         try {
                             if (map.get(field.getName()) != null)
                                 field.set(null, map.get(field.getName()));
-                        } catch (Exception e) {
+                        } catch (Exception ignored) {
 
                         }
                     }
                 }
             }
             RobotConfig.logger.info("配置初始化完成");
+            System.out.println("RobotConfig.customKeyword = " + RobotConfig.customKeyword);
         }
-
         // 文件不存在，创建文件并填写模板
         else {
-            file.createNewFile();
+            boolean newFile = file.createNewFile();
             try (FileOutputStream fileOutputStream = new FileOutputStream(file, false)) {
                 String template = ConfigUtil.TEMPLATE;
                 fileOutputStream.write(template.getBytes(StandardCharsets.UTF_8));
                 RobotConfig.logger.info("成功创建配置文件，请您填写配置并重新启动");
             } catch (Exception e) {
+                e.printStackTrace();
                 RobotConfig.logger.info("配置文件填充错误，请手动配置");
             }
         }
@@ -155,7 +155,8 @@ public class HRobotStarter {
 
 
     private static void test(Object... args) throws Exception {
-        TongZhongApi.getSongUrl("Five Hundred miles");
+        System.out.println("Pattern = " + Pattern.matches("[\\s]*", "   "));
+//        throw new RuntimeException();
     }
 }
 

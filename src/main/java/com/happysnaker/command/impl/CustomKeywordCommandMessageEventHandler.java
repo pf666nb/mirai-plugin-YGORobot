@@ -4,11 +4,12 @@ import com.happysnaker.config.RobotConfig;
 import com.happysnaker.exception.CanNotParseCommandException;
 import com.happysnaker.exception.InsufficientPermissionsException;
 import com.happysnaker.handler.handler;
-import com.happysnaker.handler.message.CustomKeywordMessageEventHandler;
+import com.happysnaker.handler.impl.CustomKeywordMessageEventHandler;
 import com.happysnaker.permission.Permission;
 import com.happysnaker.utils.PairUtil;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -89,8 +90,9 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
         } else {
             pair = getKeyVal(content);
         }
-        RobotConfig.customKeyword.put(pair.getKey(), pair.getValue());
-        return buildMessageChainAsList("添加全局自定义关键字 " + pair.getKey().replace(CustomKeywordMessageEventHandler.REGEX_PREFIX, "") + " 及回复成功！");
+        String regexKey =  StringEscapeUtils.unescapeJava(pair.getKey());
+        RobotConfig.customKeyword.put(regexKey, pair.getValue());
+        return buildMessageChainAsList("添加全局自定义关键字 " + regexKey + " 及回复成功！");
     }
 
     /**

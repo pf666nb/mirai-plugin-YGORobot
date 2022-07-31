@@ -1,4 +1,4 @@
-package com.happysnaker.handler.message;
+package com.happysnaker.handler.impl;
 
 import com.happysnaker.api.BaiKeApi;
 import com.happysnaker.context.Context;
@@ -50,11 +50,11 @@ public class KnowledgeSearchMessageEventHandler extends GroupMessageEventHandler
         }
         StringBuilder sb = new StringBuilder();
         sb.append("标题：");
-        sb.append(map.get("title") + "\n");
+        sb.append(map.get("title")).append("\n");
         sb.append("描述：");
-        sb.append(map.get("desc") + "\n");
-        sb.append(map.get("content") + "\n");
-        if (map.get("image") != null && map.get("image") instanceof String) {
+        sb.append(map.get("desc")).append("\n");
+        sb.append(map.get("content")).append("\n");
+        if (map.get("image") != null) {
             return buildMessageChainAsList(sb.toString(), uploadImage(event, new URL((String) map.get("image"))));
         }
         return buildMessageChainAsList(sb.toString());

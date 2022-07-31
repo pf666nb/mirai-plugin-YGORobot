@@ -3,6 +3,7 @@ package com.happysnaker.utils;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +14,7 @@ import java.util.List;
  * @email happysnaker@foxmail.com
  */
 public class StringUtil {
+
 
    public static List<String> splitSpaces(String s) {
        List<String> ans = new ArrayList<>();

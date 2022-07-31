@@ -1,4 +1,4 @@
-package com.happysnaker.handler.message;
+package com.happysnaker.handler.impl;
 
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.context.Context;

@@ -1,4 +1,4 @@
-package com.happysnaker.handler.message;
+package com.happysnaker.handler.impl;
 
 
 import com.happysnaker.api.BingApi;
@@ -98,7 +98,7 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
             e.printStackTrace();
             logError(event, e);
             // next
-            ans.add(new MessageChainBuilder().append("意外地失去了与地球上的通信...\n错误原因：" + e.getMessage().toString()).build());
+            ans.add(new MessageChainBuilder().append("意外地失去了与地球上的通信...\n错误原因：").append(e.getMessage()).build());
         }
         return ans;
     }

@@ -1,6 +1,6 @@
 package com.happysnaker;
 
-import com.happysnaker.handler.other.MemberJoinRequestEventHandler;
+import com.happysnaker.handler.impl.MemberJoinRequestEventHandler;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent;
 
@@ -14,8 +14,6 @@ import net.mamoe.mirai.event.events.MemberJoinRequestEvent;
 public class CustomRegistry {
     public static void registry(GlobalEventChannel instance) {
         MemberJoinRequestEventHandler memberJoinRequestEventHandler = new MemberJoinRequestEventHandler();
-        instance.subscribeAlways(MemberJoinRequestEvent.class, (event)-> {
-            memberJoinRequestEventHandler.handleEvent(event);
-        });
+        instance.subscribeAlways(MemberJoinRequestEvent.class, memberJoinRequestEventHandler::handleEvent);
     }
 }

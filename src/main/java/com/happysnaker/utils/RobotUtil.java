@@ -305,8 +305,7 @@ public class RobotUtil {
                 null,
                 null
         )) {
-            Image image = Contact.uploadImage(contact, stream);
-            return image;
+            return Contact.uploadImage(contact, stream);
         } catch (IOException e) {
             e.printStackTrace();
             throw new FileUploadException("can not upload the image from the url: " + url + ", cause by " + e.getCause().toString());
@@ -453,7 +452,7 @@ public class RobotUtil {
                 pair.setKey(pair.getKey() - 1);
                 if (pair.getKey() <= 0) {
                     this.cancel();
-                    RobotConfig.logger.info("定时任务执行次数达到阈值，已取消");
+                    RobotConfig.logger.info("定时任务执行次数达到阈值，已取消该任务");
                 }
             }
         }, time, 1000 * 60 * 60 * 24 - 100);
