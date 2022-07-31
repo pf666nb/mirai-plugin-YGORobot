@@ -1,4 +1,4 @@
-package com.happysnaker.handler.message;
+package com.happysnaker.handler.impl;
 
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.context.Context;
@@ -6,6 +6,7 @@ import com.happysnaker.handler.handler;
 import com.happysnaker.utils.StringUtil;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -36,14 +37,14 @@ public class CustomKeywordMessageEventHandler extends GroupMessageEventHandler {
         String gid = getGroupId(event);
         // 优先群内回复，获取群内的 Map 定义
         if (keywordConfig.containsKey(gid)) {
-            String reply = (String) checkSimilarWord((Map<String, Object>) keywordConfig.get(gid), getContent(event));
+            String reply = checkSimilarWordAndGetVal((Map<String, Object>) keywordConfig.get(gid), getContent(event));
             if (reply != null) {
                 // 传递到 getReplyMessage 中执行
                 ctx.setMessage(reply);
                 return true;
             }
         }
-        String reply = (String) checkSimilarWord(keywordConfig, getContent(event));
+        String reply = checkSimilarWordAndGetVal(keywordConfig, getContent(event));
         if (reply != null) {
             ctx.setMessage(reply);
             return true;
@@ -51,7 +52,8 @@ public class CustomKeywordMessageEventHandler extends GroupMessageEventHandler {
         return false;
     }
 
-    private Object checkSimilarWord(Map<String, Object> map, String word) {
+    private String checkSimilarWordAndGetVal(Map<String, Object> map, String word) {
+        Object ret = null;
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             String key = entry.getKey();
             Object val = entry.getValue();
@@ -59,15 +61,24 @@ public class CustomKeywordMessageEventHandler extends GroupMessageEventHandler {
             if (key.startsWith(REGEX_PREFIX)) {
                 key = key.replace(REGEX_PREFIX, "");
                 if (Pattern.matches(key, word)) {
-                    return val;
+                    ret = val;
+                    break;
                 }
                 continue;
             }
             int len = key.length();
             double maximumEditDistance = (1 - RobotConfig.customKeywordSimilarity) * len;
             if (StringUtil.getEditDistance(key, word) <= maximumEditDistance) {
-                return val;
+                ret = val;
+                break;
             }
+        }
+        if (ret != null) {
+            if (ret instanceof List) {
+                List<String> list = (List<String>) ret;
+                return list.get((int) (Math.random() * list.size()));
+            }
+            return (String) ret;
         }
         return null;
     }

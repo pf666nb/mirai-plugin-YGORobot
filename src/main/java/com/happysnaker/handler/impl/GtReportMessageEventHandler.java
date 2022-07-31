@@ -1,4 +1,4 @@
-package com.happysnaker.handler.message;
+package com.happysnaker.handler.impl;
 
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.context.Context;
@@ -236,17 +236,13 @@ public class GtReportMessageEventHandler extends GroupMessageEventHandler {
     public PairUtil<Map<String, Object>, Set<String>> getParseBattleStatisticsMap(String cookie) throws Exception {
         String numberOfCuts = "count";
         String totalDamage = "totalDamage";
-        List<String> dates = (List<String>) ((Map) IOUtil.sendAndGetResponseMap(new URL(GET_MEMBER_URL), "GET", getHeaders(cookie), null).get("data")).get("date");
+        List<String> dates = Collections.unmodifiableList((List<String>) ((Map) IOUtil.sendAndGetResponseMap(new URL(GET_MEMBER_URL), "GET", getHeaders(cookie), null).get("data")).get("date"));
         Set<String> bossNames = new HashSet<>(4);
         Map<String, Object> memberData = new HashMap<>();
         for (String date : dates) {
             Map<String, Object> msg = null;
-            try {
-                msg = IOUtil.sendAndGetResponseMap(new URL(BATTLE_REPORT_URL + date), "GET", getHeaders(cookie), null);
-            } catch (IOException e) {
-                throw e;
-            }
-            if (msg == null || ((String) msg.getOrDefault("message", "")).equals("服务器内部错误")) {
+            msg = IOUtil.sendAndGetResponseMap(new URL(BATTLE_REPORT_URL + date), "GET", getHeaders(cookie), null);
+            if (msg.getOrDefault("message", "").equals("服务器内部错误")) {
                 break;
             }
 
@@ -620,8 +616,8 @@ public class GtReportMessageEventHandler extends GroupMessageEventHandler {
      * @param cookie
      * @return
      */
-    private Map getHeaders(String cookie) {
-        Map heads = new HashMap(10);
+    private Map<String, String> getHeaders(String cookie) {
+        Map<String, String> heads = new HashMap<>(10);
         heads.put("Cookie", cookie);
         return heads;
     }

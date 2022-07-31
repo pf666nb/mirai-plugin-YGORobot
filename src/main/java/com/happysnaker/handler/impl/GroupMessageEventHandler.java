@@ -1,4 +1,4 @@
-package com.happysnaker.handler.message;
+package com.happysnaker.handler.impl;
 
 import com.happysnaker.api.QingYunKeApi;
 import com.happysnaker.config.RobotConfig;

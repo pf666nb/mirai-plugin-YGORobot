@@ -30,5 +30,4 @@ public interface MessageEventHandler {
      * @return 如果需要处理，则返回 true；如果不需要处理，则返回 false
      */
     boolean shouldHandle(MessageEvent event, Context ctx);
-
 }

@@ -45,7 +45,7 @@ public class TongZhongApi {
             List<Map<String, Object>> s2 = getSongs(keyword, url4);
             List<Map<String, Object>> s3 = getSongs(keyword, url5);
             List<Map<String, Object>> songs = new ArrayList<>(getSongs(keyword, url1));
-            System.out.println("getSongs(keyword, url1).size() = " + getSongs(keyword, url1).size());
+//            System.out.println("getSongs(keyword, url1).size() = " + getSongs(keyword, url1).size());
             int n = Math.max(Math.max(s1.size(), s2.size()), s3.size());
             for (int i = 0; i < n; i++) {
                 if (i < s1.size()) {
@@ -87,8 +87,7 @@ public class TongZhongApi {
                                 songUrl
                         );
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } catch (Exception ignored) {
                 }
             }
         } catch (Exception e) {

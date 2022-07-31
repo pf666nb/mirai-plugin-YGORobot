@@ -25,6 +25,9 @@ dependencies{
     implementation("org.reflections:reflections:0.9.11")
     implementation("org.yaml:snakeyaml:1.25")
     implementation("org.jsoup:jsoup:1.11.2")
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    implementation("org.apache.commons:commons-lang3:3.12.0")
+
 //    compile group: 'org.yaml', name: 'snakeyaml', version: '1.25'
 
 }

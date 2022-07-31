@@ -6,7 +6,7 @@ import com.happysnaker.config.RobotConfig;
 import com.happysnaker.context.Context;
 import com.happysnaker.exception.CanNotParseCommandException;
 import com.happysnaker.exception.InsufficientPermissionsException;
-import com.happysnaker.handler.message.GroupMessageEventHandler;
+import com.happysnaker.handler.impl.GroupMessageEventHandler;
 import com.happysnaker.utils.OfUtil;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;

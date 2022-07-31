@@ -1,4 +1,4 @@
-package com.happysnaker.handler.other;
+package com.happysnaker.handler.impl;
 
 import com.happysnaker.config.RobotConfig;
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent;
@@ -16,7 +16,6 @@ import java.util.Map;
 public class MemberJoinRequestEventHandler {
 
     public void handleEvent(MemberJoinRequestEvent event) {
-        System.out.println("event = " + event);
         String gid = String.valueOf(event.getGroupId());
         if (RobotConfig.autoApproval.isEmpty()) {
             return;

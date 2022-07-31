@@ -1,9 +1,10 @@
-package com.happysnaker.handler.message;
+package com.happysnaker.handler.impl;
 
 import com.happysnaker.api.MiguApi;
 import com.happysnaker.api.TongZhongApi;
 import com.happysnaker.context.Context;
 import com.happysnaker.handler.handler;
+import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.*;
 
@@ -31,6 +32,8 @@ public class MusicShareMessageEventHandler extends GroupMessageEventHandler {
         keywords.add(MUSIC_KEYWORD);
         keywords.add(MIGU_MUSIC_KEYWORD);
     }
+
+
 
     @Override
     public List<MessageChain> handleMessageEvent(MessageEvent event, Context ctx) {
@@ -67,7 +70,7 @@ public class MusicShareMessageEventHandler extends GroupMessageEventHandler {
             }
         } catch (Exception e) {
             logError(event, e);
-            ans.add(new MessageChainBuilder().append("我炸了").build());
+            ans.add(new MessageChainBuilder().append("啊，我炸了").build());
         }
         return ans;
     }

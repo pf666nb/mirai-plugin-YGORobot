@@ -4,7 +4,7 @@
 
 - 获取坎公 cookie 教程请往下翻。
 - 配置文件为 JSON 格式，配置后，可以前往[JSON在线格式化校验工具 (ohjson.cn)](http://ohjson.cn/)验证格式是否正确。
-- 模板为最新版插件 v2.0-beta，历史版本请前往 [历史版本配置](./HISTORY_VERSION.md) 查看，说明都是一致的。
+- 模板为最新版插件 v2.0-beta，历史版本请前往 [历史版本配置](../HISTORY_VERSION.md) 查看，说明都是一致的。
 
 ## 模板
 
