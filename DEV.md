@@ -154,8 +154,8 @@ public interface Interceptor {
 HRobot 没有使用传统的命令行方式，这太不方便了，HRobot 采用群聊对话的方式检测命令并执行，管理员可以专门创建一个群用于测试和执行命令，一个命令需要以特定前缀开头，由于命令比较危险，每个命令都需要被记录，因此 HRobot 中，每个命令都会被暂时的记录下来，超级管理员可以看到谁执行了什么命令，除非管理员将其刷新，当命令执行失败时，HRobot 会自动记录下错误日志。
 
 开发者无需关注复杂的逻辑，简单来看命令处理器也是一种消息处理器，想要实现一个命令处理器仅需三步：
-1. 继承 `DefaultCommandMessageEventHandlerManager` 类，实现 `parseCommand` 方法
-2. 在构造器中调用父类的 `registerKeywords` 方法注册关键字
+1. 继承 `DefaultCommandMessageEventHandlerManager` 类，构造器中调用父类的 `registerKeywords` 方法注册关键字
+2. 实现父类的 `parseCommand` 方法
 3. 使用 @handler 标注类，通常我们约定命令的优先级很高，优先级设置为一个比较大的数
 
 例如，我们实现一个开启、关闭机器人操作，关键词为关闭机器人、开启机器人，需要超级管理员才能执行：
@@ -192,5 +192,16 @@ public class CaseCommandMessageEventHandler extends DefaultCommandMessageEventHa
 
 ![image](https://user-images.githubusercontent.com/73147033/184531974-388bd327-5a15-472d-af63-f66ebe369189.png)
 
-### 贡献
+### 权限
+HRobot 会自动读取配置文件，可以调用 com.happysnaker.permission 包下的 Permission 类进行权限判断。
+
+### 配置
+HRobot 的配置集中在 `com.happysnaker.config` 包下的 `RobotConfig` 类中，所有配置项以静态变量的形式给出，`RobotConfig` 类中所有配置在启动时都会动态替换成 yaml 配置文件中的相关项。
+
+如果您需要新增一项配置，您需要：
+1. 在 `RobotConfig` 类中添加相关变量
+2. 将您在  `RobotConfig` 类中添加的变量名复制到 `com.happysnaker.utils` 包下的 ConfigUtil 类中的 configNames 集合中，注意 configName 一定要与变量名一致
+3. 在 `config/com.happysnaker.HRobot/config.yaml` 文件中编写同名变量（开发时在 `debug-sandbox` 目录下）
+
+## 贡献
 最后，开发完之后别忘了提出 PullRequest 共同建设项目，非常感谢您的参与！
