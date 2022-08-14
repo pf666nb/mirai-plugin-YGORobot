@@ -103,9 +103,11 @@ public class CaseMessageEventHandler extends GroupMessageEventHandler {
 }
 ```
 至此，一个消息处理器就完成了，可以登录机器人进行验证，效果图如下：
+
 ![c911c55d0a604dd0442f227c5b8b651](https://user-images.githubusercontent.com/73147033/184530084-27948d1a-e440-4c97-a05f-b2c36f0ad202.jpg)
 
 这个 case 类继承了 `GroupMessageEventHandler` 类，可以看下整体的架构：
+
 ![image](https://user-images.githubusercontent.com/73147033/184530226-135130e1-40d6-4e28-acc5-3f97df864566.png)
 
 父类集成了一些通用的功能，你可以阅读代码了解，RobotUtil 封装了许多有用的 API 供开发者调用，例如上述代码 getPlantContent、uploadImage、buildMessageChain、buildMessageChainAsList 均是 RobotUtil 中封装的 API，更多信息可以阅读代码，所有方法都有注释。
@@ -187,6 +189,7 @@ public class CaseCommandMessageEventHandler extends DefaultCommandMessageEventHa
 ```
 
 通过类图可以帮助你更好的理解相关概念，命令处理器不过也只是个消息处理器罢了：
+
 ![image](https://user-images.githubusercontent.com/73147033/184531974-388bd327-5a15-472d-af63-f66ebe369189.png)
 
 ### 贡献
