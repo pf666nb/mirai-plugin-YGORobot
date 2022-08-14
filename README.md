@@ -8,6 +8,7 @@ mirai 群聊机器人插件，支持加群审批、敏感词检测撤回，支�
 
 ![image-20220703143852884](https://happysnaker-1306579962.cos.ap-nanjing.myqcloud.com/img/typora/image-20220703143852884.png)
 
+在此项目上二次开发或共同建设：[开发手册](https://github.com/happysnaker/mirai-plugin-HRobot/blob/master/DEV.md)
 ## 快速使用
 
 机器人运行必须要求 Java 运行时环境版本大于等于 11
