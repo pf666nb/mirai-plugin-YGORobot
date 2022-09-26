@@ -22,7 +22,7 @@ public class HRobotVersionChecker {
     /**
      * 当前版本信息
      */
-    public static final String VERSION = "HRobot v3.2.1";
+    public static final String VERSION = String.format("HRobot v%s", RobotConfig.CURRENT_VERSION);
     /**
      * 请求 API
      */
@@ -30,7 +30,7 @@ public class HRobotVersionChecker {
     /**
      * 当前插件文件名
      */
-    public static final String fileName = "plugin-3.2.1-SNAPSHOT.mirai.jar";
+    public static final String fileName = String.format("plugin-%s-SNAPSHOT.mirai.jar", RobotConfig.CURRENT_VERSION);
     /**
      * 先与或等于当前插件的最后一个稳定版本(非 pre-release 版本)
      */
@@ -40,7 +40,8 @@ public class HRobotVersionChecker {
         try {
             Map<String, Object> map = IOUtil.sendAndGetResponseMap(new URL(api), "GET", null, null);
             String latestVersion = (String) map.get("name");
-            System.out.println("latestVersion = " + latestVersion);
+
+            RobotConfig.logger.info("最新版本 " + latestVersion);
             if (latestVersion.equals(VERSION)) {
                 RobotConfig.logger.info("当前 HRobot 插件已为最新版");
                 return;
@@ -49,16 +50,15 @@ public class HRobotVersionChecker {
             String assetsUrl = (String) map.get("assets_url");
 
             String res = IOUtil.sendAndGetResponseString(new URL(assetsUrl), "GET", null, null);
+            
             List<Map<String, Object>> lists = JSONObject.parseObject(res, List.class);
             String downLoadUrl = (String) lists.get(0).get("browser_download_url");
             String downloadName = (String) lists.get(0).get("name");
 
-            if (lastRelease.equals(downloadName)) {
-                RobotConfig.logger.info("当前 HRobot 插件已为最新版");
-                return;
-            }
-
             RobotConfig.logger.info("检测到新版本: " + latestVersion + ", 请前往 " + map.get("html_url") + " 查看详情");
+            RobotConfig.logger.info("如您使用的已经是最新版插件请忽略此消息");
+
+            // 只有 windos 才自动更新，linux 不考虑
             if (isWindows()) {
                 int n = JOptionPane.showConfirmDialog(null, "新版本 " + latestVersion + " 可用于你的系统，是否自动更新？", "更新提示", JOptionPane.YES_NO_OPTION);
                 // 自动更新
@@ -75,13 +75,11 @@ public class HRobotVersionChecker {
                             }
                         }
                         if (oldFile == null) {
-                            JOptionPane.showMessageDialog(null, "更新失败，未检测到当前版本插件，请手动尝试", "提示", JOptionPane.PLAIN_MESSAGE);
+                            JOptionPane.showMessageDialog(null, "更新失败，未检测到当前版本插件文件，请手动尝试", "提示", JOptionPane.PLAIN_MESSAGE);
                             return;
                         }
                         RobotConfig.logger.info("检索成功，开始下载新版本文件，下载链接：" + downLoadUrl);
-                        InputStream in = null;
-                        try {
-                            in = IOUtil.sendAndGetResponseStream(new URL(downLoadUrl), "GET", null, null, 1000 * 15);
+                        try (InputStream in = IOUtil.sendAndGetResponseStream(new URL(downLoadUrl), "GET", null, null, 1000 * 15)) {
                             RobotConfig.logger.info("下载新版本完成，正在创建文件夹：" + plugins + "/" + downloadName);
                             File newFile = new File(plugins + "/" + downloadName);
                             boolean b = newFile.createNewFile();
@@ -92,12 +90,8 @@ public class HRobotVersionChecker {
                             }
                             IOUtil.writeToFile(newFile, in);
                             RobotConfig.logger.info("写入成功，请重启机器人");
-                        } finally {
-                            if (in != null) {
-                                in.close();
-                            }
                         }
-                        RobotConfig.logger.info("文件下载成功！");
+                        RobotConfig.logger.info("插件下载成功！");
                         System.gc();
                         Thread.sleep(2000);
                         if (oldFile.delete()) {
@@ -123,7 +117,7 @@ public class HRobotVersionChecker {
     }
 
     public static boolean isWindows() {
-        return System.getProperties().getProperty("os.name").toUpperCase().indexOf("WINDOWS") != -1;
+        return System.getProperties().getProperty("os.name").toUpperCase().contains("WINDOWS");
     }
 
 

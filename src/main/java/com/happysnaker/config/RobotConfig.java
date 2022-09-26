@@ -15,6 +15,11 @@ import java.util.*;
 public class RobotConfig {
     // ------------ 系统配置 ----------------
     /**
+     * 插件版本，每次更新请更新此配置
+     */
+    public static final String CURRENT_VERSION = "3.2.1";
+    
+    /**
      * 主配置文件名
      */
     public static String mainConfigPathName = "config.yaml";

@@ -118,7 +118,6 @@ public class HRobotStarter {
                 }
             }
             RobotConfig.logger.info("配置初始化完成");
-            System.out.println("RobotConfig.customKeyword = " + RobotConfig.customKeyword);
         }
         // 文件不存在，创建文件并填写模板
         else {

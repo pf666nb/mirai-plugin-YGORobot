@@ -33,9 +33,6 @@ import java.util.stream.Collectors;
  * @email happysnaker@foxmail.com
  */
 public class RobotUtil {
-    public final String at = "[mirai:at:qq]";
-
-
     /**
      * 用于消息处理失败时记录日志
      *
@@ -48,7 +45,7 @@ public class RobotUtil {
             public void run() {
                 String filePath = ConfigUtil.getDataFilePath("error.log");
                 try {
-                    IOUtil.writeToFile(new File(filePath), getLog(event) + "\n错误日志：：" + errorMsg + "\n");
+                    IOUtil.writeToFile(new File(filePath), getLog(event) + "\n错误日志：" + errorMsg + "\n\n");
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -197,22 +194,6 @@ public class RobotUtil {
 
 
     /**
-     * 如果匹配则删除，注意该函数会返回 null
-     *
-     * @param content 源消息(MIRAI编码)
-     * @param regex   at 匹配的消息
-     * @return 如果被 at 将返回去除 atMessage(所有的) 信息后的消息，否则返回 null
-     */
-    public static String handlerContentIfMatches(String content, String regex) {
-        // 如果 split = 1，说明没有分割，即不包含该 regex
-        if (content != null && content.split(regex).length != 1) {
-            return content.replaceAll(regex, "").trim();
-        }
-        return null;
-    }
-
-
-    /**
      * 建造 MessageChain
      *
      * @param m 多个文本消息
@@ -253,7 +234,6 @@ public class RobotUtil {
     public static List<MessageChain> buildMessageChainAsList(Object... m) {
         return OfUtil.ofList(buildMessageChain(m));
     }
-
 
     /**
      * 建造 MessageChainList，参数是多个 MessageChain
@@ -442,9 +422,7 @@ public class RobotUtil {
                         msg = message.plus(RobotUtil.uploadImage(
                                 contact, new URL(PixivApi.beautifulImageUrl)
                         ));
-                    } catch (FileUploadException e) {
-                        e.printStackTrace();
-                    } catch (MalformedURLException e) {
+                    } catch (FileUploadException | MalformedURLException e) {
                         e.printStackTrace();
                     }
                 }
@@ -542,6 +520,7 @@ public class RobotUtil {
                 && source1.getTime() == source2.getTime();
     }
 
+    @Deprecated
     public static List<MessageChain> doHelp(MessageEvent event) throws MalformedURLException, FileUploadException {
         event.getSubject().sendMessage("正在上传帮助图片，此操作可能较慢，请稍等。如此操作出错，请前往 https://github.com/happysnaker/mirai-plugin-HRobot 查阅相关信息");
         // 版本变更

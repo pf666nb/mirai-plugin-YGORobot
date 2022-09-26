@@ -19,7 +19,7 @@ mirai 群聊机器人插件，支持加群审批、敏感词检测撤回，支�
 
 如果你是新手，不会安装 java 环境，你可以使用安装器一键安装 java 环境 和 mcl，请移步：[mcl 一键安装](https://github.com/iTXTech/mcl-installer)
 
-经过测试，HRobot 适配 mcl-1.2.2、mcl-1.2.1 版本，更早版本暂未测试。
+经过测试，HRobot 适配 mcl-1.2.2、mcl-1.2.1、mcl-2.1.1 版本，其他版本暂未测试，但应该都是支持的。
 
 前往[Releases · happysnaker/mirai-plugin-HRobot (github.com)](https://github.com/happysnaker/mirai-plugin-HRobot/releases)选择对应版本下载插件 jar 包 plugin-SNAPSHOT.mirai.jar，将该 jar 包移动至 mcl 文件下的 plugins 文件夹下，然后无须配置任何文件，点击 mcl.cmd 即可启动机器人，注意如果你是第一次下载，你必须先启动一次 mcl.cmd 才会有 plugins 相关文件夹生成。
 

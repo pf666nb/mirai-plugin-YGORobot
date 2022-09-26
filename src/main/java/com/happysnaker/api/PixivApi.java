@@ -20,7 +20,7 @@ public class PixivApi {
     /**
      * 能用 HTTP 的就用 HTTP，HTTPS 性能比较低，实验比较大
      */
-    public static final String pidApi = "http://api.lolicon.app/setu/v2";
+    public static final String pidApi = "https://api.lolicon.app/setu/v2";
     public static final String beautifulImageUrl = "https://api.sunweihu.com/api/sjbz/api.php";
     public static final String chickenSoupUrl = "https://api.shadiao.app/chp/";
     public static final String duChickenSoupUrl = "https://api.shadiao.app/du";
@@ -37,15 +37,15 @@ public class PixivApi {
      * @throws IOException
      */
     public static long getImagePid(List<String> tags) throws IOException {
-        String url = pidApi;
+        StringBuilder url = new StringBuilder(pidApi);
         if (tags != null) {
-            url += "?";
+            url.append("?");
             for (String tag : tags) {
-                url += "tag=" + URLEncoder.encode(tag, "UTF-8") + "&";
+                url.append("tag=").append(URLEncoder.encode(tag, "UTF-8")).append("&");
             }
-            url = url.substring(0, url.length() - 1);
+            url = new StringBuilder(url.substring(0, url.length() - 1));
         }
-        List<Map<String, Object>> map = (List<Map<String, Object>>) IOUtil.sendAndGetResponseMap(new URL(url), "GET", null, null).get("data");
+        List<Map<String, Object>> map = (List<Map<String, Object>>) IOUtil.sendAndGetResponseMap(new URL(url.toString()), "GET", null, null).get("data");
         if (map == null || map.isEmpty()) {
             return -1;
         }
@@ -64,15 +64,15 @@ public class PixivApi {
      * @throws IOException
      */
     public static long getSeImagePid(List<String> tags) throws IOException {
-        String url = pidApi + "?r18=1";
+        StringBuilder url = new StringBuilder(pidApi + "?r18=1");
         if (tags != null) {
-            url += "&";
+            url.append("&");
             for (String tag : tags) {
-                url += "tag=" + URLEncoder.encode(tag, "UTF-8") + "&";
+                url.append("tag=").append(URLEncoder.encode(tag, "UTF-8")).append("&");
             }
-            url = url.substring(0, url.length() - 1);
+            url = new StringBuilder(url.substring(0, url.length() - 1));
         }
-        List<Map<String, Object>> map = (List<Map<String, Object>>) IOUtil.sendAndGetResponseMap(new URL(url), "GET", null, null).get("data");
+        List<Map<String, Object>> map = (List<Map<String, Object>>) IOUtil.sendAndGetResponseMap(new URL(url.toString()), "GET", null, null).get("data");
         if (map == null || map.isEmpty()) {
             return -1;
         }

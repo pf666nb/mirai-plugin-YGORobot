@@ -76,6 +76,7 @@ public class CustomKeywordMessageEventHandler extends GroupMessageEventHandler {
         if (ret != null) {
             if (ret instanceof List) {
                 List<String> list = (List<String>) ret;
+                // 随机回复
                 return list.get((int) (Math.random() * list.size()));
             }
             return (String) ret;

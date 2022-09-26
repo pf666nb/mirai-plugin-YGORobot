@@ -26,6 +26,7 @@ import java.util.Set;
 public class MusicShareMessageEventHandler extends GroupMessageEventHandler {
     private final Set<String> keywords = new HashSet<>();
     private final String MUSIC_KEYWORD = "音乐";
+    @Deprecated
     private final String MIGU_MUSIC_KEYWORD = "咪咕";
 
     public MusicShareMessageEventHandler() {

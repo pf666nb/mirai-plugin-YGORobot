@@ -12,6 +12,7 @@ import net.mamoe.mirai.message.data.MessageChain;
 import java.util.*;
 
 /**
+ * 俄罗斯轮盘赌
  * @author Happysnaker
  * @description
  * @date 2022/7/9
@@ -72,6 +73,8 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
             String content = getPlantContent(event);
             String groupId = getGroupId(event);
             String qq = getSenderId(event);
+
+            // 结束游戏
             if (content.startsWith(stop)) {
                 if (Permission.hasGroupAdmin(qq) || getSenderPermission(event) != 0) {
                     map.remove(groupId);
@@ -79,13 +82,18 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
                 }
                 return buildMessageChainAsList(getQuoteReply(event), "您没有权限停止游戏，必须要本群管理员或机器人的群管理员权限才能执行此操作");
             }
+
+            // 装弹命令
             if (content.startsWith(reload)) {
                 content = content.replace(reload, "");
+                // 游戏仍在进行
                 if (map.containsKey(groupId)) {
                     return buildMessageChainAsList(getQuoteReply(event), "游戏还未结束，请勿重复操作");
                 }
+
                 List<String> splitSpaces = StringUtil.splitSpaces(content);
                 Helper helper = new Helper();
+                // 加了参数，自定义装弹数
                 if (splitSpaces.size() != 0) {
                     if (!Permission.hasGroupAdmin(qq) && getSenderPermission(event) == 0) {
                         return buildMessageChainAsList("您没有权限自定义弹夹数", getQuoteReply(event));
@@ -113,7 +121,9 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
             if (!content.equals(shot)) {
                 return null;
             }
-            Helper helper = null;
+
+            // 开枪命令
+            Helper helper;
             if ((helper = map.get(groupId)) == null) {
                 return buildMessageChainAsList("群暂未开启游戏，发送 装弹 来填充弹夹!");
             }
@@ -123,21 +133,20 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
             boolean shot;
             int v;
             synchronized (helper) {
+                // 进行开枪判定
                 shot = helper.shot();
+                // 奖惩额度
                 v = helper.getRewardOrPunishment(shot, qq);
-                if (shot) {
-                    helper.realNum--;
-                    helper.updateIncome(qq, -v);
-                } else {
-                    helper.updateIncome(qq, v);
-                }
                 helper.totalNum--;
                 StringBuilder sb = new StringBuilder();
                 if (shot) {
+                    helper.realNum--;
+                    helper.updateIncome(qq, -v);
                     sb.append("boom！一朵绚烂的血花盛开，你送走了你自己！\n");
                     sb.append("『扣除积分" + v + "』\n");
                     helper.shotMan.add(qq);
                 } else {
+                    helper.updateIncome(qq, v);
                     sb.append("有惊无险，这是一个空枪！\n");
                     sb.append("『增加积分" + v + "』\n");
                 }
@@ -150,8 +159,8 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
                         sb.append("弹夹已无空弹，剩下的人都将被子弹穿膛，游戏结束\n");
                     }
                     map.remove(groupId);
-                    int max = helper.income.values().stream().max((a, b) -> a - b).get();
-                    int min = helper.income.values().stream().min((a, b) -> a - b).get();
+                    int max = helper.income.values().stream().max(Comparator.comparingInt(a -> a)).get();
+                    int min = helper.income.values().stream().min(Comparator.comparingInt(a -> a)).get();
                     for (Map.Entry<String, Integer> it : helper.income.entrySet()) {
                         if (it.getValue() == max) {
                             sb.append("本次游戏最大获益人：" + it.getKey() + "，总计" + max + " 积分\n");
@@ -169,7 +178,8 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
                 return buildMessageChainAsList(buildMessageChain(getQuoteReply(event), sb.toString()));
             }
         } catch (Exception e) {
-            return buildMessageChainAsList("发生了意料之内的错误：" + e.getMessage());
+            logError(event, e);
+            return buildMessageChainAsList("发生了意料之外、情理之中的错误：" + e.getMessage());
         }
     }
 

@@ -40,13 +40,12 @@ public class TongZhongApi {
 
     public static MusicShare getSongUrl(String keyword) {
         try {
-//            MusicKind neteaseCloudMusic = MusicKind.NeteaseCloudMusic;
             List<Map<String, Object>> s1 = getSongs(keyword, url3);
             List<Map<String, Object>> s2 = getSongs(keyword, url4);
             List<Map<String, Object>> s3 = getSongs(keyword, url5);
             List<Map<String, Object>> songs = new ArrayList<>(getSongs(keyword, url1));
-//            System.out.println("getSongs(keyword, url1).size() = " + getSongs(keyword, url1).size());
             int n = Math.max(Math.max(s1.size(), s2.size()), s3.size());
+            // 从多个 URL 里搜索聚合
             for (int i = 0; i < n; i++) {
                 if (i < s1.size()) {
                     songs.add(s1.get(i));
@@ -59,6 +58,7 @@ public class TongZhongApi {
                 }
             }
 
+            // 随机排序一下，换不同的版本听听
             if (Math.random() <= 0.2) {
                 songs.sort((a, b) -> {
                     if (a == null && b == null) {
@@ -105,15 +105,13 @@ public class TongZhongApi {
         }
 
         List<Map<String, Object>> songs = null;
-        if (res != null) {
-            if (!url.equals(url1)) {
-                res = (Map<String, Object>) res.get("data");
-            }
-            if (res != null) {
-                songs = (List<Map<String, Object>>) res.getOrDefault("songs", null);
-            }
+        if (!url.equals(url1)) {
+            res = (Map<String, Object>) res.get("data");
         }
-//        System.out.println("songs = " + songs);
+        if (res != null) {
+            songs = (List<Map<String, Object>>) res.getOrDefault("songs", null);
+        }
+        //        System.out.println("songs = " + songs);
         return songs == null ? new ArrayList<>() : songs;
     }
 }

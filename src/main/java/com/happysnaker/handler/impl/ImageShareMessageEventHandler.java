@@ -5,14 +5,17 @@ import com.happysnaker.api.BingApi;
 import com.happysnaker.api.PixivApi;
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.context.Context;
+import com.happysnaker.exception.CanNotSendMessageException;
 import com.happysnaker.exception.FileUploadException;
 import com.happysnaker.handler.handler;
 import com.happysnaker.utils.IOUtil;
+import com.sun.imageio.plugins.common.ImageUtil;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.MessageReceipt;
 import net.mamoe.mirai.message.data.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -73,11 +76,11 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
                 // 需要分割 tag
                 List<String> tags = getTags(content, tem);
                 //检测到涩图需要自动撤回，因此自定义逻辑处理，处理完返回 null，不需要抽象类的逻辑
-                MessageChain chain = doParseSeImage(event, tags, tem.equals(seImagePlus));
+                MessageChain chain = doParseSeImage(event, tags, tem.equals(seImagePlus), true);
 
                 if (chain != null && !chain.isEmpty() && chain.get(0) instanceof Image) {
                     MessageReceipt<Contact> receipt = event.getSubject().sendMessage(chain);
-                    receipt.recallIn(RobotConfig.pictureWithdrawalTime * 1000);
+                    receipt.recallIn(RobotConfig.pictureWithdrawalTime * 1000L);
                 } else {
                     throw new Exception("无法获取涩图...");
                 }
@@ -97,7 +100,6 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
         } catch (Exception e) {
             e.printStackTrace();
             logError(event, e);
-            // next
             ans.add(new MessageChainBuilder().append("意外地失去了与地球上的通信...\n错误原因：").append(e.getMessage()).build());
         }
         return ans;
@@ -159,7 +161,7 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
      * @throws IOException
      * @throws FileUploadException
      */
-    private MessageChain doParseSeImage(MessageEvent event, List<String> tags, boolean isPlus) throws IOException, FileUploadException {
+    private MessageChain doParseSeImage(MessageEvent event, List<String> tags, boolean isPlus, boolean sendUrl) throws IOException, FileUploadException, CanNotSendMessageException {
         if (!RobotConfig.colorSwitch) {
             return null;
         }
@@ -170,10 +172,13 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
         // 如果不是高清涩图加上 &web=true，表示请求一张更小的图片
         String api = isPlus ? pixivSearchApi : pixivSearchApi + "&web=true";
         String imgUrl = api.replace("IMGID", String.valueOf(pid));
-        info("imgurl = " + imgUrl);
+        info("color img url = " + imgUrl);
+        if (sendUrl) {
+            sendMsg(buildMessageChain("Color Image Url: ", imgUrl), event);
+        }
         return new MessageChainBuilder()
-                .append(uploadImage(event, new URL(imgUrl)
-                )).build();
+                .append(uploadImage(event, new URL(imgUrl)))
+                .build();
     }
 
     /**
@@ -194,7 +199,7 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
             return buildMessageChain("查无此图");
         }
         String imgUrl = pixivSearchApi.replace("IMGID", String.valueOf(pid));
-        info("imgurl = " + imgUrl);
+        info("color img url = " + imgUrl);
         return new MessageChainBuilder()
                 .append(uploadImage(event, new URL(imgUrl))).build();
     }

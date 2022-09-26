@@ -23,6 +23,7 @@ import java.util.*;
  * @email happysnaker@foxmail.com
  */
 @handler(priority = 1)
+@Deprecated // 代码待重构
 public class GtReportMessageEventHandler extends GroupMessageEventHandler {
     public static final String BATTLE_REPORT = "会战报表";
     public static final String FRONTLINE_REPORTING = "前线报道";
