@@ -314,7 +314,13 @@ public class RobotUtil {
     public static QuoteReply getQuoteReply(MessageEvent event) {
         return new QuoteReply(event.getMessage());
     }
-    
+
+    /**
+     * 简单回复一条字符串消息
+     * @param event
+     * @param msg
+     * @return
+     */
     public static MessageChain quoteReply(MessageEvent event, String msg) {
         return buildMessageChain(getQuoteReply(event), msg);
     }
@@ -386,6 +392,22 @@ public class RobotUtil {
             contact.sendMessage(msg).recallIn(autoRecall);
         } catch (Exception e) {
             throw new CanNotSendMessageException(e.getMessage());
+        }
+    }
+
+    /**
+     * 发送一条将自动撤回的消息，子类可以提前发送消息，而不必等到由 getReplyMessage 方法被调用，请注意，即使子类提前发送消息，getReplyMessage 仍然会被调用，不过子类可以在 getReplyMessage 方法内返回 null 值以表示不发送消息
+     *
+     * @param msg        消息
+     * @param e    消息事件
+     * @param autoRecall 自动撤回等待时间(毫秒)
+     * @return
+     */
+    public static void sendMsg(MessageChain msg, MessageEvent e, long autoRecall) throws CanNotSendMessageException {
+        try {
+            e.getSubject().sendMessage(msg).recallIn(autoRecall);
+        } catch (Exception ee) {
+            throw new CanNotSendMessageException(ee.getMessage());
         }
     }
 

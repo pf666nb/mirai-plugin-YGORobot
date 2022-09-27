@@ -7,7 +7,9 @@ import com.happysnaker.handler.handler;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.*;
+import net.mamoe.mirai.utils.ExternalResource;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -61,6 +63,13 @@ public class MusicShareMessageEventHandler extends GroupMessageEventHandler {
     protected List<MessageChain> music(MessageEvent event) {
         List<MessageChain> ans = new ArrayList<>();
         String content = getPlantContent(event);
+        // ffmpeg -i 稻香.mp3 -f wav test.wav
+        // ffmpeg -i test.wav -ar 8000 -ab 12.2k -ac 1 test.amr
+        Audio audio = getGroupMessageEvent(event).getGroup().uploadAudio(ExternalResource.create(new File("test.amr")));
+        ans.add(buildMessageChain(audio));
+        if (event != null) {
+            return ans;
+        }
         String name = content.substring(MUSIC_KEYWORD.length()).trim();
         try {
             MusicShare music = TongZhongApi.getSongUrl(name);
@@ -75,6 +84,8 @@ public class MusicShareMessageEventHandler extends GroupMessageEventHandler {
         }
         return ans;
     }
+
+//    protected
 
     @Override
     public boolean shouldHandle(MessageEvent event, Context ctx) {

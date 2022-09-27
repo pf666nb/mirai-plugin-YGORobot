@@ -28,6 +28,7 @@ public class SystemCommandMessageEventHandler extends DefaultCommandMessageEvent
     public static String boot = "开机";
     public static String openSe = "开启涩图";
     public static String closeSe = "关闭涩图";
+    public static String updateSeStrategy = "设置涩图发送模式";
 
     public SystemCommandMessageEventHandler() {
         super.registerKeywords(saveConfigCommand);
@@ -35,7 +36,7 @@ public class SystemCommandMessageEventHandler extends DefaultCommandMessageEvent
         super.registerKeywords(showConfigLogCommand);
         super.registerKeywords(reloadConfigCommand);
         super.registerKeywords(shutdown).registerKeywords(boot);
-        super.registerKeywords(openSe).registerKeywords(closeSe);
+        super.registerKeywords(openSe).registerKeywords(closeSe).registerKeywords(updateSeStrategy);
     }
 
 
@@ -59,6 +60,8 @@ public class SystemCommandMessageEventHandler extends DefaultCommandMessageEvent
                 return doOpenSe(event);
             } else if (content.equals(closeSe)) {
                 return doCloseSe(event);
+            } else if (content.startsWith(updateSeStrategy)) {
+                return doUpdateSeStrategy(event);
             }
         } catch (InsufficientPermissionsException e) {
             throw e;
@@ -66,6 +69,38 @@ public class SystemCommandMessageEventHandler extends DefaultCommandMessageEvent
             throw new CanNotParseCommandException(e);
         }
         return null;
+    }
+
+
+
+
+    private List<MessageChain> doUpdateSeStrategy(MessageEvent event) throws InsufficientPermissionsException {
+        if (!Permission.hasSuperAdmin(getSenderId(event))) {
+            throw new InsufficientPermissionsException("您的权限不足，无法执行此操作");
+        }
+        int mode = -1;
+        try {
+            mode = Integer.parseInt(getPlantContent(event).replace(updateSeStrategy, ""));
+        } catch (Exception e) {
+            return buildMessageChainAsList("无法识别的模式，仅支持 0、1、2、3 模式");
+        }
+        String message = "无法识别的模式，仅支持 0、1、2、3 模式";
+        switch (mode) {
+            case 0:
+                message = "已设置模式：不发送任何消息";
+                break;
+            case 1:
+                message = "已设置模式：仅发送图片链接";
+                break;
+            case 2:
+                message = "已设置模式：仅发送图片";
+                break;
+            case 3:
+                message = "已设置模式：即发送图片，且发送图片链接";
+                break;
+        }
+        RobotConfig.colorStrategy = mode >= 0 && mode <= 3 ? mode : RobotConfig.colorStrategy;
+        return buildMessageChainAsList(getQuoteReply(event), message);
     }
 
     private List<MessageChain> doOpenSe(MessageEvent event) throws InsufficientPermissionsException {

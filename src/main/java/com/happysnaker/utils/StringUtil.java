@@ -15,7 +15,9 @@ import java.util.List;
  */
 public class StringUtil {
 
-
+    public static boolean isNullOrEmpty(String s) {
+        return s == null || s.isEmpty();
+    }
    public static List<String> splitSpaces(String s) {
        List<String> ans = new ArrayList<>();
        for (String s1 : s.split("\\s+")) {

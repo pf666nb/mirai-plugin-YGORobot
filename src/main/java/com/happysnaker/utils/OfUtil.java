@@ -11,19 +11,17 @@ import java.util.*;
  */
 public class OfUtil {
 
+    @SafeVarargs
     public static<T> List<T> ofList(T... vs) {
         List<T> list = new ArrayList<>();
-        for (T v : vs) {
-            list.add(v);
-        }
+        Collections.addAll(list, vs);
         return list;
     }
 
+    @SafeVarargs
     public static<T> Set<T> ofSet(T... vs) {
         Set<T> set = new HashSet<>();
-        for (T v : vs) {
-            set.add(v);
-        }
+        Collections.addAll(set, vs);
         return set;
     }
 

@@ -164,6 +164,17 @@ public class RobotConfig {
     public static boolean colorSwitch = true;
 
     /**
+     * 颜色图片发送策略 <br/>
+     * <ul>
+     *     <li>数值 0 表示不发送任何消息</li>
+     *     <li>数值 1 表示仅发送图片链接，不发送图片</li>
+     *     <li>数值 2 表示仅发送图片，不发送图片链接</li>
+     *     <li>数值 3 表示既发送图片，又发送图片链接</li>
+     * </ul>
+     */
+    public static int colorStrategy = 3;
+
+    /**
      * 俄罗斯轮盘赌，key 分别是 totalNum, realNum, base，含义可参考配置文件
      */
     public static Map<String, Object> russianRoulette = new HashMap<>();

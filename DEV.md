@@ -11,7 +11,7 @@
 搭建步骤：
 1. fork 本项目，随后在 IDEA 中使用 GET FROM VCS 使用 utl 从 fork 下来的仓库导入项目，导入完成后等待 IDEA 加载并下载相关模块完成，并跟随 IDEA 指示安装  Kotlin 插件
 2. 在 src 目录下创建 `test/kotlin/RunTerminal.kt` 文件，文件内容为：
-  ```java
+```java
   package com.happysnaker
 
 import net.mamoe.mirai.alsoLogin

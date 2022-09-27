@@ -154,7 +154,10 @@ public class HRobotStarter {
 
 
     private static void test(Object... args) throws Exception {
-        System.out.println("Pattern = " + Pattern.matches("[\\s]*", "   "));
+        File file = new File(".");
+        for (File f : file.listFiles()) {
+            System.out.println(f);
+        }
 //        throw new RuntimeException();
     }
 }

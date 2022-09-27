@@ -16,7 +16,7 @@
 2. 点击 f12 打开游览器开发工具，找到网络工具。
 3. 保持 f12 打开，同时点击前线报道，找到名称为 feweb?target=kan-gong-guild-boss-info%2Fa 的项。
 
-​	![image-20220131193950450](https://happysnaker-1306579962.cos.ap-nanjing.myqcloud.com/img/typora/image-20220131193950450.png)
+![image-20220131193950450](https://happysnaker-1306579962.cos.ap-nanjing.myqcloud.com/img/typora/image-20220131193950450.png)
 
 4. 再标头中找到请求标头，复制 cookie 即可。
 
