@@ -17,7 +17,7 @@ public class RobotConfig {
     /**
      * 插件版本，每次更新请更新此配置
      */
-    public static final String CURRENT_VERSION = "3.2.1";
+    public static final String CURRENT_VERSION = "3.3";
     
     /**
      * 主配置文件名

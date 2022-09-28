@@ -1,13 +1,11 @@
 package com.happysnaker.cron;
 
-import com.happysnaker.api.PixivApi;
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.utils.RobotUtil;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.message.data.MessageChain;
 
-import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledExecutorService;
@@ -42,9 +40,9 @@ public class RobotCronTask {
 
 
     /**
-     * 执行定期任务，此方法必须得等到机器人初始化完成后调用
+     * 执行用户自定义定期任务，此方法必须得等到机器人初始化完成后调用
      */
-    public static void cronPeriodTask() throws Exception {
+    public static void runCustomerPeriodTask() throws Exception {
         // 执行定时任务
         Date now = new Date(System.currentTimeMillis());
         int year = now.getYear(), month = now.getMonth();

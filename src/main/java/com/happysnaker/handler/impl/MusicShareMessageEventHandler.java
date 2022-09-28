@@ -50,8 +50,9 @@ public class MusicShareMessageEventHandler extends GroupMessageEventHandler {
         } catch (Exception e) {
             e.printStackTrace();
             logError(event, e);
+            return buildMessageChainAsList("出错了呢，换首歌试试吧！\n" + e.getMessage());
         }
-        return buildMessageChainAsList("出错了呢，换首歌试试吧！");
+        return null;
     }
 
     protected List<MessageChain> miguMusic(MessageEvent event) throws IOException {
@@ -60,16 +61,11 @@ public class MusicShareMessageEventHandler extends GroupMessageEventHandler {
         return buildMessageChainAsList(MiguApi.search(name));
     }
 
-    protected List<MessageChain> music(MessageEvent event) {
+    protected List<MessageChain> music(MessageEvent event) throws IOException {
         List<MessageChain> ans = new ArrayList<>();
         String content = getPlantContent(event);
         // ffmpeg -i 稻香.mp3 -f wav test.wav
         // ffmpeg -i test.wav -ar 8000 -ab 12.2k -ac 1 test.amr
-        Audio audio = getGroupMessageEvent(event).getGroup().uploadAudio(ExternalResource.create(new File("test.amr")));
-        ans.add(buildMessageChain(audio));
-        if (event != null) {
-            return ans;
-        }
         String name = content.substring(MUSIC_KEYWORD.length()).trim();
         try {
             MusicShare music = TongZhongApi.getSongUrl(name);
@@ -79,8 +75,7 @@ public class MusicShareMessageEventHandler extends GroupMessageEventHandler {
                 ans.add(buildMessageChain("查无此歌"));
             }
         } catch (Exception e) {
-            logError(event, e);
-            ans.add(new MessageChainBuilder().append("啊，我炸了").build());
+            throw new IOException(e);
         }
         return ans;
     }

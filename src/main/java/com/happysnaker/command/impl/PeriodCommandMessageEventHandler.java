@@ -1,21 +1,18 @@
 package com.happysnaker.command.impl;
 
-import com.happysnaker.api.PixivApi;
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.exception.CanNotParseCommandException;
 import com.happysnaker.exception.InsufficientPermissionsException;
 import com.happysnaker.handler.handler;
 import com.happysnaker.permission.Permission;
 import com.happysnaker.utils.OfUtil;
-import com.happysnaker.utils.PairUtil;
+import com.happysnaker.utils.Pair;
 import com.happysnaker.utils.RobotUtil;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 
-import java.net.URL;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Happysnaker
@@ -40,7 +37,7 @@ public class PeriodCommandMessageEventHandler extends DefaultCommandMessageEvent
         try {
             // 不能获取纯文本
             String content = getContent(event).replace(RobotConfig.commandPrefix + ADD_PERIOD_TASK, "").trim();
-            PairUtil<String, String> keyVal = getKeyVal(content);
+            Pair<String, String> keyVal = getKeyVal(content);
             String[] split = keyVal.getKey().split("-");
             int hour = Integer.parseInt(split[0]);
             int minute = Integer.parseInt(split[1]);
@@ -70,7 +67,7 @@ public class PeriodCommandMessageEventHandler extends DefaultCommandMessageEvent
      * @return
      * @throws CanNotParseCommandException
      */
-    private PairUtil<String, String> getKeyVal(String content) throws CanNotParseCommandException {
+    private Pair<String, String> getKeyVal(String content) throws CanNotParseCommandException {
         int l = content.indexOf('{');
         int r = content.indexOf('}');
         if (l == -1 || r == -1) {
@@ -78,6 +75,6 @@ public class PeriodCommandMessageEventHandler extends DefaultCommandMessageEvent
         }
         String keyword = content.substring(l + 1, r);
         String val = content.replace("{" + keyword + "}", "");
-        return new PairUtil<>(keyword.trim(), val.trim());
+        return new Pair<>(keyword.trim(), val.trim());
     }
 }

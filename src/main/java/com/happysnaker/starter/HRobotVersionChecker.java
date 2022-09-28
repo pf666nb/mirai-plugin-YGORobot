@@ -31,10 +31,38 @@ public class HRobotVersionChecker {
      * 当前插件文件名
      */
     public static final String fileName = String.format("plugin-%s-SNAPSHOT.mirai.jar", RobotConfig.CURRENT_VERSION);
-    /**
-     * 先与或等于当前插件的最后一个稳定版本(非 pre-release 版本)
-     */
-    public static final String lastRelease = "plugin-3.2.1-SNAPSHOT.mirai.jar";
+
+    public static int compareVersion(String v1, String v2) {
+        String n1 = v1.substring(0, v1.indexOf('-') == -1 ? v1.length() : v1.indexOf('-')).replace("HRobot v", "");
+        String n2 = v2.substring(0, v2.indexOf('-') == -1 ? v2.length() : v2.indexOf('-')).replace("HRobot v", "");
+        String[] split1 = n1.split("\\.");
+        String[] split2 = n2.split("\\.");
+        int ret = 0;
+        for (int i = 0; i < Math.max(split1.length, split2.length); i++) {
+            int num1 = i < split1.length ? Integer.parseInt(split1[i]) : 0;
+            int num2 = i < split2.length ? Integer.parseInt(split2[i]) : 0;
+            if (num1 > num2) {
+                ret = 1;
+                break;
+            } else if (num1 < num2) {
+                ret = -1;
+                break;
+            }
+        }
+        if (ret != 0 || (!v1.contains("beta") && !v2.contains("beta"))) {
+            return ret;
+        }
+        if (v1.contains("beta") && v2.contains("beta")) {
+            if (v1.endsWith("beta")) {
+                v1 += ".0";
+            }
+            if (v2.endsWith("beta")) {
+                v2 += ".0";
+            }
+            return Integer.parseInt(v1.split("beta\\.")[1]) - Integer.parseInt(v2.split("beta\\.")[1]);
+        }
+        return v1.contains("beta") ? -1 : 1;
+    }
 
     public static void checkVersion() {
         try {
@@ -42,7 +70,7 @@ public class HRobotVersionChecker {
             String latestVersion = (String) map.get("name");
 
             RobotConfig.logger.info("最新版本 " + latestVersion);
-            if (latestVersion.equals(VERSION)) {
+            if (compareVersion(VERSION, latestVersion) >= 0) {
                 RobotConfig.logger.info("当前 HRobot 插件已为最新版");
                 return;
             }
@@ -58,7 +86,7 @@ public class HRobotVersionChecker {
             RobotConfig.logger.info("检测到新版本: " + latestVersion + ", 请前往 " + map.get("html_url") + " 查看详情");
             RobotConfig.logger.info("如您使用的已经是最新版插件请忽略此消息");
 
-            // 只有 windos 才自动更新，linux 不考虑
+            // 只有 windows 才自动更新，linux 仅提示
             if (isWindows()) {
                 int n = JOptionPane.showConfirmDialog(null, "新版本 " + latestVersion + " 可用于你的系统，是否自动更新？", "更新提示", JOptionPane.YES_NO_OPTION);
                 // 自动更新

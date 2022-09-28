@@ -1,5 +1,5 @@
 # 成员输入 帮助 或 help 或菜单后机器人回复的消息
-menu: '欢迎使用 HRobot，请前往 https://github.com/happysnaker/mirai-plugin-HRobot 查看相关信息'
+menu: '欢迎使用 HRobot v$CURRENT_VERSION，请前往 https://github.com/happysnaker/mirai-plugin-HRobot 查看相关信息'
 
 
 # 指明机器人生效的群，include 和 exclude 只能配置一个而置另一个为空

@@ -93,12 +93,12 @@ public class ChartUtil {
         }
     }
 
-    public static String generateALineChart(List<PairUtil<String, List<PairUtil<String, Double>>>> datasets, String title, String rowTitle, String colTitle) throws IOException {
+    public static String generateALineChart(List<Pair<String, List<Pair<String, Double>>>> datasets, String title, String rowTitle, String colTitle) throws IOException {
         try {
             //种类数据集
             DefaultCategoryDataset ds = new DefaultCategoryDataset();
-            for (PairUtil<String, List<PairUtil<String, Double>>> dataset : datasets) {
-                for (PairUtil<String, Double> it : dataset.getValue()) {
+            for (Pair<String, List<Pair<String, Double>>> dataset : datasets) {
+                for (Pair<String, Double> it : dataset.getValue()) {
                     ds.setValue(it.getValue(), dataset.getKey(), it.getKey());
                 }
             }
@@ -144,13 +144,13 @@ public class ChartUtil {
     }
 
 
-    public static String generateHistogram(List<PairUtil<String, List<PairUtil<String, Double>>>> datasets, String title, String rowTitle, String colTitle) throws IOException {
+    public static String generateHistogram(List<Pair<String, List<Pair<String, Double>>>> datasets, String title, String rowTitle, String colTitle) throws IOException {
         try {
             //种类数据集
             DefaultCategoryDataset ds = new DefaultCategoryDataset();
 
-            for (PairUtil<String, List<PairUtil<String, Double>>> dataset : datasets) {
-                for (PairUtil<String, Double> it : dataset.getValue()) {
+            for (Pair<String, List<Pair<String, Double>>> dataset : datasets) {
+                for (Pair<String, Double> it : dataset.getValue()) {
                     ds.setValue(it.getValue(), dataset.getKey(), it.getKey());
                 }
             }

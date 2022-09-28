@@ -96,7 +96,7 @@ public abstract class AbstractMessageEventHandler extends RobotUtil implements M
 
         try {
             info("正在提交定期任务...");
-            RobotCronTask.cronPeriodTask();
+            RobotCronTask.runCustomerPeriodTask();
             info("任务提交成功！");
         } catch (Exception e) {
             e.printStackTrace();

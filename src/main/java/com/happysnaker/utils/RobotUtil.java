@@ -1,5 +1,6 @@
 package com.happysnaker.utils;
 
+import com.happysnaker.HelloJob;
 import com.happysnaker.api.PixivApi;
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.cron.RobotCronTask;
@@ -13,6 +14,9 @@ import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.ExternalResource;
+import org.quartz.*;
+import org.quartz.impl.StdScheduler;
+import org.quartz.impl.StdSchedulerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,6 +26,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Calendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -412,13 +417,59 @@ public class RobotUtil {
     }
 
 
+
+    /**
+     * 提交一条基于 cron 定时发送的消息
+     *
+     * @param cronExpression cron 表达式
+     * @param plusImage 是否需要附带一张图片
+     * @param message   消息
+     * @param count 执行次数
+     * @throws CanNotSendMessageException
+     */
+    public static void submitSendMsgTask(String cronExpression, int count, boolean plusImage, MessageChain message, Contact contact) throws CanNotSendMessageException, SchedulerException, InterruptedException {
+
+        // 保存 count 的容器
+        final Pair<Integer, Object> pair = Pair.of(count, null);
+
+        //1、调度器(Schedular)，从工厂中获取调度实例（默认：实例化new StdSchedulerFactory();)
+        JobDataMap data = new JobDataMap();
+        data.put("count", new HashMap<>());
+        Scheduler scheduler= StdSchedulerFactory.getDefaultScheduler();
+        //2、任务实例（JobDetail）
+        JobDetail jobDetail= JobBuilder.newJob(HelloJob.class).usingJobData(data) //加载任务类，与HelloJob完成绑定，要求HelloJob实现Job接口
+                .build();
+        System.out.println("jobDetail = " + jobDetail);
+        //3、触发器（Trigger）
+        Trigger trigger= TriggerBuilder.newTrigger()
+                .startNow() //马上启动触发器
+                .withSchedule(SimpleScheduleBuilder.repeatSecondlyForever(5)) //每5秒执行一次
+                .build();
+        //让调度器关联任务和触发器，保证按照触发器定义的条件执行任务
+        scheduler.scheduleJob(jobDetail,trigger);
+
+        JobDetail jobDetail1= JobBuilder.newJob(HelloJob.class).usingJobData(data) //加载任务类，与HelloJob完成绑定，要求HelloJob实现Job接口
+                .build();
+        Trigger trigger1= TriggerBuilder.newTrigger()
+                .startNow() //马上启动触发器
+                .withSchedule(CronScheduleBuilder.cronSchedule(cronExpression)) //每5秒执行一次
+                .build();
+
+        scheduler.scheduleJob(jobDetail1,trigger1);
+        //启动
+        scheduler.start();
+        Thread.sleep(100000000000000000L);
+    }
+
+
+
     /**
      * 提交一条每天定时发送的消息
      *
      * @param hour      0-23
      * @param minute    0-60
      * @param count     需要执行几次，大于等于 1
-     * @param plusImage
+     * @param plusImage 是否需要附带一张图片
      * @param message   消息
      * @throws CanNotSendMessageException
      */
@@ -433,12 +484,14 @@ public class RobotUtil {
             time = calendar.getTime();
         }
         // 保存 count 的容器
-        final PairUtil<Integer, Object> pair = PairUtil.of(count, null);
+        final Pair<Integer, Object> pair = Pair.of(count, null);
         RobotConfig.logger.info("下一次任务执行时间 = " + time);
         RobotCronTask.service.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 MessageChain msg = message;
+                RobotConfig.logger.info("本次任务执行时间 = " + new Date());
+                RobotConfig.logger.info("本次剩余次数 = " + String.valueOf(pair.getKey() - 1));
                 if (plusImage) {
                     try {
                         msg = message.plus(RobotUtil.uploadImage(

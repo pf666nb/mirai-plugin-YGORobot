@@ -106,5 +106,5 @@ public class ConfigUtil {
     /**
      * 配置类模板，在第一次创建配置文件时会写入此模板
      */
-    public static String TEMPLATE = IOUtil.readFromFile(new File("config_template.yaml"));
+    public static String TEMPLATE = Objects.requireNonNull(IOUtil.readFromFile(new File("config_template.yaml"))).replace("$CURRENT_VERSION", RobotConfig.CURRENT_VERSION);
 }

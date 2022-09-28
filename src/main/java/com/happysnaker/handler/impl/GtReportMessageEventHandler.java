@@ -105,7 +105,7 @@ public class GtReportMessageEventHandler extends GroupMessageEventHandler {
                 // 一键催刀
                 else if (content.contains(URGE_KNIFE_ALL)) {
                     // 一键催到会催未出满刀的所有人
-                    PairUtil<Set<String>, Set<String>> pair = getNotDoPeople(cookie, event);
+                    Pair<Set<String>, Set<String>> pair = getNotDoPeople(cookie, event);
                     Set<String> param = pair.getKey();
                     param.addAll(pair.getValue());
                     return OfUtil.ofList(doUrge(event, param));
@@ -140,8 +140,8 @@ public class GtReportMessageEventHandler extends GroupMessageEventHandler {
         Map<String, Object> msg = null;
         List<String> dates = (List<String>) ((Map) IOUtil.sendAndGetResponseMap(new URL(GET_MEMBER_URL), "GET", getHeaders(cookie), null).get("data")).get("date");
 
-        List<PairUtil<String, List<PairUtil<String, Double>>>> datasets = new ArrayList<>();
-        Map<String, List<PairUtil<String, Double>>> map = new HashMap<>();
+        List<Pair<String, List<Pair<String, Double>>>> datasets = new ArrayList<>();
+        Map<String, List<Pair<String, Double>>> map = new HashMap<>();
 
         Collections.reverse(dates);
         for (String date : dates) {
@@ -156,15 +156,15 @@ public class GtReportMessageEventHandler extends GroupMessageEventHandler {
                 map.putIfAbsent(username, new ArrayList<>());
                 if (damageList != null) {
                     if (damageList.size() == TOTAL_COUNT) {
-                        map.get(username).add(PairUtil.of(date, 3.0));
+                        map.get(username).add(Pair.of(date, 3.0));
                     } else {
                         // 出了但是未出满的仔
                         map.get(username).
-                                add(PairUtil.of(date, (double) damageList.size()));
+                                add(Pair.of(date, (double) damageList.size()));
                     }
                 } else {
                     // 一刀没出
-                    map.get(username).add(PairUtil.of(date, 0.1));
+                    map.get(username).add(Pair.of(date, 0.1));
                 }
             }
 
@@ -172,13 +172,13 @@ public class GtReportMessageEventHandler extends GroupMessageEventHandler {
                 map.putIfAbsent(m, new ArrayList<>());
                 if (!doneSet.contains(m)) {
                     // 一刀没出
-                    map.get(m).add(PairUtil.of(date, 0.1));
+                    map.get(m).add(Pair.of(date, 0.1));
                 }
             }
         }
         for (String m : ms) {
             if (m.contains(m)) {
-                datasets.add(PairUtil.of(m, map.get(m)));
+                datasets.add(Pair.of(m, map.get(m)));
             }
         }
         String f = testLine ? ChartUtil.generateALineChart(datasets, "查刀", "日期", "出刀数") : ChartUtil.generateHistogram(datasets, "查刀", "日期", "出刀数");
@@ -234,7 +234,7 @@ public class GtReportMessageEventHandler extends GroupMessageEventHandler {
      * @return Pair, key 是 memberData, val 是 bossNames
      * @throws Exception
      */
-    public PairUtil<Map<String, Object>, Set<String>> getParseBattleStatisticsMap(String cookie) throws Exception {
+    public Pair<Map<String, Object>, Set<String>> getParseBattleStatisticsMap(String cookie) throws Exception {
         String numberOfCuts = "count";
         String totalDamage = "totalDamage";
         List<String> dates = Collections.unmodifiableList((List<String>) ((Map) IOUtil.sendAndGetResponseMap(new URL(GET_MEMBER_URL), "GET", getHeaders(cookie), null).get("data")).get("date"));
@@ -273,7 +273,7 @@ public class GtReportMessageEventHandler extends GroupMessageEventHandler {
             }
 //            calendar.set(Calendar.HOUR_OF_DAY, -24);
         }
-        return new PairUtil<Map<String, Object>, Set<String>>(memberData, bossNames);
+        return new Pair<Map<String, Object>, Set<String>>(memberData, bossNames);
     }
 
 
@@ -309,7 +309,7 @@ public class GtReportMessageEventHandler extends GroupMessageEventHandler {
      * @return
      */
     public MessageChain doParseCheck(String cookie, MessageEvent event) {
-        PairUtil<Set<String>, Set<String>> pair = getNotDoPeople(cookie, event);
+        Pair<Set<String>, Set<String>> pair = getNotDoPeople(cookie, event);
         StringBuilder sb = new StringBuilder();
         sb.append("以下用户暂未出刀：\n");
         if (pair.getKey().size() != 0) {
@@ -356,7 +356,7 @@ public class GtReportMessageEventHandler extends GroupMessageEventHandler {
      * @param event
      * @return Pair，key 是没出刀的玩家集合，val 是出刀但是未出满刀的玩家
      */
-    public PairUtil<Set<String>, Set<String>> getNotDoPeople(String cookie, MessageEvent event) {
+    public Pair<Set<String>, Set<String>> getNotDoPeople(String cookie, MessageEvent event) {
         // 获取配置成员
         Set<String> members = getGtMembers(event);
         // 如果没有配置，那么则是同群成员
@@ -392,7 +392,7 @@ public class GtReportMessageEventHandler extends GroupMessageEventHandler {
                 s1.add(member);
             }
         }
-        return new PairUtil<>(s1, s2);
+        return new Pair<>(s1, s2);
     }
 
 
@@ -406,7 +406,7 @@ public class GtReportMessageEventHandler extends GroupMessageEventHandler {
     public MessageChain doParseBattleStatistics(String cookie, String username, MessageEvent event) throws IOException, FileUploadException {
         String numberOfCuts = "count";
         String totalDamage = "totalDamage";
-        PairUtil<Map<String, Object>, Set<String>> p = null;
+        Pair<Map<String, Object>, Set<String>> p = null;
         try {
             p = getParseBattleStatisticsMap(cookie);
         } catch (Exception e) {
@@ -459,7 +459,7 @@ public class GtReportMessageEventHandler extends GroupMessageEventHandler {
     public MessageChain doParseBattleStatistics(String cookie) {
         String numberOfCuts = "count";
         String totalDamage = "totalDamage";
-        PairUtil<Map<String, Object>, Set<String>> p = null;
+        Pair<Map<String, Object>, Set<String>> p = null;
         try {
             p = getParseBattleStatisticsMap(cookie);
         } catch (Exception e) {

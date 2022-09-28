@@ -154,11 +154,7 @@ public class HRobotStarter {
 
 
     private static void test(Object... args) throws Exception {
-        File file = new File(".");
-        for (File f : file.listFiles()) {
-            System.out.println(f);
-        }
-//        throw new RuntimeException();
+
     }
 }
 

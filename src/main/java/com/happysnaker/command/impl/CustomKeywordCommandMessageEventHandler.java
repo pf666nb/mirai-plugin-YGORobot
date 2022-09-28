@@ -6,7 +6,7 @@ import com.happysnaker.exception.InsufficientPermissionsException;
 import com.happysnaker.handler.handler;
 import com.happysnaker.handler.impl.CustomKeywordMessageEventHandler;
 import com.happysnaker.permission.Permission;
-import com.happysnaker.utils.PairUtil;
+import com.happysnaker.utils.Pair;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -84,9 +84,9 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
         }
         // 去除命令
         String content = getContent(event).replace(RobotConfig.commandPrefix + SET_KEYWORD, "").trim();
-        PairUtil<String, String> pair;
+        Pair<String, String> pair;
         if (hasQuote(event)) {
-            pair = PairUtil.of(content, getContent(getQuoteMessageChain(event)));
+            pair = Pair.of(content, getContent(getQuoteMessageChain(event)));
         } else {
             pair = getKeyVal(content);
         }
@@ -108,9 +108,9 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
         }
         // 去除命名
         String content = getContent(event).replace(RobotConfig.commandPrefix + SET_GROUP_KEYWORD, "").trim();
-        PairUtil<String, String> pair;
+        Pair<String, String> pair;
         if (hasQuote(event)) {
-            pair = PairUtil.of(content, getContent(getQuoteMessageChain(event)));
+            pair = Pair.of(content, getContent(getQuoteMessageChain(event)));
         } else {
             pair = getKeyVal(content);
         }
@@ -221,7 +221,7 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
      * @return
      * @throws CanNotParseCommandException
      */
-    private PairUtil<String, String> getKeyVal(String content) throws CanNotParseCommandException {
+    private Pair<String, String> getKeyVal(String content) throws CanNotParseCommandException {
         int l = content.indexOf('{');
         int r = content.indexOf('}');
         if (l == -1 || r == -1) {
@@ -232,6 +232,6 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
             throw new CanNotParseCommandException("不正确的关键字格式，关键字不得以机器人所有的群号");
         }
         String val = content.replace("{" + keyword + "}", "");
-        return new PairUtil<>(keyword.trim(), val.trim());
+        return new Pair<>(keyword.trim(), val.trim());
     }
 }
