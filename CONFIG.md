@@ -2,6 +2,9 @@
 
 - [声明](#声明)
 - [模板](#模板)
+- [订阅配置中的 key](#订阅配置中的-key)
+  - [bilibili](#bilibili)
+
 - [获取坎公 Cookie](#获取砍公-cookie)
 
 ## 声明
@@ -21,7 +24,25 @@
 - [v3.0 配置文件模板](./version/v3.0_config.md)
 - [更早版本配置文件模板](./version/V2&V1_CONFIG.md)
 
-## 获取砍公 cookie
+## 订阅配置中的 key
+
+### bilibili
+
+对于小破站而言，目前支持对 up 主动态订阅以及对番剧更新订阅，由不同的 type 驱动。
+
+1. UP 主唯一 Key
+
+​	点进 UP 主个人空间，如图所示，这一串数字便是 UP 主唯一标识:
+
+![image-20221004130621037](https://happysnaker-1306579962.cos.ap-nanjing.myqcloud.com/img/typora202210041306793.png)
+
+2. 番剧唯一 Key
+
+   点进番剧页面，URL 地址中 ss 后面一串数字即是唯一 Key，例如下图中的唯一 Key 是 `42994`：
+   
+   ![image-20221004132010638](https://happysnaker-1306579962.cos.ap-nanjing.myqcloud.com/img/typora202210041320514.png)
+
+## 砍公 cookie
 
 坎公相关功能需要配置 Cookie，请参考如下步骤获取：
 
