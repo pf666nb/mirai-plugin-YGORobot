@@ -46,7 +46,7 @@ public class RobotCronJob implements Job {
      * @since v3.3
      */
     public volatile static org.quartz.Scheduler scheduler;
-    public static Set<Long> visited;
+    public static Set<Long> visited = new HashSet<>();
     public static final int PERIOD_MINUTE = 3;
 
     static {
