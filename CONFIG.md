@@ -2,7 +2,7 @@
 
 - [声明](#声明)
 - [模板](#模板)
-- [获取坎公 Cookie](#获取砍公 cookie)
+- [获取坎公 Cookie](#获取砍公-cookie)
 
 ## 声明
 - v3.0 之后正式使用 yaml 作为配置文件，早期版本 json 配置请移步: [历史版本配置](version/V2&V1_CONFIG.md)，对于正在使用 json 配置文件的用户可以前往 [JSON转YAML,YAML转JSON - 在线工具 - OKTools ](https://oktools.net/json2yaml)将 JSON 转为 yaml 文件进行迁移。
