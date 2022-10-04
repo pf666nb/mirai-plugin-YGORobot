@@ -38,7 +38,7 @@ public class KnowledgeSearchMessageEventHandler extends GroupMessageEventHandler
         } catch (Exception e) {
             logError(event, e);
             e.printStackTrace();
-            return buildMessageChainAsList("发生了错误，错误原因：" + e.getMessage());
+            return buildMessageChainAsSingletonList("发生了错误，错误原因：" + e.getMessage());
         }
     }
 
@@ -46,7 +46,7 @@ public class KnowledgeSearchMessageEventHandler extends GroupMessageEventHandler
         String content = getPlantContent(event).replace(BAIDU_BAIKE, "");
         Map<String, String> map = BaiKeApi.search(content);
         if (map == null) {
-            return buildMessageChainAsList(getQuoteReply(event), "检索失败，换个关键词试试吧");
+            return buildMessageChainAsSingletonList(getQuoteReply(event), "检索失败，换个关键词试试吧");
         }
         StringBuilder sb = new StringBuilder();
         sb.append("标题：");
@@ -55,9 +55,9 @@ public class KnowledgeSearchMessageEventHandler extends GroupMessageEventHandler
         sb.append(map.get("desc")).append("\n");
         sb.append(map.get("content")).append("\n");
         if (map.get("image") != null) {
-            return buildMessageChainAsList(sb.toString(), uploadImage(event, new URL(map.get("image"))));
+            return buildMessageChainAsSingletonList(sb.toString(), uploadImage(event, new URL(map.get("image"))));
         }
-        return buildMessageChainAsList(sb.toString());
+        return buildMessageChainAsSingletonList(sb.toString());
     }
 
     @Override

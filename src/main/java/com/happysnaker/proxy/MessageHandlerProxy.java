@@ -68,7 +68,7 @@ public class MessageHandlerProxy implements MessageEventHandler {
         if (ctx == null) {
             ctx = new Context(handlers, interceptors);
         }
-        ctx.execute(event);
+        ctx. execute(event);
         return null;
     }
 

@@ -1,12 +1,13 @@
 package com.happysnaker.utils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class MapGetter implements Cloneable {
     private Map<Object, Object> map;
+
+    public MapGetter() {
+        this.map = new HashMap<>();
+    }
 
     @Override
     public String toString() {
@@ -36,10 +37,24 @@ public class MapGetter implements Cloneable {
         } else {
             throw new RuntimeException("不合法的构造参数");
         }
+        if (this.map == null) {
+            this.map = new HashMap<>();
+        }
+    }
+
+    public void put(Object key, Object val) {
+        this.map.put(key, val);
+    }
+
+    public Map getMap() {
+        return this.map;
     }
 
     public MapGetter(Map map) {
         this.map = map;
+        if (this.map == null) {
+            this.map = new HashMap<>();
+        }
     }
 
     public MapGetter(MapGetter mg) {
@@ -58,7 +73,18 @@ public class MapGetter implements Cloneable {
         if (!map.containsKey(key)) {
             return null;
         }
+        if (map.get(key) == null) {
+            return null;
+        }
         return new MapGetter((Map) map.get(key));
+    }
+
+    public boolean containsKey(Object key) {
+        return map.containsKey(key);
+    }
+
+    public int size() {
+        return map.size();
     }
 
     public Object get(Object key) {
@@ -75,8 +101,15 @@ public class MapGetter implements Cloneable {
     }
 
     public String getString(Object key) {
+        return getString(key, false);
+    }
+
+    public String getString(Object key, boolean toString) {
         if (!map.containsKey(key)) {
             return null;
+        }
+        if (toString) {
+            return map.get(key).toString();
         }
         return (String) map.get(key);
     }
@@ -92,15 +125,32 @@ public class MapGetter implements Cloneable {
         return Long.parseLong(map.get(key).toString());
     }
 
+    public<T> T getItemFromList(Object key, int index, Class<T> tClass) {
+        List<T> ts = getList(key, tClass);
+        if (ts == null || ts.size() <= index) {
+            return null;
+        }
+        return ts.get(index);
+    }
+
     public int getInt(Object key) {
+        if (!map.containsKey(key)) {
+            return 0;
+        }
         return Integer.parseInt(map.get(key).toString());
     }
 
     public double getDouble(Object key) {
+        if (!map.containsKey(key)) {
+            return 0;
+        }
         return Double.parseDouble(map.get(key).toString());
     }
 
     public float getFloat(Object key) {
+        if (!map.containsKey(key)) {
+            return 0;
+        }
         return Float.parseFloat(map.get(key).toString());
     }
 
@@ -118,7 +168,40 @@ public class MapGetter implements Cloneable {
         return (List<T>) map.get(key);
     }
 
+    public<T> List<T> getListOrSingleton(Object key, Class<T> tClass) {
+        if (!map.containsKey(key)) {
+            return null;
+        }
+        if (!(map.get(key) instanceof List)) {
+            return (List<T>) OfUtil.ofList(map.get(key));
+        }
+        return (List<T>) map.get(key);
+    }
+
+    public List<MapGetter> getMapGetterList(Object key) {
+        List<Map> maps = getList(key, Map.class);
+        if (maps == null) {
+            return null;
+        }
+        List<MapGetter> ret = new ArrayList<>();
+        maps.forEach(m -> ret.add(new MapGetter(m)));
+        return ret;
+    }
+
     public boolean getBoolean(Object key) {
+        if (!map.containsKey(key)) {
+            return false;
+        }
         return Boolean.parseBoolean(map.get(key).toString());
+    }
+
+    public String getStringOrDefault(String key, String val, boolean toString) {
+        if (!map.containsKey(key)) {
+            return val;
+        }
+        if (toString) {
+            return map.get(key).toString();
+        }
+        return (String) map.get(key);
     }
 }

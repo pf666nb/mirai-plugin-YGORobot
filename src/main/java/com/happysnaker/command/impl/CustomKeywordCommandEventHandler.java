@@ -23,7 +23,7 @@ import java.util.Set;
  * @email happysnaker@foxmail.com
  */
 @handler(priority = 1024)
-public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessageEventHandlerManager {
+public class CustomKeywordCommandEventHandler extends DefaultCommandEventHandlerManager {
     public static final String SET_KEYWORD = "设置关键字回复";
     public static final String SET_GROUP_KEYWORD = "设置群内关键字回复";
     public static final String REMOVE_KEYWORD = "移除关键字";
@@ -33,7 +33,7 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
     public static final String CLEAR_ALL = "清空所有关键字";
     public static final String SEE_GROUP_KEYWORD = "查看群内关键字";
 
-    public CustomKeywordCommandMessageEventHandler() {
+    public CustomKeywordCommandEventHandler() {
         super.registerKeywords(SET_KEYWORD);
         super.registerKeywords(SET_GROUP_KEYWORD);
         super.registerKeywords(REMOVE_GROUP_KEYWORD);
@@ -92,7 +92,7 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
         }
         String regexKey =  StringEscapeUtils.unescapeJava(pair.getKey());
         RobotConfig.customKeyword.put(regexKey, pair.getValue());
-        return buildMessageChainAsList("添加全局自定义关键字 " + regexKey + " 及回复成功！");
+        return buildMessageChainAsSingletonList("添加全局自定义关键字 " + regexKey + " 及回复成功！");
     }
 
     /**
@@ -117,7 +117,7 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
         RobotConfig.customKeyword.putIfAbsent(getGroupId(event), new HashMap<>());
         Map<String, Object> gMap = (Map<String, Object>) RobotConfig.customKeyword.get(getGroupId(event));
         gMap.put(pair.getKey(), pair.getValue());
-        return buildMessageChainAsList("添加群内自定义关键字 " + pair.getKey().replace(CustomKeywordMessageEventHandler.REGEX_PREFIX, "") + " 及回复成功！");
+        return buildMessageChainAsSingletonList("添加群内自定义关键字 " + pair.getKey().replace(CustomKeywordMessageEventHandler.REGEX_PREFIX, "") + " 及回复成功！");
     }
 
 
@@ -134,9 +134,9 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
         }
         String content = getContent(event).replace(RobotConfig.commandPrefix + REMOVE_KEYWORD, "").trim();
         if (RobotConfig.customKeyword.remove(content) == null) {
-            return buildMessageChainAsList("不包含此全局关键字：" + content);
+            return buildMessageChainAsSingletonList("不包含此全局关键字：" + content);
         }
-        return buildMessageChainAsList("移除成功");
+        return buildMessageChainAsSingletonList("移除成功");
     }
 
     /**
@@ -152,13 +152,13 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
         }
         String content = getContent(event).replace(RobotConfig.commandPrefix + REMOVE_GROUP_KEYWORD, "").trim();
         if (!RobotConfig.customKeyword.containsKey(getGroupId(event))) {
-            return buildMessageChainAsList("此群暂无任何群内关键字配置");
+            return buildMessageChainAsSingletonList("此群暂无任何群内关键字配置");
         }
         Map<String, Object> gMap = (Map<String, Object>) RobotConfig.customKeyword.get(getGroupId(event));
         if (gMap.remove(content) == null) {
-            return buildMessageChainAsList("不包含此群内关键字：" + content);
+            return buildMessageChainAsSingletonList("不包含此群内关键字：" + content);
         }
-        return buildMessageChainAsList("移除成功");
+        return buildMessageChainAsSingletonList("移除成功");
     }
 
 
@@ -181,7 +181,7 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
             }
         }
         RobotConfig.customKeyword = map;
-        return buildMessageChainAsList("已清空所有全局关键字");
+        return buildMessageChainAsSingletonList("已清空所有全局关键字");
     }
 
     /**
@@ -196,7 +196,7 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
             throw new InsufficientPermissionsException();
         }
         RobotConfig.customKeyword.remove(getGroupId(event));
-        return buildMessageChainAsList("已清空群 " + getGroupId(event) + " 内的所有关键字");
+        return buildMessageChainAsSingletonList("已清空群 " + getGroupId(event) + " 内的所有关键字");
     }
 
     /**
@@ -211,7 +211,7 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
             throw new InsufficientPermissionsException();
         }
         RobotConfig.customKeyword = new HashMap<>();
-        return buildMessageChainAsList("已清空所有关键字信息");
+        return buildMessageChainAsSingletonList("已清空所有关键字信息");
     }
 
 

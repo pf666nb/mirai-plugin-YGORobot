@@ -69,7 +69,8 @@ public class HRobotVersionChecker {
             Map<String, Object> map = IOUtil.sendAndGetResponseMap(new URL(api), "GET", null, null);
             String latestVersion = (String) map.get("name");
 
-            RobotConfig.logger.info("最新版本 " + latestVersion);
+            RobotConfig.logger.info("Gouhub 最新发行版本 " + latestVersion);
+            RobotConfig.logger.info("当前版本 " + VERSION);
             if (compareVersion(VERSION, latestVersion) >= 0) {
                 RobotConfig.logger.info("当前 HRobot 插件已为最新版");
                 return;

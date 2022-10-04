@@ -60,6 +60,9 @@ public class TongZhongApi {
                 }
             }
 
+            for (int i = 0; i < songs.size(); i++) {
+                songs.get(i).put("index", i);
+            }
             // 按照名称相似程度排序
             songs.sort((a, b) -> {
                 if (a == null || b == null) {
@@ -69,8 +72,8 @@ public class TongZhongApi {
                 String bName = new MapGetter(b).getStringOrDefault("name", "");
                 int adis = StringUtil.getEditDistance(aName, keyword), bdis = StringUtil.getEditDistance(bName, keyword);
                 if (adis == bdis) {
-                    // 有艺人名字优先
-                    return a.get("artists") == null ? -1 : 1;
+                    // 如果名称优先度相同，则按照原本搜索的顺序排序
+                    return (int) a.get("index") - (int) b.get("index");
                 }
                 return adis - bdis;
             });

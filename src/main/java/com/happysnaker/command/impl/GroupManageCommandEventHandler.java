@@ -20,13 +20,13 @@ import java.util.Map;
  * @email happysnaker@foxmail.com
  */
 @handler(priority = 1024)
-public class GroupManageCommandMessageEventHandler extends DefaultCommandMessageEventHandlerManager {
+public class GroupManageCommandEventHandler extends DefaultCommandEventHandlerManager {
     public static final String ENABLE_AUTO_APPROVE = "开启自动审批";
     public static final String DISABLE_AUTO_APPROVE = "关闭自动审批";
     public static final String ENABLE_SENSITIVE_WORD_DETECTION = "开启敏感词检测";
     public static final String DISABLE_SENSITIVE_WORD_DETECTION = "关闭敏感词检测";
 
-    public GroupManageCommandMessageEventHandler() {
+    public GroupManageCommandEventHandler() {
         registerKeywords(ENABLE_AUTO_APPROVE);
         registerKeywords(DISABLE_AUTO_APPROVE);
         registerKeywords(ENABLE_SENSITIVE_WORD_DETECTION);
@@ -48,19 +48,19 @@ public class GroupManageCommandMessageEventHandler extends DefaultCommandMessage
                         RobotConfig.autoApproval.remove(map);
                     }
                 }
-                return buildMessageChainAsList("关闭自动审批成功");
+                return buildMessageChainAsSingletonList("关闭自动审批成功");
             } else if (content.startsWith(ENABLE_AUTO_APPROVE)) {
                 String s = content.replaceFirst(ENABLE_AUTO_APPROVE, "").trim();
                 RobotConfig.autoApproval.add(OfUtil.ofMap(gid, s));
-                return buildMessageChainAsList("开启自动审批成功，审批验证消息：" + s);
+                return buildMessageChainAsSingletonList("开启自动审批成功，审批验证消息：" + s);
             } else if (content.startsWith(ENABLE_SENSITIVE_WORD_DETECTION)) {
                 if (!RobotConfig.enableSensitiveWordDetection.contains(gid)) {
                     RobotConfig.enableSensitiveWordDetection.add(gid);
                 }
-                return buildMessageChainAsList("本群已开启敏感词检测");
+                return buildMessageChainAsSingletonList("本群已开启敏感词检测");
             } else if (content.startsWith(DISABLE_SENSITIVE_WORD_DETECTION)) {
                 RobotConfig.enableSensitiveWordDetection.remove(gid);
-                return buildMessageChainAsList("本群已关闭敏感词检测");
+                return buildMessageChainAsSingletonList("本群已关闭敏感词检测");
             }
         } catch (Exception e) {
             throw new CanNotParseCommandException(e);

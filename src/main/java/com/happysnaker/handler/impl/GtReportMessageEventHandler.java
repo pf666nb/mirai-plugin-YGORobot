@@ -182,7 +182,7 @@ public class GtReportMessageEventHandler extends GroupMessageEventHandler {
             }
         }
         String f = testLine ? ChartUtil.generateALineChart(datasets, "查刀", "日期", "出刀数") : ChartUtil.generateHistogram(datasets, "查刀", "日期", "出刀数");
-        return buildMessageChainAsList(uploadImage(event, f));
+        return buildMessageChainAsSingletonList(uploadImage(event, f));
     }
 
     /**

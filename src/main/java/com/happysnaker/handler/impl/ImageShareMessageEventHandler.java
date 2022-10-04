@@ -165,7 +165,7 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
         Image image = uploadImage(event, new URL(imgUrl));
         // 可访问的地址，原地址可能会被腾讯视为恶意网站
         String reachable_image_url = Image.queryUrl(image);
-        if (!StringUtil.isNullOrEmpty(reachable_image_url)) {
+        if (StringUtil.isNullOrEmpty(reachable_image_url)) {
             reachable_image_url = imgUrl;
         }
         switch (RobotConfig.colorStrategy) {

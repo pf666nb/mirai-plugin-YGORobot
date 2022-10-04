@@ -20,7 +20,7 @@ import java.util.List;
  * @date 2022/2/15
  * @email happysnaker@foxmail.com
  */
-public abstract class AbstractCommandMessageEventHandler extends GroupMessageEventHandler implements CommandHandler, CommandHandlerManager {
+public abstract class AbstractCommandEventHandler extends GroupMessageEventHandler implements CommandHandler, CommandHandlerManager {
 
 
 

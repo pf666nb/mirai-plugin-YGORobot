@@ -109,7 +109,6 @@ public class Permission {
         }
 
         if (getGroupAdminList().contains(qq)) {
-            System.out.println("true");
             permissionList.add(GROUP_ADMINISTRATOR);
         }
 

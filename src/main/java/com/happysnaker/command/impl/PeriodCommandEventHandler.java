@@ -12,6 +12,7 @@ import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -21,11 +22,10 @@ import java.util.List;
  * @email happysnaker@foxmail.com
  */
 @handler(priority = 1024)
-public class PeriodCommandMessageEventHandler extends DefaultCommandMessageEventHandlerManager {
-
+public class PeriodCommandEventHandler extends DefaultCommandEventHandlerManager {
     public static final String ADD_PERIOD_TASK = "设置定时任务";
 
-    public PeriodCommandMessageEventHandler() {
+    public PeriodCommandEventHandler() {
         registerKeywords(ADD_PERIOD_TASK);
     }
 
@@ -35,7 +35,7 @@ public class PeriodCommandMessageEventHandler extends DefaultCommandMessageEvent
             throw new InsufficientPermissionsException("权限不足");
         }
         try {
-            // 不能获取纯文本
+            // 不能获取纯文本，要获取 mirai 编码
             String content = getContent(event).replace(RobotConfig.commandPrefix + ADD_PERIOD_TASK, "").trim();
             Pair<String, String> keyVal = getKeyVal(content);
             String[] split = keyVal.getKey().split("-");
@@ -44,17 +44,15 @@ public class PeriodCommandMessageEventHandler extends DefaultCommandMessageEvent
             int count = Integer.parseInt(split[2]);
             int image = split.length == 4 ? Integer.parseInt(split[3]) : 0;
             // 如果永久任务，则允许调用 #保存配置 保存
-            if (count == 0) {
-                count = Integer.MAX_VALUE;
-                RobotConfig.periodicTask.add(
-                        OfUtil.ofMap(OfUtil.ofList("hour", "minute", "groupId", "count", "image", "content"), OfUtil.ofList(hour, minute, getGroupId(event), 0, image == 1, keyVal.getValue())
-                        )
-                );
-            }
+            RobotConfig.periodicTask.add(
+                    OfUtil.ofMap(OfUtil.ofList("hour", "minute", "groupId", "count", "image", "content"),
+                            OfUtil.ofList(hour, minute, getGroupId(event), 0, image == 1, keyVal.getValue())
+                    )
+            );
             MessageChain message = parseMiraiCode(keyVal.getValue());
             Contact contact = event.getSubject();
-            RobotUtil.submitSendMsgTask(hour, minute, count, image == 1, message, contact);
-            return buildMessageChainAsList("任务提交成功！");
+            RobotUtil.submitSendMsgTask(hour, minute, count <= 0 ? Integer.MAX_VALUE : count, image == 1, Collections.singletonList(message), contact);
+            return buildMessageChainAsSingletonList("任务提交成功！");
         } catch (Exception e) {
             throw new CanNotParseCommandException(e.getMessage());
         }

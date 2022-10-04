@@ -26,8 +26,7 @@ public final class Main extends JavaPlugin {
     @Override
     public void onEnable() {
         try {
-            RobotUtil.submitSendMsgTask("0/5 * * * * ?", 1, true, null, null);
-//            HRobotStarter.Start(this);
+            HRobotStarter.Start(this);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(500);

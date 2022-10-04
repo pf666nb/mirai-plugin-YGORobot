@@ -4,12 +4,9 @@ import com.happysnaker.api.MiguApi;
 import com.happysnaker.api.TongZhongApi;
 import com.happysnaker.context.Context;
 import com.happysnaker.handler.handler;
-import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.*;
-import net.mamoe.mirai.utils.ExternalResource;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -50,7 +47,7 @@ public class MusicShareMessageEventHandler extends GroupMessageEventHandler {
         } catch (Exception e) {
             e.printStackTrace();
             logError(event, e);
-            return buildMessageChainAsList("出错了呢，换首歌试试吧！\n" + e.getMessage());
+            return buildMessageChainAsSingletonList("出错了呢，换首歌试试吧！\n" + e.getMessage());
         }
         return null;
     }
@@ -58,7 +55,7 @@ public class MusicShareMessageEventHandler extends GroupMessageEventHandler {
     protected List<MessageChain> miguMusic(MessageEvent event) throws IOException {
         String content = getPlantContent(event);
         String name = content.substring(MIGU_MUSIC_KEYWORD.length()).trim();
-        return buildMessageChainAsList(MiguApi.search(name));
+        return buildMessageChainAsSingletonList(MiguApi.search(name));
     }
 
     protected List<MessageChain> music(MessageEvent event) throws IOException {

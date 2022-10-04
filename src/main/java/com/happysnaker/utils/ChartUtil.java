@@ -1,7 +1,7 @@
 package com.happysnaker.utils;
 
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.cron.RobotCronTask;
+import com.happysnaker.cron.RobotCronJob;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -32,7 +32,7 @@ import java.util.UUID;
 public class ChartUtil {
     static {
         RobotConfig.logger.info("注册后台清理任务...");
-        RobotCronTask.addCronTask(() -> {
+        RobotCronJob.addCronTask(() -> {
             File file = new File(ConfigUtil.getDataFilePath("img"));
             if (!file.exists() || !file.isDirectory()) {
                 file.mkdir();

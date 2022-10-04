@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * @email happysnaker@foxmail.com
  */
 @handler(priority = 1024)
-public class GtCommandMessageEventHandler extends DefaultCommandMessageEventHandlerManager {
+public class GtCommandEventHandler extends DefaultCommandEventHandlerManager {
     public static final String addGtMembersCommand = "添加坎公公会成员";
     public static final String clearGtMembersCommand = "清空坎公公会成员";
     public static final String setGtMembersCommand = "设置坎公公会成员";
@@ -27,7 +27,7 @@ public class GtCommandMessageEventHandler extends DefaultCommandMessageEventHand
     public static final String removeGtMembersCommand = "移除坎公公会成员";
     public static final String setGtCookieCommand = "设置坎公cookie";
 
-    public GtCommandMessageEventHandler() {
+    public GtCommandEventHandler() {
         super.registerKeywords(setGtCookieCommand);
         super.registerKeywords(setGtMembersCommand);
         super.registerKeywords(seeGtMembersCommand);

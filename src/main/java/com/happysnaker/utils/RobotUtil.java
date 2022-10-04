@@ -1,9 +1,7 @@
 package com.happysnaker.utils;
 
-import com.happysnaker.HelloJob;
-import com.happysnaker.api.PixivApi;
-import com.happysnaker.config.RobotConfig;
-import com.happysnaker.cron.RobotCronTask;
+import com.happysnaker.cron.PeriodCronJob;
+import com.happysnaker.cron.RobotCronJob;
 import com.happysnaker.exception.CanNotSendMessageException;
 import com.happysnaker.exception.FileUploadException;
 import net.mamoe.mirai.Bot;
@@ -15,8 +13,6 @@ import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.ExternalResource;
 import org.quartz.*;
-import org.quartz.impl.StdScheduler;
-import org.quartz.impl.StdSchedulerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -26,7 +22,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.Calendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -45,7 +40,7 @@ public class RobotUtil {
      * @param errorMsg
      */
     public static void recordFailLog(MessageEvent event, String errorMsg) {
-        RobotCronTask.service.schedule(new TimerTask() {
+        RobotCronJob.service.schedule(new TimerTask() {
             @Override
             public void run() {
                 String filePath = ConfigUtil.getDataFilePath("error.log");
@@ -221,8 +216,14 @@ public class RobotUtil {
     public static MessageChain buildMessageChain(Object... m) {
         MessageChainBuilder builder = new MessageChainBuilder();
         for (Object s : m) {
+            if (s == null) {
+                continue;
+            }
             if (s instanceof String) {
                 s = new PlainText((CharSequence) s);
+            }
+            if (s instanceof StringBuilder) {
+                s = new PlainText((CharSequence) s.toString());
             }
             builder.append((SingleMessage) s);
         }
@@ -236,7 +237,7 @@ public class RobotUtil {
      * @param m 多个 SingleMessage
      * @return 将多个 SingleMessage 组合成 MessageChain List，List 的大小只为 1
      */
-    public static List<MessageChain> buildMessageChainAsList(Object... m) {
+    public static List<MessageChain> buildMessageChainAsSingletonList(Object... m) {
         return OfUtil.ofList(buildMessageChain(m));
     }
 
@@ -423,42 +424,14 @@ public class RobotUtil {
      *
      * @param cronExpression cron 表达式
      * @param plusImage 是否需要附带一张图片
-     * @param message   消息
+     * @param messages   消息列表，会随机选择一条消息
      * @param count 执行次数
      * @throws CanNotSendMessageException
      */
-    public static void submitSendMsgTask(String cronExpression, int count, boolean plusImage, MessageChain message, Contact contact) throws CanNotSendMessageException, SchedulerException, InterruptedException {
-
-        // 保存 count 的容器
-        final Pair<Integer, Object> pair = Pair.of(count, null);
-
-        //1、调度器(Schedular)，从工厂中获取调度实例（默认：实例化new StdSchedulerFactory();)
-        JobDataMap data = new JobDataMap();
-        data.put("count", new HashMap<>());
-        Scheduler scheduler= StdSchedulerFactory.getDefaultScheduler();
-        //2、任务实例（JobDetail）
-        JobDetail jobDetail= JobBuilder.newJob(HelloJob.class).usingJobData(data) //加载任务类，与HelloJob完成绑定，要求HelloJob实现Job接口
-                .build();
-        System.out.println("jobDetail = " + jobDetail);
-        //3、触发器（Trigger）
-        Trigger trigger= TriggerBuilder.newTrigger()
-                .startNow() //马上启动触发器
-                .withSchedule(SimpleScheduleBuilder.repeatSecondlyForever(5)) //每5秒执行一次
-                .build();
-        //让调度器关联任务和触发器，保证按照触发器定义的条件执行任务
-        scheduler.scheduleJob(jobDetail,trigger);
-
-        JobDetail jobDetail1= JobBuilder.newJob(HelloJob.class).usingJobData(data) //加载任务类，与HelloJob完成绑定，要求HelloJob实现Job接口
-                .build();
-        Trigger trigger1= TriggerBuilder.newTrigger()
-                .startNow() //马上启动触发器
-                .withSchedule(CronScheduleBuilder.cronSchedule(cronExpression)) //每5秒执行一次
-                .build();
-
-        scheduler.scheduleJob(jobDetail1,trigger1);
-        //启动
-        scheduler.start();
-        Thread.sleep(100000000000000000L);
+    public static void submitSendMsgTask(String cronExpression, int count, boolean plusImage, List<MessageChain> messages, Contact contact) throws CanNotSendMessageException, SchedulerException, InterruptedException {
+        JobDataMap jobData = PeriodCronJob.PeriodCronJobData.getJobDataMap(count, plusImage, messages, contact);
+        RobotCronJob.submitCronJob(PeriodCronJob.class,
+                CronScheduleBuilder.cronSchedule(cronExpression), jobData);
     }
 
 
@@ -470,45 +443,13 @@ public class RobotUtil {
      * @param minute    0-60
      * @param count     需要执行几次，大于等于 1
      * @param plusImage 是否需要附带一张图片
-     * @param message   消息
+     * @param messages   消息列表，机器人会随机选择一条消息发送
      * @throws CanNotSendMessageException
      */
-    public static void submitSendMsgTask(int hour, int minute, int count, boolean plusImage, MessageChain message, Contact contact) throws CanNotSendMessageException {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, hour);
-        calendar.set(Calendar.MINUTE, minute);
-        calendar.set(Calendar.SECOND, 0);
-        Date time = calendar.getTime();
-        if (time.before(new Date(System.currentTimeMillis()))) {
-            calendar.add(Calendar.DAY_OF_MONTH, 1);
-            time = calendar.getTime();
-        }
-        // 保存 count 的容器
-        final Pair<Integer, Object> pair = Pair.of(count, null);
-        RobotConfig.logger.info("下一次任务执行时间 = " + time);
-        RobotCronTask.service.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                MessageChain msg = message;
-                RobotConfig.logger.info("本次任务执行时间 = " + new Date());
-                RobotConfig.logger.info("本次剩余次数 = " + String.valueOf(pair.getKey() - 1));
-                if (plusImage) {
-                    try {
-                        msg = message.plus(RobotUtil.uploadImage(
-                                contact, new URL(PixivApi.beautifulImageUrl)
-                        ));
-                    } catch (FileUploadException | MalformedURLException e) {
-                        e.printStackTrace();
-                    }
-                }
-                contact.sendMessage(msg);
-                pair.setKey(pair.getKey() - 1);
-                if (pair.getKey() <= 0) {
-                    this.cancel();
-                    RobotConfig.logger.info("定时任务执行次数达到阈值，已取消该任务");
-                }
-            }
-        }, time, 1000 * 60 * 60 * 24 - 100);
+    public static void submitSendMsgTask(int hour, int minute, int count, boolean plusImage, List<MessageChain> messages, Contact contact) throws Exception {
+        JobDataMap jobData = PeriodCronJob.PeriodCronJobData.getJobDataMap(count, plusImage, messages, contact);
+        RobotCronJob.submitCronJob(PeriodCronJob.class,
+                CronScheduleBuilder.dailyAtHourAndMinute(hour, minute), jobData);
     }
 
 
@@ -521,7 +462,7 @@ public class RobotUtil {
      * @return 返回 future，可以调用 future.cancel 以取消事件
      */
     public static void submitSendMsgTask(MessageChain msg, Contact contact, long waitTime) throws CanNotSendMessageException {
-        RobotCronTask.service.schedule(new TimerTask() {
+        RobotCronJob.service.schedule(new TimerTask() {
             @Override
             public void run() {
                 try {
@@ -544,7 +485,7 @@ public class RobotUtil {
      * @return 返回 future，可以调用 future.cancel 以取消事件
      */
     public static void submitSendMsgTaskAtFixRate(MessageChain msg, Contact contact, long initTTime, long waitTime) throws CanNotSendMessageException {
-        RobotCronTask.service.scheduleAtFixedRate(new TimerTask() {
+        RobotCronJob.service.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 try {
@@ -559,6 +500,12 @@ public class RobotUtil {
 
     public static String formatTime() {
         Date d = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return sdf.format(d);
+    }
+
+    public static String formatTime(long ts) {
+        Date d = new Date(ts);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return sdf.format(d);
     }

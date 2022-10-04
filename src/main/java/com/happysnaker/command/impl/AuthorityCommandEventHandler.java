@@ -20,7 +20,7 @@ import java.util.Map;
  * @email happysnaker@foxmail.com
  */
 @handler(priority = 1024)
-public class AuthorityCommandMessageEventHandler extends DefaultCommandMessageEventHandlerManager {
+public class AuthorityCommandEventHandler extends DefaultCommandEventHandlerManager {
     public static final String GRANT_ADMIN = "授予管理员权限";
     public static final String GRANT_GT_ADMIN = "授予坎公管理员权限";
     public static final String GRANT_GROUP_ADMIN = "授予群管理员权限";
@@ -31,7 +31,7 @@ public class AuthorityCommandMessageEventHandler extends DefaultCommandMessageEv
 
     public static final Map<Integer, String> permissionMap = new HashMap<>();
 
-    public AuthorityCommandMessageEventHandler() {
+    public AuthorityCommandEventHandler() {
         super.registerKeywords(GRANT_ADMIN);
         super.registerKeywords(GRANT_GT_ADMIN);
         super.registerKeywords(SEE_PERMISSION);
@@ -81,8 +81,8 @@ public class AuthorityCommandMessageEventHandler extends DefaultCommandMessageEv
             sb.append("- " + permissionMap.get(p) + "\n");
         }
         return sb.length() == 0 ?
-                buildMessageChainAsList("用户 " + qq + " 无任何权限") :
-                buildMessageChainAsList("用户 " + qq + " 的权限为:\n" + sb);
+                buildMessageChainAsSingletonList("用户 " + qq + " 无任何权限") :
+                buildMessageChainAsSingletonList("用户 " + qq + " 的权限为:\n" + sb);
     }
 
     private List<MessageChain> removeGroupAdmin(MessageEvent event) throws CanNotParseCommandException, InsufficientPermissionsException {
@@ -94,10 +94,10 @@ public class AuthorityCommandMessageEventHandler extends DefaultCommandMessageEv
             throw new InsufficientPermissionsException();
         }
         if (!RobotConfig.groupAdministrator.contains(qq)) {
-            return buildMessageChainAsList("qq: " + qq + " 不是群管理员，此操作无任何动作");
+            return buildMessageChainAsSingletonList("qq: " + qq + " 不是群管理员，此操作无任何动作");
         }
         if (RobotConfig.groupAdministrator.remove(qq)) {
-            return buildMessageChainAsList("移除成功");
+            return buildMessageChainAsSingletonList("移除成功");
         }
         throw new CanNotParseCommandException("未知错误");
     }
@@ -111,10 +111,10 @@ public class AuthorityCommandMessageEventHandler extends DefaultCommandMessageEv
             throw new InsufficientPermissionsException();
         }
         if (!RobotConfig.gtAdministrator.contains(qq)) {
-            return buildMessageChainAsList("qq: " + qq + " 不是坎公管理员，此操作无任何动作");
+            return buildMessageChainAsSingletonList("qq: " + qq + " 不是坎公管理员，此操作无任何动作");
         }
         if (RobotConfig.gtAdministrator.remove(qq)) {
-            return buildMessageChainAsList("移除成功");
+            return buildMessageChainAsSingletonList("移除成功");
         }
         throw new CanNotParseCommandException("未知错误");
     }
@@ -128,10 +128,10 @@ public class AuthorityCommandMessageEventHandler extends DefaultCommandMessageEv
             throw new InsufficientPermissionsException();
         }
         if (!RobotConfig.administrator.contains(qq)) {
-            return buildMessageChainAsList("qq: " + qq + " 不是管理员，此操作无任何动作");
+            return buildMessageChainAsSingletonList("qq: " + qq + " 不是管理员，此操作无任何动作");
         }
         if (RobotConfig.administrator.remove(qq)) {
-            return buildMessageChainAsList("移除成功");
+            return buildMessageChainAsSingletonList("移除成功");
         }
         throw new CanNotParseCommandException("未知错误");
     }
@@ -145,10 +145,10 @@ public class AuthorityCommandMessageEventHandler extends DefaultCommandMessageEv
             throw new InsufficientPermissionsException();
         }
         if (RobotConfig.gtAdministrator.contains(qq)) {
-            return buildMessageChainAsList(qq + " 已是坎公管理员");
+            return buildMessageChainAsSingletonList(qq + " 已是坎公管理员");
         }
         if (RobotConfig.gtAdministrator.add(qq)) {
-            return buildMessageChainAsList("配置成功");
+            return buildMessageChainAsSingletonList("配置成功");
         }
         throw new CanNotParseCommandException("未知错误");
     }
@@ -162,10 +162,10 @@ public class AuthorityCommandMessageEventHandler extends DefaultCommandMessageEv
             throw new InsufficientPermissionsException();
         }
         if (RobotConfig.groupAdministrator.contains(qq)) {
-            return buildMessageChainAsList(qq + " 已是坎公管理员");
+            return buildMessageChainAsSingletonList(qq + " 已是坎公管理员");
         }
         if (RobotConfig.groupAdministrator.add(qq)) {
-            return buildMessageChainAsList("配置成功");
+            return buildMessageChainAsSingletonList("配置成功");
         }
         throw new CanNotParseCommandException("未知错误");
     }
@@ -179,10 +179,10 @@ public class AuthorityCommandMessageEventHandler extends DefaultCommandMessageEv
             throw new InsufficientPermissionsException();
         }
         if (RobotConfig.administrator.contains(qq)) {
-            return buildMessageChainAsList(qq + " 已是管理员");
+            return buildMessageChainAsSingletonList(qq + " 已是管理员");
         }
         if (RobotConfig.administrator.add(qq)) {
-            return buildMessageChainAsList("配置成功");
+            return buildMessageChainAsSingletonList("配置成功");
         }
         throw new CanNotParseCommandException("未知错误");
     }

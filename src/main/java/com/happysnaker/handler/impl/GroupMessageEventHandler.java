@@ -196,7 +196,7 @@ public class GroupMessageEventHandler extends AbstractMessageEventHandler {
         if (help1.equals(content) || help2.equals(content) || help3.equals(content)) {
             try {
                 if (!RobotConfig.menu.isEmpty()) {
-                    return buildMessageChainAsList(RobotConfig.menu);
+                    return buildMessageChainAsSingletonList(RobotConfig.menu);
                 }
                 return doHelp(event);
             } catch (FileUploadException | MalformedURLException e) {

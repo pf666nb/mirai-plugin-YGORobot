@@ -1,6 +1,7 @@
 package com.happysnaker.utils;
 
 import com.alibaba.fastjson.JSONObject;
+import com.happysnaker.Main;
 import com.happysnaker.config.RobotConfig;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -41,7 +42,9 @@ public class ConfigUtil {
             "skipStep",
             "periodicTask",
             "colorSwitch",
-            "russianRoulette"
+            "russianRoulette",
+            "colorStrategy",
+            "subscribe"
     );
 
 
@@ -106,5 +109,21 @@ public class ConfigUtil {
     /**
      * 配置类模板，在第一次创建配置文件时会写入此模板
      */
-    public static String TEMPLATE = Objects.requireNonNull(IOUtil.readFromFile(new File("config_template.yaml"))).replace("$CURRENT_VERSION", RobotConfig.CURRENT_VERSION);
+    public static String TEMPLATE = "";
+
+    static {
+        InputStream inputStream = ConfigUtil.class.getClassLoader().getResourceAsStream("config/config_template.yaml");
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                TEMPLATE += line + "\n";
+            }
+            inputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            RobotConfig.logger.info("配置文件模板写入有误，请手动编写配置文件，可参考 Github 中的配置模板");
+            System.exit(1);
+        }
+    }
 }

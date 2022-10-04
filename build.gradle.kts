@@ -29,8 +29,6 @@ dependencies{
     implementation("org.apache.commons:commons-lang3:3.12.0")
     implementation("org.quartz-scheduler:quartz:2.2.1")
 
-//    compile group: 'org.yaml', name: 'snakeyaml', version: '1.25'
-
 }
 
 val compileKotlin: KotlinCompile by tasks

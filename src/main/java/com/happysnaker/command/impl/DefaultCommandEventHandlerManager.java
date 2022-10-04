@@ -21,14 +21,14 @@ import java.util.Set;
  * @date 2022/2/23
  * @email happysnaker@foxmail.com
  */
-public class DefaultCommandMessageEventHandlerManager extends AbstractCommandMessageEventHandler implements Serializable {
+public class DefaultCommandEventHandlerManager extends AbstractCommandEventHandler implements Serializable {
     protected Set<String> keywords = new HashSet<>();
 
     private static StringBuilder log = new StringBuilder();
     private static int successNum = 0;
 
 
-    protected DefaultCommandMessageEventHandlerManager registerKeywords(String kw) {
+    protected DefaultCommandEventHandlerManager registerKeywords(String kw) {
         keywords.add(kw);
         return this;
     }
