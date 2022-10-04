@@ -23,7 +23,7 @@ public class PneumoniaMessageEventHandler extends GroupMessageEventHandler {
             }
             Map<String, Object> map = PneumoniaApi.queryPneumoniaMap(content);
             if (map == null) {
-                return buildMessageChainAsList("未查询到相关数据", getQuoteReply(event));
+                return buildMessageChainAsSingletonList("未查询到相关数据", getQuoteReply(event));
             }
             String lastUpdateTime = (String) map.get("lastUpdateTime");
             sb.append("查询" + content + "疫情结果\n");
@@ -54,11 +54,11 @@ public class PneumoniaMessageEventHandler extends GroupMessageEventHandler {
             sb.append("累计境外输入：" + total.getOrDefault("input", 0) + "\n");
             sb.append("累计治愈：" + total.getOrDefault("heal", 0) + "\n");
             System.out.println(sb);
-            return buildMessageChainAsList(sb.toString());
+            return buildMessageChainAsSingletonList(sb.toString());
         } catch (Exception e) {
             e.printStackTrace();
             logError(event, e);
-            return buildMessageChainAsList("哎呦不错哦，竟然出错了，错误原因：" + StringUtil.getErrorInfoFromException(e));
+            return buildMessageChainAsSingletonList("哎呦不错哦，竟然出错了，错误原因：" + StringUtil.getErrorInfoFromException(e));
         }
     }
 

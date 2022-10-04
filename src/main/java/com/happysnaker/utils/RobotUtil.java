@@ -1,8 +1,7 @@
 package com.happysnaker.utils;
 
-import com.happysnaker.api.PixivApi;
-import com.happysnaker.config.RobotConfig;
-import com.happysnaker.cron.RobotCronTask;
+import com.happysnaker.cron.PeriodCronJob;
+import com.happysnaker.cron.RobotCronJob;
 import com.happysnaker.exception.CanNotSendMessageException;
 import com.happysnaker.exception.FileUploadException;
 import net.mamoe.mirai.Bot;
@@ -13,6 +12,7 @@ import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.ExternalResource;
+import org.quartz.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -40,7 +40,7 @@ public class RobotUtil {
      * @param errorMsg
      */
     public static void recordFailLog(MessageEvent event, String errorMsg) {
-        RobotCronTask.service.schedule(new TimerTask() {
+        RobotCronJob.service.schedule(new TimerTask() {
             @Override
             public void run() {
                 String filePath = ConfigUtil.getDataFilePath("error.log");
@@ -216,8 +216,14 @@ public class RobotUtil {
     public static MessageChain buildMessageChain(Object... m) {
         MessageChainBuilder builder = new MessageChainBuilder();
         for (Object s : m) {
+            if (s == null) {
+                continue;
+            }
             if (s instanceof String) {
                 s = new PlainText((CharSequence) s);
+            }
+            if (s instanceof StringBuilder) {
+                s = new PlainText((CharSequence) s.toString());
             }
             builder.append((SingleMessage) s);
         }
@@ -231,7 +237,7 @@ public class RobotUtil {
      * @param m 多个 SingleMessage
      * @return 将多个 SingleMessage 组合成 MessageChain List，List 的大小只为 1
      */
-    public static List<MessageChain> buildMessageChainAsList(Object... m) {
+    public static List<MessageChain> buildMessageChainAsSingletonList(Object... m) {
         return OfUtil.ofList(buildMessageChain(m));
     }
 
@@ -314,7 +320,13 @@ public class RobotUtil {
     public static QuoteReply getQuoteReply(MessageEvent event) {
         return new QuoteReply(event.getMessage());
     }
-    
+
+    /**
+     * 简单回复一条字符串消息
+     * @param event
+     * @param msg
+     * @return
+     */
     public static MessageChain quoteReply(MessageEvent event, String msg) {
         return buildMessageChain(getQuoteReply(event), msg);
     }
@@ -389,6 +401,40 @@ public class RobotUtil {
         }
     }
 
+    /**
+     * 发送一条将自动撤回的消息，子类可以提前发送消息，而不必等到由 getReplyMessage 方法被调用，请注意，即使子类提前发送消息，getReplyMessage 仍然会被调用，不过子类可以在 getReplyMessage 方法内返回 null 值以表示不发送消息
+     *
+     * @param msg        消息
+     * @param e    消息事件
+     * @param autoRecall 自动撤回等待时间(毫秒)
+     * @return
+     */
+    public static void sendMsg(MessageChain msg, MessageEvent e, long autoRecall) throws CanNotSendMessageException {
+        try {
+            e.getSubject().sendMessage(msg).recallIn(autoRecall);
+        } catch (Exception ee) {
+            throw new CanNotSendMessageException(ee.getMessage());
+        }
+    }
+
+
+
+    /**
+     * 提交一条基于 cron 定时发送的消息
+     *
+     * @param cronExpression cron 表达式
+     * @param plusImage 是否需要附带一张图片
+     * @param messages   消息列表，会随机选择一条消息
+     * @param count 执行次数
+     * @throws CanNotSendMessageException
+     */
+    public static void submitSendMsgTask(String cronExpression, int count, boolean plusImage, List<MessageChain> messages, Contact contact) throws CanNotSendMessageException, SchedulerException, InterruptedException {
+        JobDataMap jobData = PeriodCronJob.PeriodCronJobData.getJobDataMap(count, plusImage, messages, contact);
+        RobotCronJob.submitCronJob(PeriodCronJob.class,
+                CronScheduleBuilder.cronSchedule(cronExpression), jobData);
+    }
+
+
 
     /**
      * 提交一条每天定时发送的消息
@@ -396,44 +442,14 @@ public class RobotUtil {
      * @param hour      0-23
      * @param minute    0-60
      * @param count     需要执行几次，大于等于 1
-     * @param plusImage
-     * @param message   消息
+     * @param plusImage 是否需要附带一张图片
+     * @param messages   消息列表，机器人会随机选择一条消息发送
      * @throws CanNotSendMessageException
      */
-    public static void submitSendMsgTask(int hour, int minute, int count, boolean plusImage, MessageChain message, Contact contact) throws CanNotSendMessageException {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, hour);
-        calendar.set(Calendar.MINUTE, minute);
-        calendar.set(Calendar.SECOND, 0);
-        Date time = calendar.getTime();
-        if (time.before(new Date(System.currentTimeMillis()))) {
-            calendar.add(Calendar.DAY_OF_MONTH, 1);
-            time = calendar.getTime();
-        }
-        // 保存 count 的容器
-        final PairUtil<Integer, Object> pair = PairUtil.of(count, null);
-        RobotConfig.logger.info("下一次任务执行时间 = " + time);
-        RobotCronTask.service.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                MessageChain msg = message;
-                if (plusImage) {
-                    try {
-                        msg = message.plus(RobotUtil.uploadImage(
-                                contact, new URL(PixivApi.beautifulImageUrl)
-                        ));
-                    } catch (FileUploadException | MalformedURLException e) {
-                        e.printStackTrace();
-                    }
-                }
-                contact.sendMessage(msg);
-                pair.setKey(pair.getKey() - 1);
-                if (pair.getKey() <= 0) {
-                    this.cancel();
-                    RobotConfig.logger.info("定时任务执行次数达到阈值，已取消该任务");
-                }
-            }
-        }, time, 1000 * 60 * 60 * 24 - 100);
+    public static void submitSendMsgTask(int hour, int minute, int count, boolean plusImage, List<MessageChain> messages, Contact contact) throws Exception {
+        JobDataMap jobData = PeriodCronJob.PeriodCronJobData.getJobDataMap(count, plusImage, messages, contact);
+        RobotCronJob.submitCronJob(PeriodCronJob.class,
+                CronScheduleBuilder.dailyAtHourAndMinute(hour, minute), jobData);
     }
 
 
@@ -446,7 +462,7 @@ public class RobotUtil {
      * @return 返回 future，可以调用 future.cancel 以取消事件
      */
     public static void submitSendMsgTask(MessageChain msg, Contact contact, long waitTime) throws CanNotSendMessageException {
-        RobotCronTask.service.schedule(new TimerTask() {
+        RobotCronJob.service.schedule(new TimerTask() {
             @Override
             public void run() {
                 try {
@@ -469,7 +485,7 @@ public class RobotUtil {
      * @return 返回 future，可以调用 future.cancel 以取消事件
      */
     public static void submitSendMsgTaskAtFixRate(MessageChain msg, Contact contact, long initTTime, long waitTime) throws CanNotSendMessageException {
-        RobotCronTask.service.scheduleAtFixedRate(new TimerTask() {
+        RobotCronJob.service.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 try {
@@ -484,6 +500,12 @@ public class RobotUtil {
 
     public static String formatTime() {
         Date d = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return sdf.format(d);
+    }
+
+    public static String formatTime(long ts) {
+        Date d = new Date(ts);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return sdf.format(d);
     }

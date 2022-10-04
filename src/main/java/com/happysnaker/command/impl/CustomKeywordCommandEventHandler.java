@@ -6,7 +6,7 @@ import com.happysnaker.exception.InsufficientPermissionsException;
 import com.happysnaker.handler.handler;
 import com.happysnaker.handler.impl.CustomKeywordMessageEventHandler;
 import com.happysnaker.permission.Permission;
-import com.happysnaker.utils.PairUtil;
+import com.happysnaker.utils.Pair;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -23,7 +23,7 @@ import java.util.Set;
  * @email happysnaker@foxmail.com
  */
 @handler(priority = 1024)
-public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessageEventHandlerManager {
+public class CustomKeywordCommandEventHandler extends DefaultCommandEventHandlerManager {
     public static final String SET_KEYWORD = "设置关键字回复";
     public static final String SET_GROUP_KEYWORD = "设置群内关键字回复";
     public static final String REMOVE_KEYWORD = "移除关键字";
@@ -33,7 +33,7 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
     public static final String CLEAR_ALL = "清空所有关键字";
     public static final String SEE_GROUP_KEYWORD = "查看群内关键字";
 
-    public CustomKeywordCommandMessageEventHandler() {
+    public CustomKeywordCommandEventHandler() {
         super.registerKeywords(SET_KEYWORD);
         super.registerKeywords(SET_GROUP_KEYWORD);
         super.registerKeywords(REMOVE_GROUP_KEYWORD);
@@ -84,15 +84,15 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
         }
         // 去除命令
         String content = getContent(event).replace(RobotConfig.commandPrefix + SET_KEYWORD, "").trim();
-        PairUtil<String, String> pair;
+        Pair<String, String> pair;
         if (hasQuote(event)) {
-            pair = PairUtil.of(content, getContent(getQuoteMessageChain(event)));
+            pair = Pair.of(content, getContent(getQuoteMessageChain(event)));
         } else {
             pair = getKeyVal(content);
         }
         String regexKey =  StringEscapeUtils.unescapeJava(pair.getKey());
         RobotConfig.customKeyword.put(regexKey, pair.getValue());
-        return buildMessageChainAsList("添加全局自定义关键字 " + regexKey + " 及回复成功！");
+        return buildMessageChainAsSingletonList("添加全局自定义关键字 " + regexKey + " 及回复成功！");
     }
 
     /**
@@ -108,16 +108,16 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
         }
         // 去除命名
         String content = getContent(event).replace(RobotConfig.commandPrefix + SET_GROUP_KEYWORD, "").trim();
-        PairUtil<String, String> pair;
+        Pair<String, String> pair;
         if (hasQuote(event)) {
-            pair = PairUtil.of(content, getContent(getQuoteMessageChain(event)));
+            pair = Pair.of(content, getContent(getQuoteMessageChain(event)));
         } else {
             pair = getKeyVal(content);
         }
         RobotConfig.customKeyword.putIfAbsent(getGroupId(event), new HashMap<>());
         Map<String, Object> gMap = (Map<String, Object>) RobotConfig.customKeyword.get(getGroupId(event));
         gMap.put(pair.getKey(), pair.getValue());
-        return buildMessageChainAsList("添加群内自定义关键字 " + pair.getKey().replace(CustomKeywordMessageEventHandler.REGEX_PREFIX, "") + " 及回复成功！");
+        return buildMessageChainAsSingletonList("添加群内自定义关键字 " + pair.getKey().replace(CustomKeywordMessageEventHandler.REGEX_PREFIX, "") + " 及回复成功！");
     }
 
 
@@ -134,9 +134,9 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
         }
         String content = getContent(event).replace(RobotConfig.commandPrefix + REMOVE_KEYWORD, "").trim();
         if (RobotConfig.customKeyword.remove(content) == null) {
-            return buildMessageChainAsList("不包含此全局关键字：" + content);
+            return buildMessageChainAsSingletonList("不包含此全局关键字：" + content);
         }
-        return buildMessageChainAsList("移除成功");
+        return buildMessageChainAsSingletonList("移除成功");
     }
 
     /**
@@ -152,13 +152,13 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
         }
         String content = getContent(event).replace(RobotConfig.commandPrefix + REMOVE_GROUP_KEYWORD, "").trim();
         if (!RobotConfig.customKeyword.containsKey(getGroupId(event))) {
-            return buildMessageChainAsList("此群暂无任何群内关键字配置");
+            return buildMessageChainAsSingletonList("此群暂无任何群内关键字配置");
         }
         Map<String, Object> gMap = (Map<String, Object>) RobotConfig.customKeyword.get(getGroupId(event));
         if (gMap.remove(content) == null) {
-            return buildMessageChainAsList("不包含此群内关键字：" + content);
+            return buildMessageChainAsSingletonList("不包含此群内关键字：" + content);
         }
-        return buildMessageChainAsList("移除成功");
+        return buildMessageChainAsSingletonList("移除成功");
     }
 
 
@@ -181,7 +181,7 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
             }
         }
         RobotConfig.customKeyword = map;
-        return buildMessageChainAsList("已清空所有全局关键字");
+        return buildMessageChainAsSingletonList("已清空所有全局关键字");
     }
 
     /**
@@ -196,7 +196,7 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
             throw new InsufficientPermissionsException();
         }
         RobotConfig.customKeyword.remove(getGroupId(event));
-        return buildMessageChainAsList("已清空群 " + getGroupId(event) + " 内的所有关键字");
+        return buildMessageChainAsSingletonList("已清空群 " + getGroupId(event) + " 内的所有关键字");
     }
 
     /**
@@ -211,7 +211,7 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
             throw new InsufficientPermissionsException();
         }
         RobotConfig.customKeyword = new HashMap<>();
-        return buildMessageChainAsList("已清空所有关键字信息");
+        return buildMessageChainAsSingletonList("已清空所有关键字信息");
     }
 
 
@@ -221,7 +221,7 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
      * @return
      * @throws CanNotParseCommandException
      */
-    private PairUtil<String, String> getKeyVal(String content) throws CanNotParseCommandException {
+    private Pair<String, String> getKeyVal(String content) throws CanNotParseCommandException {
         int l = content.indexOf('{');
         int r = content.indexOf('}');
         if (l == -1 || r == -1) {
@@ -232,6 +232,6 @@ public class CustomKeywordCommandMessageEventHandler extends DefaultCommandMessa
             throw new CanNotParseCommandException("不正确的关键字格式，关键字不得以机器人所有的群号");
         }
         String val = content.replace("{" + keyword + "}", "");
-        return new PairUtil<>(keyword.trim(), val.trim());
+        return new Pair<>(keyword.trim(), val.trim());
     }
 }

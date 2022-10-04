@@ -1,6 +1,5 @@
 package com.happysnaker.utils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -10,16 +9,16 @@ import java.util.Objects;
  * @date 2022/1/30
  * @email happysnaker@foxmail.com
  */
-public class PairUtil<K, V> {
+public class Pair<K, V> {
     K key;
     V value;
 
-    public static<K, V> PairUtil<K, V> of(K key, V val) {
-        return new PairUtil<>(key, val);
+    public static<K, V> Pair<K, V> of(K key, V val) {
+        return new Pair<>(key, val);
     }
 
-    public static<K, V> List<PairUtil<K, V>> ofList(K key1, V val1, K key2, V val2, K key3, V val3) {
-        return OfUtil.ofList(PairUtil.of(key1, val1), PairUtil.of(key2, val2), PairUtil.of(key3, val3));
+    public static<K, V> List<Pair<K, V>> ofList(K key1, V val1, K key2, V val2, K key3, V val3) {
+        return OfUtil.ofList(Pair.of(key1, val1), Pair.of(key2, val2), Pair.of(key3, val3));
     }
 
     public void setKey(K key) {
@@ -30,7 +29,7 @@ public class PairUtil<K, V> {
         this.value = value;
     }
 
-    public PairUtil(K key, V value) {
+    public Pair(K key, V value) {
         this.key = key;
         this.value = value;
     }
@@ -41,7 +40,7 @@ public class PairUtil<K, V> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PairUtil<?, ?> pair = (PairUtil<?, ?>) o;
+        Pair<?, ?> pair = (Pair<?, ?>) o;
         return Objects.equals(key, pair.key) && Objects.equals(value, pair.value);
     }
 

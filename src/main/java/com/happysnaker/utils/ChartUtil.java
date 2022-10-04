@@ -1,7 +1,7 @@
 package com.happysnaker.utils;
 
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.cron.RobotCronTask;
+import com.happysnaker.cron.RobotCronJob;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -24,27 +24,25 @@ import java.util.UUID;
 /**
  * 图表实用类，为坎公骑冠剑生成会展报表，方法返回文件名
  * @author Happysnaker
- * @description
+ * @description 待重构
  * @date 2022/2/26
  * @email happysnaker@foxmail.com
  */
+@Deprecated
 public class ChartUtil {
     static {
         RobotConfig.logger.info("注册后台清理任务...");
-        RobotCronTask.addCronTask(new Runnable() {
-            @Override
-            public void run() {
-                File file = new File(ConfigUtil.getDataFilePath("img"));
-                if (!file.exists() || !file.isDirectory()) {
-                    file.mkdir();
-                } else {
-                    for (File listFile : file.listFiles()) {
-                        if (listFile.isFile()) {
-                            listFile.delete();
-                        }
+        RobotCronJob.addCronTask(() -> {
+            File file = new File(ConfigUtil.getDataFilePath("img"));
+            if (!file.exists() || !file.isDirectory()) {
+                file.mkdir();
+            } else {
+                for (File listFile : file.listFiles()) {
+                    if (listFile.isFile()) {
+                        listFile.delete();
                     }
-                    RobotConfig.logger.info("已清理不要的图片");
                 }
+                RobotConfig.logger.info("已清理不要的图片");
             }
         });
     }
@@ -73,7 +71,7 @@ public class ChartUtil {
             //设置图例项目字体
             chart.getLegend().setItemFont(font);
 
-            plot.setStartAngle(new Float(3.14f / 2f));
+            plot.setStartAngle(3.14f / 2f);
 
             //设置plot的前景色透明度
             plot.setForegroundAlpha(0.7f);
@@ -95,12 +93,12 @@ public class ChartUtil {
         }
     }
 
-    public static String generateALineChart(List<PairUtil<String, List<PairUtil<String, Double>>>> datasets, String title, String rowTitle, String colTitle) throws IOException {
+    public static String generateALineChart(List<Pair<String, List<Pair<String, Double>>>> datasets, String title, String rowTitle, String colTitle) throws IOException {
         try {
             //种类数据集
             DefaultCategoryDataset ds = new DefaultCategoryDataset();
-            for (PairUtil<String, List<PairUtil<String, Double>>> dataset : datasets) {
-                for (PairUtil<String, Double> it : dataset.getValue()) {
+            for (Pair<String, List<Pair<String, Double>>> dataset : datasets) {
+                for (Pair<String, Double> it : dataset.getValue()) {
                     ds.setValue(it.getValue(), dataset.getKey(), it.getKey());
                 }
             }
@@ -146,13 +144,13 @@ public class ChartUtil {
     }
 
 
-    public static String generateHistogram(List<PairUtil<String, List<PairUtil<String, Double>>>> datasets, String title, String rowTitle, String colTitle) throws IOException {
+    public static String generateHistogram(List<Pair<String, List<Pair<String, Double>>>> datasets, String title, String rowTitle, String colTitle) throws IOException {
         try {
             //种类数据集
             DefaultCategoryDataset ds = new DefaultCategoryDataset();
 
-            for (PairUtil<String, List<PairUtil<String, Double>>> dataset : datasets) {
-                for (PairUtil<String, Double> it : dataset.getValue()) {
+            for (Pair<String, List<Pair<String, Double>>> dataset : datasets) {
+                for (Pair<String, Double> it : dataset.getValue()) {
                     ds.setValue(it.getValue(), dataset.getKey(), it.getKey());
                 }
             }

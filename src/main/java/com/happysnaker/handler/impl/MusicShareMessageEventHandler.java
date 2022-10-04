@@ -4,7 +4,6 @@ import com.happysnaker.api.MiguApi;
 import com.happysnaker.api.TongZhongApi;
 import com.happysnaker.context.Context;
 import com.happysnaker.handler.handler;
-import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.*;
 
@@ -48,19 +47,22 @@ public class MusicShareMessageEventHandler extends GroupMessageEventHandler {
         } catch (Exception e) {
             e.printStackTrace();
             logError(event, e);
+            return buildMessageChainAsSingletonList("出错了呢，换首歌试试吧！\n" + e.getMessage());
         }
-        return buildMessageChainAsList("出错了呢，换首歌试试吧！");
+        return null;
     }
 
     protected List<MessageChain> miguMusic(MessageEvent event) throws IOException {
         String content = getPlantContent(event);
         String name = content.substring(MIGU_MUSIC_KEYWORD.length()).trim();
-        return buildMessageChainAsList(MiguApi.search(name));
+        return buildMessageChainAsSingletonList(MiguApi.search(name));
     }
 
-    protected List<MessageChain> music(MessageEvent event) {
+    protected List<MessageChain> music(MessageEvent event) throws IOException {
         List<MessageChain> ans = new ArrayList<>();
         String content = getPlantContent(event);
+        // ffmpeg -i 稻香.mp3 -f wav test.wav
+        // ffmpeg -i test.wav -ar 8000 -ab 12.2k -ac 1 test.amr
         String name = content.substring(MUSIC_KEYWORD.length()).trim();
         try {
             MusicShare music = TongZhongApi.getSongUrl(name);
@@ -70,11 +72,12 @@ public class MusicShareMessageEventHandler extends GroupMessageEventHandler {
                 ans.add(buildMessageChain("查无此歌"));
             }
         } catch (Exception e) {
-            logError(event, e);
-            ans.add(new MessageChainBuilder().append("啊，我炸了").build());
+            throw new IOException(e);
         }
         return ans;
     }
+
+//    protected
 
     @Override
     public boolean shouldHandle(MessageEvent event, Context ctx) {

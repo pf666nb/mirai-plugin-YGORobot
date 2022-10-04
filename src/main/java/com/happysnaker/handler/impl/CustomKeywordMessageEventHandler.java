@@ -6,7 +6,6 @@ import com.happysnaker.handler.handler;
 import com.happysnaker.utils.StringUtil;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
-import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.util.List;
 import java.util.Map;

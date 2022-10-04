@@ -78,9 +78,9 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
             if (content.startsWith(stop)) {
                 if (Permission.hasGroupAdmin(qq) || getSenderPermission(event) != 0) {
                     map.remove(groupId);
-                    return buildMessageChainAsList("弹夹已卸下，游戏结束");
+                    return buildMessageChainAsSingletonList("弹夹已卸下，游戏结束");
                 }
-                return buildMessageChainAsList(getQuoteReply(event), "您没有权限停止游戏，必须要本群管理员或机器人的群管理员权限才能执行此操作");
+                return buildMessageChainAsSingletonList(getQuoteReply(event), "您没有权限停止游戏，必须要本群管理员或机器人的群管理员权限才能执行此操作");
             }
 
             // 装弹命令
@@ -88,7 +88,7 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
                 content = content.replace(reload, "");
                 // 游戏仍在进行
                 if (map.containsKey(groupId)) {
-                    return buildMessageChainAsList(getQuoteReply(event), "游戏还未结束，请勿重复操作");
+                    return buildMessageChainAsSingletonList(getQuoteReply(event), "游戏还未结束，请勿重复操作");
                 }
 
                 List<String> splitSpaces = StringUtil.splitSpaces(content);
@@ -96,7 +96,7 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
                 // 加了参数，自定义装弹数
                 if (splitSpaces.size() != 0) {
                     if (!Permission.hasGroupAdmin(qq) && getSenderPermission(event) == 0) {
-                        return buildMessageChainAsList("您没有权限自定义弹夹数", getQuoteReply(event));
+                        return buildMessageChainAsSingletonList("您没有权限自定义弹夹数", getQuoteReply(event));
                     }
                 }
                 if (splitSpaces.size() == 1) {
@@ -116,7 +116,7 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
                     throw new Exception("这么多真弹数？想集体暴毙？");
                 }
                 map.put(groupId, helper);
-                return buildMessageChainAsList(getQuoteReply(event), "装弹成功，总弹数 " + helper.totalNum + " 弹，真弹数 " + helper.realNum + " 弹，让我们开始开枪吧，我已经迫不及待了！");
+                return buildMessageChainAsSingletonList(getQuoteReply(event), "装弹成功，总弹数 " + helper.totalNum + " 弹，真弹数 " + helper.realNum + " 弹，让我们开始开枪吧，我已经迫不及待了！");
             }
             if (!content.equals(shot)) {
                 return null;
@@ -125,10 +125,10 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
             // 开枪命令
             Helper helper;
             if ((helper = map.get(groupId)) == null) {
-                return buildMessageChainAsList("群暂未开启游戏，发送 装弹 来填充弹夹!");
+                return buildMessageChainAsSingletonList("群暂未开启游戏，发送 装弹 来填充弹夹!");
             }
             if (helper.shotMan.contains(qq)) {
-                return buildMessageChainAsList(getQuoteReply(event), "你已经中弹一次了，想学安倍身中两弹？我看你还是老老实实等待游戏结束吧！");
+                return buildMessageChainAsSingletonList(getQuoteReply(event), "你已经中弹一次了，想学安倍身中两弹？我看你还是老老实实等待游戏结束吧！");
             }
             boolean shot;
             int v;
@@ -179,7 +179,7 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
             }
         } catch (Exception e) {
             logError(event, e);
-            return buildMessageChainAsList("发生了意料之外、情理之中的错误：" + e.getMessage());
+            return buildMessageChainAsSingletonList("发生了意料之外、情理之中的错误：" + e.getMessage());
         }
     }
 

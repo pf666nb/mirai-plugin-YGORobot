@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "com.happysnaker"
-version = "1.0-SNAPSHOT"
+version = "3.3-SNAPSHOT"
 
 repositories {
     maven("https://maven.aliyun.com/repository/public")
@@ -27,8 +27,7 @@ dependencies{
     implementation("org.jsoup:jsoup:1.11.2")
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     implementation("org.apache.commons:commons-lang3:3.12.0")
-
-//    compile group: 'org.yaml', name: 'snakeyaml', version: '1.25'
+    implementation("org.quartz-scheduler:quartz:2.2.1")
 
 }
 

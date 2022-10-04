@@ -4,6 +4,7 @@ import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 机器人配置，调用者需直接调用此配置而非在本地线程保存，因为配置是可能被重载的
@@ -17,7 +18,7 @@ public class RobotConfig {
     /**
      * 插件版本，每次更新请更新此配置
      */
-    public static final String CURRENT_VERSION = "3.2.1";
+    public static final String CURRENT_VERSION = "3.3";
     
     /**
      * 主配置文件名
@@ -42,7 +43,7 @@ public class RobotConfig {
     /**
      * 日志
      */
-    public static MiraiLogger logger;
+    public volatile static MiraiLogger logger;
 
 
     /**
@@ -114,12 +115,12 @@ public class RobotConfig {
     /**
      * 发送鸡汤时有一定概率发送毒鸡汤，这个概率是 [0, 1] 之间的小数
      */
-    public static double duChickenSoupProbability = 0.1;
+    public static double duChickenSoupProbability = 0.2;
 
     /**
      * 聊天是否需要 @ 机器人，如果此字段为 false，则任意消息机器人都会回复
      */
-    public static boolean enableAt = true;
+    public volatile static boolean enableAt = true;
 
     /**
      * 自定义回复替代，可以将回复消息内的关键词替换为自定义语句
@@ -164,7 +165,22 @@ public class RobotConfig {
     public static boolean colorSwitch = true;
 
     /**
+     * 颜色图片发送策略 <br/>
+     * <ul>
+     *     <li>数值 0 表示不发送任何消息</li>
+     *     <li>数值 1 表示仅发送图片链接，不发送图片</li>
+     *     <li>数值 2 表示仅发送图片，不发送图片链接</li>
+     *     <li>数值 3 表示既发送图片，又发送图片链接</li>
+     * </ul>
+     */
+    public volatile static int colorStrategy = 2;
+
+    /**
      * 俄罗斯轮盘赌，key 分别是 totalNum, realNum, base，含义可参考配置文件
      */
     public static Map<String, Object> russianRoulette = new HashMap<>();
+    /**
+     * 订阅配置，keySet 为 platform、type、key、atMember
+     */
+    public static List<Map<String, Object>> subscribe = new ArrayList<>();
 }

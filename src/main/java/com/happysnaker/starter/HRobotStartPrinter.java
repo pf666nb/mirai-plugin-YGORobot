@@ -1,5 +1,7 @@
 package com.happysnaker.starter;
 
+import com.happysnaker.config.RobotConfig;
+
 /**
  * @author Happysnaker
  * @description
@@ -20,7 +22,7 @@ public class HRobotStartPrinter {
             "|   | '  ,/ :   ' | \\.'\\   \\  / |   | '/ : \\   \\  /   ;  :    ; \n" +
             ";   : ;--'  :   : :-'   `----'  |   :    |  `----'    |  ,   /  \n" +
             "|   ,/      |   |.'             /    \\  /              ---`-'       \n" +
-            "'---'       `---'               `-'----'                            v3.2.1";
+            "'---'       `---'               `-'----'                            v" + RobotConfig.CURRENT_VERSION;
 
     public static void printBanner() {
         System.out.println(banner);

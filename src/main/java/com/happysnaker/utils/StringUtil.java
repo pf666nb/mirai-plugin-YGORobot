@@ -15,7 +15,9 @@ import java.util.List;
  */
 public class StringUtil {
 
-
+    public static boolean isNullOrEmpty(String s) {
+        return s == null || s.isEmpty();
+    }
    public static List<String> splitSpaces(String s) {
        List<String> ans = new ArrayList<>();
        for (String s1 : s.split("\\s+")) {
@@ -34,6 +36,12 @@ public class StringUtil {
        return sb.toString();
    }
 
+    /**
+     * 获取编辑距离，值越小，二者越相似
+     * @param word1
+     * @param word2
+     * @return
+     */
     public static int getEditDistance(String word1, String word2) {
         int n1= word1.length(), n2 = word2.length();
         int[][] dp = new int[n1 + 1][n2 + 1];

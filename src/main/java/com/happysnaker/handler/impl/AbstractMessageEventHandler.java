@@ -1,7 +1,7 @@
 package com.happysnaker.handler.impl;
 
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.cron.RobotCronTask;
+import com.happysnaker.cron.RobotCronJob;
 import com.happysnaker.context.Context;
 import com.happysnaker.handler.MessageEventHandler;
 import com.happysnaker.utils.*;
@@ -94,14 +94,14 @@ public abstract class AbstractMessageEventHandler extends RobotUtil implements M
         }
         this.qqList = qqs;
 
-        try {
-            info("正在提交定期任务...");
-            RobotCronTask.cronPeriodTask();
-            info("任务提交成功！");
-        } catch (Exception e) {
-            e.printStackTrace();
-            error("定期任务提交失败，请检查配置是否成功，如有相关问题可前往 提出 ISSUE");
-        }
+//        try {
+//            info("正在提交定期任务...");
+//            RobotCronJob.runCustomerPeriodTask();
+//            info("任务提交成功！");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            error("定期任务提交失败，请检查配置是否成功，如有相关问题可前往 提出 ISSUE");
+//        }
     }
 
     public String getPlantContent(MessageEvent event) {

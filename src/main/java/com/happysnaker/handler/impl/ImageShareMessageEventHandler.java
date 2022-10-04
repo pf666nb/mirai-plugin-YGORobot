@@ -9,13 +9,10 @@ import com.happysnaker.exception.CanNotSendMessageException;
 import com.happysnaker.exception.FileUploadException;
 import com.happysnaker.handler.handler;
 import com.happysnaker.utils.IOUtil;
-import com.sun.imageio.plugins.common.ImageUtil;
-import net.mamoe.mirai.contact.Contact;
+import com.happysnaker.utils.StringUtil;
 import net.mamoe.mirai.event.events.MessageEvent;
-import net.mamoe.mirai.message.MessageReceipt;
 import net.mamoe.mirai.message.data.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -73,17 +70,8 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
             // 涩图 或 高清涩图
             if (content.startsWith(seImage) || content.startsWith(seImagePlus)) {
                 String tem = content.startsWith(seImage) ? seImage : seImagePlus;
-                // 需要分割 tag
-                List<String> tags = getTags(content, tem);
                 //检测到涩图需要自动撤回，因此自定义逻辑处理，处理完返回 null，不需要抽象类的逻辑
-                MessageChain chain = doParseSeImage(event, tags, tem.equals(seImagePlus), true);
-
-                if (chain != null && !chain.isEmpty() && chain.get(0) instanceof Image) {
-                    MessageReceipt<Contact> receipt = event.getSubject().sendMessage(chain);
-                    receipt.recallIn(RobotConfig.pictureWithdrawalTime * 1000L);
-                } else {
-                    throw new Exception("无法获取涩图...");
-                }
+                doParseSeImageAndSend(event, getTags(content, tem), tem.equals(seImagePlus));
                 return null;
             }
 
@@ -157,28 +145,43 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
      * @param event
      * @param tags
      * @param isPlus 是否是高清涩图
-     * @return
      * @throws IOException
      * @throws FileUploadException
      */
-    private MessageChain doParseSeImage(MessageEvent event, List<String> tags, boolean isPlus, boolean sendUrl) throws IOException, FileUploadException, CanNotSendMessageException {
+    private void doParseSeImageAndSend(MessageEvent event, List<String> tags, boolean isPlus) throws IOException, FileUploadException, CanNotSendMessageException {
         if (!RobotConfig.colorSwitch) {
-            return null;
+            return;
         }
         long pid = PixivApi.getSeImagePid(tags);
         if (pid == -1) {
-            return buildMessageChain("查无此图");
+            buildMessageChain("查无此图");
+            return;
         }
         // 如果不是高清涩图加上 &web=true，表示请求一张更小的图片
         String api = isPlus ? pixivSearchApi : pixivSearchApi + "&web=true";
         String imgUrl = api.replace("IMGID", String.valueOf(pid));
-        info("color img url = " + imgUrl);
-        if (sendUrl) {
-            sendMsg(buildMessageChain("Color Image Url: ", imgUrl), event);
+        info("source color img url = " + imgUrl);
+
+        Image image = uploadImage(event, new URL(imgUrl));
+        // 可访问的地址，原地址可能会被腾讯视为恶意网站
+        String reachable_image_url = Image.queryUrl(image);
+        if (StringUtil.isNullOrEmpty(reachable_image_url)) {
+            reachable_image_url = imgUrl;
         }
-        return new MessageChainBuilder()
-                .append(uploadImage(event, new URL(imgUrl)))
-                .build();
+        switch (RobotConfig.colorStrategy) {
+            case 0:
+                return;
+            case 1:
+                sendMsg(buildMessageChain(getQuoteReply(event), "颜色图片链接：" + reachable_image_url), event);
+                break;
+            case 2:
+                sendMsg(buildMessageChain(image), event, RobotConfig.pictureWithdrawalTime * 1000L);
+                break;
+            case 3:
+                sendMsg(buildMessageChain(getQuoteReply(event), "颜色图片链接：" + reachable_image_url), event);
+                sendMsg(buildMessageChain(image), event, RobotConfig.pictureWithdrawalTime * 1000L);
+                break;
+        }
     }
 
     /**
