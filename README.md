@@ -28,7 +28,7 @@ V3.3 版本后可以选择仅发送涩图链接，这或许是个不错的选项
 
 如果你是新手，不会安装 java 环境，你可以使用安装器一键安装 java 环境 和 mcl，请移步：[mcl 一键安装](https://github.com/iTXTech/mcl-installer)。
 
-如果你会使用 Docker，强烈建议你使用 Docker 运行，可参考 [使用 Docker 运行](#使用 Docker 运行)
+如果你会使用 Docker，强烈建议你使用 Docker 运行，可参考 [使用 Docker 运行](#使用-Docker-运行)
 
 经过测试，HRobot 适配 mcl-1.2.2、mcl-1.2.1、mcl-2.1.1 版本，其他版本暂未测试，但应该都是支持的。
 
