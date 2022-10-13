@@ -21,7 +21,7 @@
 
 ## Linux 或 Docker 环境登录
 1. 在命令行中输入`login 账号 密码`，然后回车。
-   ![image-20221001162201804](https://happysnaker-1306579962.cos.ap-nanjing.myqcloud.com/img/typora202210011622811.png)
+  ![image](https://user-images.githubusercontent.com/73147033/195557836-23bb220f-bd16-412d-8644-da62b9be20e8.png)
 2. 如果出现上图提示，则需要进行验证，输入 `TxCaptchaHepler` ，然后回车，如果不需要验证则忽略。
    ![image-20221001162618180](https://happysnaker-1306579962.cos.ap-nanjing.myqcloud.com/img/typora202210011626265.png)
 3. 拿到请求码，在手机上打开刚刚下载的 apk 进行验证，如验证通过会有提示。如果仍需验证会有下列输出，如果不需要验证应该就直接登录了。
