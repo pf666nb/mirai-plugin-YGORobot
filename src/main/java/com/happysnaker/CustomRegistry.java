@@ -2,9 +2,8 @@ package com.happysnaker;
 
 import com.happysnaker.cron.RobotCronJob;
 import com.happysnaker.handler.impl.MemberJoinRequestEventHandler;
-import net.mamoe.mirai.event.GlobalEventChannel;
-import net.mamoe.mirai.event.events.BotActiveEvent;
-import net.mamoe.mirai.event.events.BotOfflineEvent;
+import net.mamoe.mirai.event.Event;
+import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.events.BotOnlineEvent;
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent;
 
@@ -16,7 +15,7 @@ import net.mamoe.mirai.event.events.MemberJoinRequestEvent;
  * @email happysnaker@foxmail.com
  */
 public class CustomRegistry {
-    public static void registry(GlobalEventChannel instance) {
+    public static void registry(EventChannel<Event> instance) {
         instance.subscribeAlways(MemberJoinRequestEvent.class, new MemberJoinRequestEventHandler()::handleEvent);
         instance.subscribeAlways(BotOnlineEvent.class, e -> {
             try {

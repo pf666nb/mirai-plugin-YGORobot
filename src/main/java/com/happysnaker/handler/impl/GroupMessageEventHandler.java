@@ -2,12 +2,14 @@ package com.happysnaker.handler.impl;
 
 import com.happysnaker.api.QingYunKeApi;
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.context.Context;
+import com.happysnaker.proxy.Context;
 import com.happysnaker.exception.FileUploadException;
 import com.happysnaker.exception.InsufficientPermissionsException;
 import com.happysnaker.handler.handler;
 import com.happysnaker.utils.OfUtil;
+import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.ContactList;
+import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.MemberPermission;
 import net.mamoe.mirai.contact.NormalMember;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
@@ -49,7 +51,7 @@ public class GroupMessageEventHandler extends AbstractMessageEventHandler {
      * @return
      */
     protected boolean isGroupMessageEvent(MessageEvent event) {
-        return event != null && event instanceof GroupMessageEvent;
+        return event instanceof GroupMessageEvent;
     }
 
 
@@ -84,8 +86,8 @@ public class GroupMessageEventHandler extends AbstractMessageEventHandler {
         if (qqList == null) {
             initBotQQ();
         }
-        for (String s : qqList) {
-            if (isAt(event, s)) {
+        for (Bot bot : Bot.getInstances()) {
+            if (isAt(event, String.valueOf(bot.getId()))) {
                 return true;
             }
         }
@@ -132,7 +134,7 @@ public class GroupMessageEventHandler extends AbstractMessageEventHandler {
         if ((members = getMembers(event)) != null) {
             for (NormalMember member : members) {
                 String s = member.getNameCard();
-                if (s == null || s.isEmpty()) {
+                if (s.isEmpty()) {
                     s = member.queryProfile().getNickname();
                 }
                 ans.add(s);
@@ -166,13 +168,13 @@ public class GroupMessageEventHandler extends AbstractMessageEventHandler {
      * @param groupName 群成员的群名片，如果为空，则为群成员的昵称
      * @return 未搜索到返回 -1
      */
-    protected Long getMemberId(MessageEvent event, String groupName) {
+    protected Long getMemberIdByName(MessageEvent event, String groupName) {
         ContactList<NormalMember> members;
         long ans = -1;
         if ((members = getMembers(event)) != null) {
             for (NormalMember member : members) {
                 String s = member.getNameCard();
-                if (s == null || s.isEmpty())
+                if (s.isEmpty())
                     s = member.queryProfile().getNickname();
                 if (s.equals(groupName))
                     return member.getId();
@@ -252,7 +254,6 @@ public class GroupMessageEventHandler extends AbstractMessageEventHandler {
             MessageSource.recall(source);
             return true;
         } catch (Exception e) {
-            e.getMessage();
             return false;
         }
     }
@@ -282,5 +283,29 @@ public class GroupMessageEventHandler extends AbstractMessageEventHandler {
     @Override
     public boolean startWithKeywords(MessageEvent event, Collection<String> keywords) {
         return isGroupMessageEvent(event) && super.startWithKeywords(event, keywords);
+    }
+
+    /**
+     * 禁言群成员
+     * @param qq 群成员 qq
+     * @param group 群
+     * @param durationSecond 秒
+     */
+    protected void mute(String qq, Group group, int durationSecond) {
+        for (NormalMember member : group.getMembers()) {
+            if (member.getId() == Long.parseLong(qq)) {
+                member.mute(durationSecond);
+                return;
+            }
+        }
+    }
+
+    /**
+     * 禁言发言者
+     * @param event 消息事件
+     * @param durationSecond 时长、秒
+     */
+    protected void muteSend(MessageEvent event, int durationSecond) {
+        getGroupMessageEvent(event).getSender().mute(durationSecond);
     }
 }

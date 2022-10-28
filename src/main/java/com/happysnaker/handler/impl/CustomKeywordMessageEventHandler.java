@@ -1,12 +1,13 @@
 package com.happysnaker.handler.impl;
 
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.context.Context;
+import com.happysnaker.proxy.Context;
 import com.happysnaker.handler.handler;
 import com.happysnaker.utils.StringUtil;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 
+import javax.naming.CannotProceedException;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -19,12 +20,19 @@ import java.util.regex.Pattern;
  * @email happysnaker@foxmail.com
  */
 @handler(priority = 0)
+@SuppressWarnings("unchecked")
 public class CustomKeywordMessageEventHandler extends GroupMessageEventHandler {
     public static final String REGEX_PREFIX = "#regex#";
 
     @Override
     public List<MessageChain> handleMessageEvent(MessageEvent event, Context ctx) {
-        return buildMessageChainAsList(parseMiraiCode(ctx.getMessage()));
+        try {
+            return buildMessageChainAsList(parseMiraiCode(ctx.getMessage()));
+        } catch (CannotProceedException e) {
+            e.printStackTrace();
+            logError(event, StringUtil.getErrorInfoFromException(e));
+            throw new  RuntimeException(e);
+        }
     }
 
     @Override
@@ -43,6 +51,7 @@ public class CustomKeywordMessageEventHandler extends GroupMessageEventHandler {
                 return true;
             }
         }
+        // 查找全局
         String reply = checkSimilarWordAndGetVal(keywordConfig, getContent(event));
         if (reply != null) {
             ctx.setMessage(reply);
@@ -66,6 +75,7 @@ public class CustomKeywordMessageEventHandler extends GroupMessageEventHandler {
                 continue;
             }
             int len = key.length();
+            // 相似度检测
             double maximumEditDistance = (1 - RobotConfig.customKeywordSimilarity) * len;
             if (StringUtil.getEditDistance(key, word) <= maximumEditDistance) {
                 ret = val;

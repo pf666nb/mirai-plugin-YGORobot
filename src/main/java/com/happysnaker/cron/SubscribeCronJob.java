@@ -1,9 +1,9 @@
 package com.happysnaker.cron;
 
+import com.happysnaker.config.ConfigManager;
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.exception.FileUploadException;
 import com.happysnaker.utils.MapGetter;
-import com.happysnaker.utils.RobotUtil;
 import com.happysnaker.utils.StringUtil;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
@@ -43,6 +43,7 @@ public abstract class SubscribeCronJob implements Runnable {
      */
     public volatile long lastPubTime;
 
+
     public SubscribeCronJob(long pushGroup, List<String> atMembers, int type, String key) {
         this.pushGroup = pushGroup;
         this.atMembers = atMembers;
@@ -57,7 +58,7 @@ public abstract class SubscribeCronJob implements Runnable {
     public SubscribeCronJob(MapGetter mapGetter) {
         this(
                 mapGetter.getLong("pushGroup"),
-                mapGetter.getList("atMembers"),
+                mapGetter.getListOrWrapperSingleton("atMembers", String.class),
                 mapGetter.getInt("type"),
                 mapGetter.getString("key"));
     }
@@ -69,11 +70,18 @@ public abstract class SubscribeCronJob implements Runnable {
         }
         RobotConfig.logger.info("run subscribe cron job...");
         Group contact = null;
+
+        if (Bot.getInstances().isEmpty()) {
+            RobotConfig.logger.info("未检查到任何 Bot 登录，忽略此次订阅检测");
+            return;
+        }
+
         for (Bot instance : Bot.getInstances()) {
             if ((contact = instance.getGroup(pushGroup)) != null) {
                 break;
             }
         }
+
         if (contact == null) {
             RobotConfig.logger.info(String.format("未检查到任何 Contact，请检查推送群号 %s 是否正确", pushGroup));
             return;
@@ -84,6 +92,7 @@ public abstract class SubscribeCronJob implements Runnable {
             message = doCheckAndPush(contact);
             if (message == null)
                 return;
+
             MessageChainBuilder builder = new MessageChainBuilder();
             for (String atMember : atMembers) {
                 if (atMember.equals("-1")) {
@@ -98,7 +107,7 @@ public abstract class SubscribeCronJob implements Runnable {
             builder.add(message);
             contact.sendMessage(builder.build());
         } catch (Exception e) {
-            RobotUtil.recordFailLog(null, new Date() + ": 推送订阅消息失败 \n" + StringUtil.getErrorInfoFromException(e));
+            ConfigManager.recordFailLog(null, new Date() + ": 推送订阅消息失败 \n" + StringUtil.getErrorInfoFromException(e));
         }
     }
 

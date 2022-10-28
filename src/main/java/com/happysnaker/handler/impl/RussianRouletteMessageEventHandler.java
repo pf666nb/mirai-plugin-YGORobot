@@ -1,7 +1,7 @@
 package com.happysnaker.handler.impl;
 
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.context.Context;
+import com.happysnaker.proxy.Context;
 import com.happysnaker.handler.handler;
 import com.happysnaker.permission.Permission;
 import com.happysnaker.utils.OfUtil;
@@ -19,12 +19,16 @@ import java.util.*;
  * @email happysnaker@foxmail.com
  */
 @handler
+@SuppressWarnings("unchecked")
 public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler {
     public final String reload = "装弹";
     public final String shot = "开枪";
     public final String stop = "卸下弹夹";
 
-    class Helper {
+    /**
+     * 帮忙者
+     */
+    static class Helper {
         // 总弹数
         public int totalNum = (int) RobotConfig.russianRoulette.getOrDefault("totalNum", 6);
         // 会打死人的弹数
@@ -41,9 +45,9 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
             this.realNum = realNum;
         }
 
-        public int updateIncome(String qq, int delta) {
+        public void updateIncome(String qq, int delta) {
             income.put(qq, income.getOrDefault(qq, 0) + delta);
-            return income.get(qq);
+            income.get(qq);
         }
 
         public Helper() {
@@ -51,7 +55,7 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
 
         public int getRewardOrPunishment(boolean shot, String qq) {
             // 被击中的概率
-            double p = realNum * 1.0 / totalNum * 1.0;
+            double p = realNum * 1.0 / totalNum;
             Random random = new Random();
             int v = base + (int) (!shot ? base * p : base * (1 - p));
             int r = random.nextInt(base / 10);
@@ -65,7 +69,7 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
         }
     }
 
-    private Map<String, Helper> map = new HashMap<>();
+    private final Map<String, Helper> map = new HashMap<>();
 
     @Override
     public List<MessageChain> handleMessageEvent(MessageEvent event, Context ctx) {
@@ -118,6 +122,8 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
                 map.put(groupId, helper);
                 return buildMessageChainAsSingletonList(getQuoteReply(event), "装弹成功，总弹数 " + helper.totalNum + " 弹，真弹数 " + helper.realNum + " 弹，让我们开始开枪吧，我已经迫不及待了！");
             }
+
+
             if (!content.equals(shot)) {
                 return null;
             }
@@ -143,15 +149,15 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
                     helper.realNum--;
                     helper.updateIncome(qq, -v);
                     sb.append("boom！一朵绚烂的血花盛开，你送走了你自己！\n");
-                    sb.append("『扣除积分" + v + "』\n");
+                    sb.append("『扣除积分").append(v).append("』\n");
                     helper.shotMan.add(qq);
                 } else {
                     helper.updateIncome(qq, v);
                     sb.append("有惊无险，这是一个空枪！\n");
-                    sb.append("『增加积分" + v + "』\n");
+                    sb.append("『增加积分").append(v).append("』\n");
                 }
-                sb.append("剩余总弹数: " + helper.totalNum + "\n");
-                sb.append("剩余真弹数: " + helper.realNum + "\n");
+                sb.append("剩余总弹数: ").append(helper.totalNum).append("\n");
+                sb.append("剩余真弹数: ").append(helper.realNum).append("\n");
                 if (helper.realNum == 0 || helper.totalNum == 0 || helper.realNum == helper.totalNum) {
                     if (helper.realNum == 0) {
                         sb.append("弹夹已无真弹，游戏结束\n");
@@ -163,16 +169,16 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
                     int min = helper.income.values().stream().min(Comparator.comparingInt(a -> a)).get();
                     for (Map.Entry<String, Integer> it : helper.income.entrySet()) {
                         if (it.getValue() == max) {
-                            sb.append("本次游戏最大获益人：" + it.getKey() + "，总计" + max + " 积分\n");
+                            sb.append("本次游戏最大获益人：").append(it.getKey()).append("，总计").append(max).append(" 积分\n");
                             max = Integer.MAX_VALUE;
                         }
                         if (it.getValue() == min) {
-                            sb.append("本次游戏最大倒霉蛋：" + it.getKey() + "，总计" + min + " 积分\n");
+                            sb.append("本次游戏最大倒霉蛋：").append(it.getKey()).append("，总计").append(min).append(" 积分\n");
                             min = Integer.MAX_VALUE;
                         }
                     }
                 }
-                if (helper.realNum == 1 && helper.totalNum == 1) {
+                if (helper.realNum == 1) {
                     sb.append("最后一个倒霉鬼是谁呢？");
                 }
                 return buildMessageChainAsList(buildMessageChain(getQuoteReply(event), sb.toString()));

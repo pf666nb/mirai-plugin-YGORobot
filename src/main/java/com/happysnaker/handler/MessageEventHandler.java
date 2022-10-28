@@ -1,6 +1,6 @@
 package com.happysnaker.handler;
 
-import com.happysnaker.context.Context;
+import com.happysnaker.proxy.Context;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 
@@ -27,7 +27,7 @@ public interface MessageEventHandler {
      * 是否应该处理事件，子类应该扩展它
      *
      * @param event
-     * @return 如果需要处理，则返回 true；如果不需要处理，则返回 false
+     * @return <strong>如果需要处理，则返回 true；如果不需要处理，则返回 false</strong>
      */
     boolean shouldHandle(MessageEvent event, Context ctx);
 }

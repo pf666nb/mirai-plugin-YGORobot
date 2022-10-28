@@ -1,7 +1,7 @@
 package com.happysnaker.handler.impl;
 
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.context.Context;
+import com.happysnaker.proxy.Context;
 import com.happysnaker.exception.FileUploadException;
 import com.happysnaker.handler.handler;
 import com.happysnaker.utils.*;
@@ -291,7 +291,7 @@ public class GtReportMessageEventHandler extends GroupMessageEventHandler {
 //        Set<String> gtMembers = (Set<String>) RobotConfig.gtConfig.get(1);
         MessageChainBuilder builder = new MessageChainBuilder();
         for (String name : names) {
-            Long id = getMemberId(event, name);
+            Long id = getMemberIdByName(event, name);
             if (id > 0) {
                 At at = new At(id);
                 builder.add(at);

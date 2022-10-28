@@ -13,6 +13,7 @@ import java.util.Map;
  * @date 2022/7/2
  * @email happysnaker@foxmail.com
  */
+@Deprecated
 public class MemberJoinRequestEventHandler {
 
     public void handleEvent(MemberJoinRequestEvent event) {

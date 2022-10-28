@@ -1,16 +1,14 @@
 package com.happysnaker.cron;
 
 import com.happysnaker.api.BilibiliApi;
-import com.happysnaker.config.RobotConfig;
 import com.happysnaker.entry.BilibiliDynamic;
 import com.happysnaker.exception.FileUploadException;
 import com.happysnaker.utils.MapGetter;
 import com.happysnaker.utils.RobotUtil;
 import com.happysnaker.utils.StringUtil;
-import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
-import net.mamoe.mirai.contact.Group;
-import net.mamoe.mirai.message.data.*;
+import net.mamoe.mirai.message.data.Image;
+import net.mamoe.mirai.message.data.MessageChain;
 
 import java.io.IOException;
 import java.net.URL;
@@ -39,7 +37,7 @@ public class BilibiliSubscribeCronJob extends SubscribeCronJob {
             return null;
         }
         String sb = String.format("您订阅的番剧 %s 更新啦\n", dynamic.getAuthName()) +
-                String.format("更新时间：%s\n", RobotUtil.formatTime(dynamic.getPubTime())) +
+                String.format("更新时间：%s\n", StringUtil.formatTime(dynamic.getPubTime())) +
                 String.format("跳转链接：%s\n", dynamic.getJumpUrl()) +
                 String.format("更新章节：%s\n", dynamic.getDesc()) +
                 String.format("分享描述：%s\n", dynamic.getPubAction());
@@ -54,11 +52,12 @@ public class BilibiliSubscribeCronJob extends SubscribeCronJob {
 
     private MessageChain checkUpDynamic(Contact contact) throws IOException, FileUploadException {
         BilibiliDynamic dynamic = BilibiliApi.getLatestDynamic(key);
+        assert dynamic != null;
         if (dynamic.pubTime <= this.lastPubTime) {
             return null;
         }
         String sb = String.format("您订阅的 up 主 %s %s\n", dynamic.getAuthName(), dynamic.getPubAction()) +
-                String.format("更新时间：%s\n", RobotUtil.formatTime(dynamic.getPubTime())) +
+                String.format("更新时间：%s\n", StringUtil.formatTime(dynamic.getPubTime())) +
                 String.format("跳转链接：%s\n", dynamic.getJumpUrl()) +
                 String.format("描述内容：%s\n", dynamic.getDesc());
         Image face  = RobotUtil.uploadImage(contact, new URL(dynamic.face));

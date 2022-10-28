@@ -10,6 +10,7 @@ import java.text.NumberFormat;
  * @date 2022/1/17
  * @email happysnaker@foxmail.com
  */
+@Deprecated
 public class NumUtil {
 
     /**

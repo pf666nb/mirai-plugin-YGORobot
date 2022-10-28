@@ -69,7 +69,7 @@ public class HRobotVersionChecker {
             Map<String, Object> map = IOUtil.sendAndGetResponseMap(new URL(api), "GET", null, null);
             String latestVersion = (String) map.get("name");
 
-            RobotConfig.logger.info("Gouhub 最新发行版本 " + latestVersion);
+            RobotConfig.logger.info("Github 最新发行版本 " + latestVersion);
             RobotConfig.logger.info("当前版本 " + VERSION);
             if (compareVersion(VERSION, latestVersion) >= 0) {
                 RobotConfig.logger.info("当前 HRobot 插件已为最新版");
@@ -140,7 +140,7 @@ public class HRobotVersionChecker {
                 }
             }
         } catch (Exception e) {
-            //
+            e.printStackTrace();
         }
         RobotConfig.logger.info("已取消下载");
     }
@@ -148,6 +148,4 @@ public class HRobotVersionChecker {
     public static boolean isWindows() {
         return System.getProperties().getProperty("os.name").toUpperCase().contains("WINDOWS");
     }
-
-
 }

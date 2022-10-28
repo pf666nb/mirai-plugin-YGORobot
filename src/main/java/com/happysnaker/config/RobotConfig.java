@@ -4,7 +4,6 @@ import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 机器人配置，调用者需直接调用此配置而非在本地线程保存，因为配置是可能被重载的
@@ -18,7 +17,7 @@ public class RobotConfig {
     /**
      * 插件版本，每次更新请更新此配置
      */
-    public static final String CURRENT_VERSION = "3.3";
+    public static final String CURRENT_VERSION = "3.4";
     
     /**
      * 主配置文件名
@@ -171,6 +170,7 @@ public class RobotConfig {
      *     <li>数值 1 表示仅发送图片链接，不发送图片</li>
      *     <li>数值 2 表示仅发送图片，不发送图片链接</li>
      *     <li>数值 3 表示既发送图片，又发送图片链接</li>
+     *     <li>数值 4 表示仅图片链接，与 1 的区别在于 1 上传了腾讯服务器，而 4 发送原始链接，手机 QQ 中可能会被视为恶意链接</li>
      * </ul>
      */
     public volatile static int colorStrategy = 2;

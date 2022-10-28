@@ -7,20 +7,20 @@ import com.happysnaker.exception.FileUploadException;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
-import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.ExternalResource;
-import org.quartz.*;
+import org.quartz.CronScheduleBuilder;
+import org.quartz.JobDataMap;
+import org.quartz.SchedulerException;
 
+import javax.naming.CannotProceedException;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,37 +33,6 @@ import java.util.stream.Collectors;
  * @email happysnaker@foxmail.com
  */
 public class RobotUtil {
-    /**
-     * 用于消息处理失败时记录日志
-     *
-     * @param event
-     * @param errorMsg
-     */
-    public static void recordFailLog(MessageEvent event, String errorMsg) {
-        RobotCronJob.service.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                String filePath = ConfigUtil.getDataFilePath("error.log");
-                try {
-                    IOUtil.writeToFile(new File(filePath), getLog(event) + "\n错误日志：" + errorMsg + "\n\n");
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, 0);
-    }
-
-    public static String getLog(MessageEvent event) {
-        if (event == null) return "";
-        String content = getContent(event);
-        String sender = getSenderId(event);
-        if (!(event instanceof GroupMessageEvent)) {
-            return "[sender:" + sender + "-" + formatTime() + "] -> " + content;
-        }
-        long groupId = ((GroupMessageEvent) event).getGroup().getId();
-        return "[sender:" + sender + " - group:" + groupId + " - " + formatTime() + "] -> " + content;
-    }
-
 
     /**
      * 读取机器人所有的群
@@ -80,7 +49,6 @@ public class RobotUtil {
         }
         return ans;
     }
-
 
     /**
      * 对消息中的 {face:num} 表情进行解析，并将表情用实际的 Face 类替代，封装进 MessageChain 中，MessageChain 中仍然保持原消息中表情和其他消息的相对位置
@@ -117,7 +85,6 @@ public class RobotUtil {
         return findFace ? messageChainBuilder.build() : messageChainBuilder.append(text).build();
     }
 
-
     /**
      * 从事件中提取消息，并将该消息转换为 mirai 码
      *
@@ -130,7 +97,6 @@ public class RobotUtil {
         }
         return getContent(event.getMessage());
     }
-
 
     /**
      * 该消息转换为 mirai 码
@@ -146,15 +112,72 @@ public class RobotUtil {
     }
 
     /**
-     * 从 mirai 编码转换为 MessageChain
+     * <P>某些时候需要自定义上传一些图片，可以调用此方法获取 Bot 自身的 Contact</P>
+     * <P>如果没有机器人登录，这个方法会返回 NULL</P>
+     */
+    public static net.mamoe.mirai.contact.Contact getAdaptContact() {
+        for (Bot bot : Bot.getInstances()) {
+            return bot.getFriend(bot.getId());
+        }
+
+        return null;
+    }
+
+    /**
+     * 从 mirai 编码转换为 MessageChain，并解析 HRobot 自带标签
      *
      * @param content
      * @return
      */
-    public static MessageChain parseMiraiCode(String content) {
-        return MiraiCode.deserializeMiraiCode(content);
+    public static MessageChain parseMiraiCode(String content) throws CannotProceedException {
+        return parseMiraiCode(content, getAdaptContact());
     }
 
+    /**
+     * 从 mirai 编码转换为 MessageChain，并解析 HRobot 自带标签
+     *
+     * @param content 编码内容
+     * @param contact HRobot 某些标签（例如图片）需要上传，使用的上传对象
+     * @return MessageChain
+     */
+    public static MessageChain parseMiraiCode(String content, Contact contact) throws CannotProceedException {
+        Pattern pattern = Pattern.compile("(\\[\\$.*?])(\\((.*?)\\))");
+        Matcher matcher = pattern.matcher(content);
+        int fromIndex = 0;
+        MessageChainBuilder builder = new MessageChainBuilder();
+        while (matcher.find()) {
+            String tag = matcher.group(1);
+            String val = matcher.group(2);
+            tag = tag.substring(2, tag.length() - 1);
+            val = val.substring(1, val.length() - 1);
+            if (tag.isEmpty() || val.isEmpty()) {
+                continue;
+            }
+            builder.append(MiraiCode.deserializeMiraiCode(content.substring(fromIndex, matcher.start())));
+            fromIndex = matcher.end();
+            try {
+                switch (tag) {
+                    case "img":
+                        if (val.startsWith("http")) {
+                            builder.append(uploadImage(contact, new URL(val)));
+                        } else {
+                            builder.append(uploadImage(contact, val));
+                        }
+                        break;
+                    case "face":
+                        break;
+                    default:
+                        builder.append(MiraiCode.deserializeMiraiCode(content.substring(matcher.start(), matcher.end())));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new CannotProceedException(String.format("解析语义标签 %s 出错，异常原因 %s, 可能是网络超时或者值的格式不正确"
+                        , matcher.group(0), e.getCause()));
+            }
+        }
+        builder.append(MiraiCode.deserializeMiraiCode(content.substring(fromIndex)));
+        return builder.build();
+    }
 
     /**
      * 从事件中提取消息，该消息仅包含纯文本内容
@@ -167,7 +190,7 @@ public class RobotUtil {
         if (event == null) {
             return null;
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (SingleMessage singleMessage : event.getMessage()) {
             if (singleMessage instanceof PlainText) {
                 sb.append(singleMessage);
@@ -176,11 +199,10 @@ public class RobotUtil {
         return sb.toString().trim();
     }
 
-
     /**
      * 读取文件（图片）并上传至腾讯服务器
      *
-     * @param event
+     * @param event    对应事件
      * @param filename 图片文件路径名
      * @return net.mamoe.mirai.message.data.Image
      */
@@ -192,6 +214,20 @@ public class RobotUtil {
         }
     }
 
+    /**
+     * 读取文件（图片）并上传至腾讯服务器
+     *
+     * @param contact  上传对象，上传对象可以是任意对象，仅上传并不会发送图片
+     * @param filename 图片文件路径名
+     * @return net.mamoe.mirai.message.data.Image
+     */
+    public static net.mamoe.mirai.message.data.Image uploadImage(Contact contact, String filename) throws FileUploadException {
+        try {
+            return ExternalResource.uploadAsImage(new File(filename), contact);
+        } catch (Exception e) {
+            throw new FileUploadException("Can not upload the image from the file: " + filename + "\nCause by " + e.getCause().toString());
+        }
+    }
 
     /**
      * 建造 MessageChain
@@ -225,11 +261,12 @@ public class RobotUtil {
             if (s instanceof StringBuilder) {
                 s = new PlainText((CharSequence) s.toString());
             }
-            builder.append((SingleMessage) s);
+            if (s instanceof SingleMessage) {
+                builder.append((SingleMessage) s);
+            }
         }
         return builder.build();
     }
-
 
     /**
      * 建造 MessageChain，参数是多个 SingleMessage
@@ -276,11 +313,10 @@ public class RobotUtil {
         return uploadImage(event.getSubject(), url);
     }
 
-
     /**
      * 网络图片并上传至腾讯服务器
      *
-     * @param contact 要发送的对象
+     * @param contact 要发送的对象，仅会上传而不会实际发送
      * @param url     网络图片 URL
      * @return net.mamoe.mirai.message.data.Image
      */
@@ -294,7 +330,7 @@ public class RobotUtil {
             return Contact.uploadImage(contact, stream);
         } catch (IOException e) {
             e.printStackTrace();
-            throw new FileUploadException("can not upload the image from the url: " + url + ", cause by " + e.getCause().toString());
+            throw new FileUploadException("Can not upload the image from the url: " + url + ", cause by " + e.getCause().toString());
         }
     }
 
@@ -305,7 +341,7 @@ public class RobotUtil {
      * @return MessageSource
      */
     public static MessageSource getQuoteSource(MessageEvent event) {
-        return event.getMessage().get(QuoteReply.Key).getSource();
+        return Objects.requireNonNull(event.getMessage().get(QuoteReply.Key)).getSource();
     }
 
     /**
@@ -315,7 +351,7 @@ public class RobotUtil {
      * @param event
      * @return MessageSource
      * @see #buildMessageChain(Object...)
-     * @see #quoteReply(MessageEvent, String) 
+     * @see #quoteReply(MessageEvent, String)
      */
     public static QuoteReply getQuoteReply(MessageEvent event) {
         return new QuoteReply(event.getMessage());
@@ -323,6 +359,7 @@ public class RobotUtil {
 
     /**
      * 简单回复一条字符串消息
+     *
      * @param event
      * @param msg
      * @return
@@ -331,17 +368,15 @@ public class RobotUtil {
         return buildMessageChain(getQuoteReply(event), msg);
     }
 
-
     /**
      * 获取一个消息链中的 Images
      *
      * @param chain
      * @return List&lt;SingleMessage&gt;，可以将 SingleMessage 强转为 Image 类
      */
-    public static List<SingleMessage> getImagesFromMessage(MessageChain chain) {
-        return chain.stream().filter(Image.class::isInstance).collect(Collectors.toList());
+    public static List<Image> getImagesFromMessage(MessageChain chain) {
+        return chain.stream().filter(Image.class::isInstance).map(v -> (Image) v).collect(Collectors.toList());
     }
-
 
     /**
      * 发送消息，子类可以提前发送消息，而不必等到由 getReplyMessage 方法被调用，请注意，即使子类提前发送消息，getReplyMessage 仍然会被调用，不过子类可以在 getReplyMessage 方法内返回 null 值以表示不发送消息
@@ -354,7 +389,6 @@ public class RobotUtil {
         sendMsg(msg, event.getSubject());
     }
 
-
     /**
      * 发送消息，子类可以提前发送消息，而不必等到由 getReplyMessage 方法被调用，请注意，即使子类提前发送消息，getReplyMessage 仍然会被调用，不过子类可以在 getReplyMessage 方法内返回 null 值以表示不发送消息
      *
@@ -365,7 +399,6 @@ public class RobotUtil {
     public static void sendMsg(MessageChain msg, MessageEvent event) throws CanNotSendMessageException {
         sendMsg(OfUtil.ofList(msg), event.getSubject());
     }
-
 
     /**
      * 发送多条消息，<strong>注意此方法并不能保证发送消息的顺序<strong/>
@@ -383,7 +416,6 @@ public class RobotUtil {
             throw new CanNotSendMessageException(e.getMessage());
         }
     }
-
 
     /**
      * 发送一条将自动撤回的消息，子类可以提前发送消息，而不必等到由 getReplyMessage 方法被调用，请注意，即使子类提前发送消息，getReplyMessage 仍然会被调用，不过子类可以在 getReplyMessage 方法内返回 null 值以表示不发送消息
@@ -405,7 +437,7 @@ public class RobotUtil {
      * 发送一条将自动撤回的消息，子类可以提前发送消息，而不必等到由 getReplyMessage 方法被调用，请注意，即使子类提前发送消息，getReplyMessage 仍然会被调用，不过子类可以在 getReplyMessage 方法内返回 null 值以表示不发送消息
      *
      * @param msg        消息
-     * @param e    消息事件
+     * @param e          消息事件
      * @param autoRecall 自动撤回等待时间(毫秒)
      * @return
      */
@@ -417,41 +449,34 @@ public class RobotUtil {
         }
     }
 
-
-
     /**
      * 提交一条基于 cron 定时发送的消息
      *
      * @param cronExpression cron 表达式
-     * @param plusImage 是否需要附带一张图片
-     * @param messages   消息列表，会随机选择一条消息
-     * @param count 执行次数
+     * @param messages       消息列表，会随机选择一条消息，消息为 mirai 编码
+     * @param count          执行次数
      * @throws CanNotSendMessageException
      */
-    public static void submitSendMsgTask(String cronExpression, int count, boolean plusImage, List<MessageChain> messages, Contact contact) throws CanNotSendMessageException, SchedulerException, InterruptedException {
-        JobDataMap jobData = PeriodCronJob.PeriodCronJobData.getJobDataMap(count, plusImage, messages, contact);
+    public static void submitSendMsgTask(String cronExpression, int count, List<String> messages, Contact contact) throws CanNotSendMessageException, SchedulerException, InterruptedException {
+        JobDataMap jobData = PeriodCronJob.PeriodCronJobData.getJobDataMap(count, messages, contact);
         RobotCronJob.submitCronJob(PeriodCronJob.class,
                 CronScheduleBuilder.cronSchedule(cronExpression), jobData);
     }
 
-
-
     /**
      * 提交一条每天定时发送的消息
      *
-     * @param hour      0-23
-     * @param minute    0-60
-     * @param count     需要执行几次，大于等于 1
-     * @param plusImage 是否需要附带一张图片
-     * @param messages   消息列表，机器人会随机选择一条消息发送
+     * @param hour     0-23
+     * @param minute   0-59
+     * @param count    需要执行几次，大于等于 1
+     * @param messages 消息列表，机器人会随机选择一条消息发送，消息为 mirai 编码
      * @throws CanNotSendMessageException
      */
-    public static void submitSendMsgTask(int hour, int minute, int count, boolean plusImage, List<MessageChain> messages, Contact contact) throws Exception {
-        JobDataMap jobData = PeriodCronJob.PeriodCronJobData.getJobDataMap(count, plusImage, messages, contact);
+    public static void submitSendMsgTask(int hour, int minute, int count, List<String> messages, Contact contact) throws Exception {
+        JobDataMap jobData = PeriodCronJob.PeriodCronJobData.getJobDataMap(count, messages, contact);
         RobotCronJob.submitCronJob(PeriodCronJob.class,
                 CronScheduleBuilder.dailyAtHourAndMinute(hour, minute), jobData);
     }
-
 
     /**
      * 提交一条将要发送的消息，此消息将在 waitTime 毫秒后自动发送
@@ -473,7 +498,6 @@ public class RobotUtil {
             }
         }, waitTime);
     }
-
 
     /**
      * 提交一条周期性发送的消息，初始等待时间为 initTime 毫秒，周期为 waitTime 毫秒
@@ -497,20 +521,6 @@ public class RobotUtil {
         }, initTTime, waitTime);
     }
 
-
-    public static String formatTime() {
-        Date d = new Date();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return sdf.format(d);
-    }
-
-    public static String formatTime(long ts) {
-        Date d = new Date(ts);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return sdf.format(d);
-    }
-
-
     /**
      * 判断给定消息事件是否引用了一条消息
      *
@@ -532,7 +542,6 @@ public class RobotUtil {
     public static MessageChain getQuoteMessageChain(MessageEvent event) {
         return getQuoteSource(event).getOriginalMessage();
     }
-
 
     public static boolean equals(MessageSource source1, MessageSource source2) {
         if (source1 == null && source2 == null) return true;

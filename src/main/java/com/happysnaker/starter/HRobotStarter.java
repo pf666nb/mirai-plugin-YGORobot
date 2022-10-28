@@ -1,14 +1,14 @@
 package com.happysnaker.starter;
 
 import com.happysnaker.CustomRegistry;
-import com.happysnaker.api.BilibiliApi;
+import com.happysnaker.Test;
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.cron.RobotCronJob;
-import com.happysnaker.entry.BilibiliDynamic;
 import com.happysnaker.proxy.MessageHandlerProxy;
-
-import com.happysnaker.utils.*;
+import com.happysnaker.config.ConfigManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
+import net.mamoe.mirai.event.Event;
+import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import org.yaml.snakeyaml.Yaml;
@@ -36,6 +36,9 @@ public class HRobotStarter {
      * @param plugin
      */
     public static void Start(JavaPlugin plugin) throws Exception {
+        // 打印 banner
+        HRobotStartPrinter.printBanner();
+
         // 补丁
         Patch.patch();
 
@@ -53,7 +56,7 @@ public class HRobotStarter {
         messageHandler = new MessageHandlerProxy();
 
         // 订阅消息事件
-        GlobalEventChannel instance = GlobalEventChannel.INSTANCE;
+        EventChannel<Event> instance =  GlobalEventChannel.INSTANCE.parentScope(com.happysnaker.Main.INSTANCE);;
         instance.subscribeAlways(GroupMessageEvent.class, event -> {
             if (messageHandler.shouldHandle(event, null)) {
                 messageHandler.handleMessageEvent(event, null);
@@ -68,10 +71,7 @@ public class HRobotStarter {
         RobotCronJob.cron();
 
         // 测试
-        test();
-
-        // 打印 banner
-        HRobotStartPrinter.printBanner();
+        Test.test();
 
         // 检查版本
         HRobotVersionChecker.checkVersion();
@@ -100,7 +100,7 @@ public class HRobotStarter {
         // 如果配置文件存在
         if (file.exists()) {
             RobotConfig.logger.info("正在初始化机器人配置");
-            Map map = null;
+            Map<?, ?> map = null;
             try (FileInputStream in = new FileInputStream(file)) {
                 map = yaml.loadAs(in, Map.class);
             }
@@ -112,7 +112,7 @@ public class HRobotStarter {
                             if (map.get(field.getName()) != null)
                                 field.set(null, map.get(field.getName()));
                         } catch (Exception ignored) {
-
+                            // 可能是名字类型不符合，忽略
                         }
                     }
                 }
@@ -121,12 +121,12 @@ public class HRobotStarter {
         }
         // 文件不存在，创建文件并填写模板
         else {
-            RobotConfig.logger.info("未检测到配置文件...");
+            RobotConfig.logger.info("未检测到配置文件，创建配置文件模板");
             boolean newFile = file.createNewFile();
             try (FileOutputStream fileOutputStream = new FileOutputStream(file, false)) {
-                String template = ConfigUtil.TEMPLATE;
+                String template = ConfigManager.TEMPLATE;
                 fileOutputStream.write(template.getBytes(StandardCharsets.UTF_8));
-                RobotConfig.logger.info("成功创建配置文件初始模板，请您填写配置并重新启动");
+                RobotConfig.logger.info("成功创建配置文件初始模板，重启机器人生效");
 //                System.exit(100);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -136,7 +136,8 @@ public class HRobotStarter {
     }
 
     public static void loadSensitiveWord() throws IOException {
-        File file = new File(RobotConfig.configFolder + "/" + RobotConfig.sensitiveWordPathName);
+        File file = new File(ConfigManager.getConfigFilePath(RobotConfig.sensitiveWordPathName));
+
         RobotConfig.sensitiveWord = new HashSet<>();
         if (file.exists()) {
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
@@ -146,17 +147,23 @@ public class HRobotStarter {
                 }
             }
         }
-
         // 文件不存在，创建文件并填写模板
         else {
-            file.createNewFile();
-            RobotConfig.logger.info("创建敏感词库文件！");
+            boolean newFile = file.createNewFile();
+            RobotConfig.logger.info("创建敏感词库文件");
+
+            InputStream inputStream = ConfigManager.class.getClassLoader().getResourceAsStream("config/sensitiveWord.txt");
+            assert inputStream != null;
+            FileOutputStream outputStream = new FileOutputStream(file);
+            byte b;
+            while ((b = (byte) inputStream.read()) != -1) {
+                outputStream.write(b);
+            }
+            inputStream.close();
+            outputStream.close();
+
+            RobotConfig.logger.info("成功生成默认敏感词库，重启机器人生效");
         }
-    }
-
-
-    private static void test(Object... args) throws Exception {
-
     }
 }
 

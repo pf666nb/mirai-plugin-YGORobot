@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 哔哩哔哩订阅命令
+ * 订阅命令
  */
 @handler(priority = 1024)
 public class SubscribeCommandEventHandler extends DefaultCommandEventHandlerManager {

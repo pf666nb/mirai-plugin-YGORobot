@@ -102,6 +102,7 @@ public class CustomKeywordCommandEventHandler extends DefaultCommandEventHandler
      * @throws CanNotParseCommandException
      * @throws InsufficientPermissionsException
      */
+    @SuppressWarnings("unchecked")
     private List<MessageChain> setGroupKeyword(MessageEvent event) throws CanNotParseCommandException, InsufficientPermissionsException {
         if (!Permission.hasGroupAdmin(getSenderId(event))) {
             throw new InsufficientPermissionsException("权限不足");
@@ -114,6 +115,7 @@ public class CustomKeywordCommandEventHandler extends DefaultCommandEventHandler
         } else {
             pair = getKeyVal(content);
         }
+
         RobotConfig.customKeyword.putIfAbsent(getGroupId(event), new HashMap<>());
         Map<String, Object> gMap = (Map<String, Object>) RobotConfig.customKeyword.get(getGroupId(event));
         gMap.put(pair.getKey(), pair.getValue());

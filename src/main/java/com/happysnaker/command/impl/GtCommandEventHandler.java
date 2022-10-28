@@ -12,13 +12,14 @@ import net.mamoe.mirai.message.data.MessageChainBuilder;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
+/** 坎公成员管理
  * @author Happysnaker
- * @description
  * @date 2022/2/18
  * @email happysnaker@foxmail.com
+ * @deprecated 坎公功能在未来可能会被重构或废弃，设置成员的方式可能会有所改变
  */
 @handler(priority = 1024)
+@Deprecated
 public class GtCommandEventHandler extends DefaultCommandEventHandlerManager {
     public static final String addGtMembersCommand = "添加坎公公会成员";
     public static final String clearGtMembersCommand = "清空坎公公会成员";

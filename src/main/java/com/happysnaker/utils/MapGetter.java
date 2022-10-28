@@ -2,6 +2,7 @@ package com.happysnaker.utils;
 
 import java.util.*;
 
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class MapGetter implements Cloneable {
     private Map<Object, Object> map;
 
@@ -168,7 +169,7 @@ public class MapGetter implements Cloneable {
         return (List<T>) map.get(key);
     }
 
-    public<T> List<T> getListOrSingleton(Object key, Class<T> tClass) {
+    public<T> List<T> getListOrWrapperSingleton(Object key, Class<T> tClass) {
         if (!map.containsKey(key)) {
             return null;
         }
