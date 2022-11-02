@@ -17,16 +17,14 @@ import java.util.List;
  */
 public class PixivApi {
     /**
-     * 能用 HTTP 的就用 HTTP，HTTPS 性能比较低，实验比较大
+     * 能用 HTTP 的就用 HTTP，HTTPS 性能比较低，延迟比较大
      */
     public static final String pidApi = "https://api.lolicon.app/setu/v2?size=original&size=small";
-    public static final String beautifulImageUrl = "https://api.sunweihu.com/api/sjbz/api.php";
+    public static final String beautifulImageUrl = "https://tenapi.cn/acg";
     public static final String chickenSoupUrl = "https://api.shadiao.app/chp/";
     public static final String duChickenSoupUrl = "https://api.shadiao.app/du";
     @Deprecated
     public static final String pixivSearchApi = "http://pximg.rainchan.win/img?img_id=IMGID";
-    public static final String randomUrl = "http://pximg.rainchan.win/img";
-
 
 
 

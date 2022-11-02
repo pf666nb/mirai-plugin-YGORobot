@@ -1,6 +1,6 @@
-package com.happysnaker.intercept.impl;
+package com.happysnaker.handler.intercept.impl;
 
-import com.happysnaker.intercept.Interceptor;
+import com.happysnaker.handler.intercept.Interceptor;
 import com.happysnaker.utils.RobotUtil;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;

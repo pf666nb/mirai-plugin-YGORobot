@@ -200,9 +200,6 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
      * @throws FileUploadException
      */
     private MessageChain doParseMysteriousImage(MessageEvent event, List<String> tags) throws IOException, FileUploadException {
-        if (tags.size() == 0) {
-            return buildMessageChain(uploadImage(event, new URL(PixivApi.randomUrl)));
-        }
         String imgUrl = PixivApi.searchImage(tags, false, false);
         if (StringUtil.isNullOrEmpty(imgUrl)) {
             return buildMessageChain("查无此图");

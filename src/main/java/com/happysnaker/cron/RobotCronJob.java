@@ -55,7 +55,8 @@ public class RobotCronJob implements Job {
             // 涉及到时间调度，默认使用中国标准时间
             try {
                 TimeZone.setDefault(TimeZone.getTimeZone("Asia/Shanghai"));
-            } catch (Exception ignore) {}
+            } catch (Exception ignore) {
+            }
             scheduler.start();
         } catch (SchedulerException e) {
             throw new RuntimeException(e);
@@ -100,16 +101,16 @@ public class RobotCronJob implements Job {
             Contact contact = instance.getGroups().getOrFail(gid);
             List<String> messages = mg.getListOrWrapperSingleton("content", String.class);
             if (plusImage) {
-                messages = messages.stream().map(str -> String.format("%s\n[$img](%s)",
+                messages = messages.stream().map(str -> String.format("%s\n[hrobot::$img](%s)",
                                 str,
                                 PixivApi.beautifulImageUrl))
                         .collect(Collectors.toList());
             }
             if (instance.getGroups().contains(gid)) {
                 if (!StringUtil.isNullOrEmpty(mg.getString("cron"))) {
-                    RobotUtil.submitSendMsgTask(mg.getString("cron"), count, messages, contact);
+                    RobotUtil.submitSendRandomMsgTask(mg.getString("cron"), count, messages, contact);
                 } else {
-                    RobotUtil.submitSendMsgTask(mg.getInt("hour"), mg.getInt("minute"), count, messages, contact);
+                    RobotUtil.submitSendRandomMsgTask(mg.getInt("hour"), mg.getInt("minute"), count, messages, contact);
                 }
             } else {
                 RobotConfig.logger.info(String.format("未检测到定时任务推送群号 %s", gid));
@@ -119,9 +120,10 @@ public class RobotCronJob implements Job {
 
     /**
      * 提交一个通用的、自定义触发时间的定时任务
-     * @param c Class<? extends Job>
+     *
+     * @param c               Class<? extends Job>
      * @param scheduleBuilder 调度规则
-     * @param data 传递的数据
+     * @param data            传递的数据
      * @throws SchedulerException
      */
     public static void submitCronJob(Class<? extends Job> c, ScheduleBuilder<? extends Trigger> scheduleBuilder, JobDataMap data) throws SchedulerException {
@@ -142,6 +144,7 @@ public class RobotCronJob implements Job {
 
     /**
      * 添加机器人定时后台任务
+     *
      * @param task
      */
     public static void addCronTask(Runnable task) {

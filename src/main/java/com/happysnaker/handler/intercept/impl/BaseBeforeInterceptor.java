@@ -1,8 +1,7 @@
-package com.happysnaker.intercept.impl;
+package com.happysnaker.handler.intercept.impl;
 
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.intercept.intercept;
-import com.happysnaker.utils.RobotUtil;
+import com.happysnaker.handler.intercept.intercept;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 
@@ -25,7 +24,7 @@ public class BaseBeforeInterceptor extends AdaptInterceptor {
     @Override
     public boolean interceptBefore(MessageEvent event) {
         // 如果如何，放行开机命令
-        if (RobotUtil.getContent(event).equals(RobotConfig.commandPrefix + "开机")) {
+        if (getContent(event).equals(RobotConfig.commandPrefix + "开机")) {
             return false;
         }
         System.out.println("RobotConfig.enableRobot = " + RobotConfig.enableRobot);

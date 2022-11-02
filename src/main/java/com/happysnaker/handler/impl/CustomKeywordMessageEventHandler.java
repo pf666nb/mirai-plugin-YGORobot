@@ -27,7 +27,7 @@ public class CustomKeywordMessageEventHandler extends GroupMessageEventHandler {
     @Override
     public List<MessageChain> handleMessageEvent(MessageEvent event, Context ctx) {
         try {
-            return buildMessageChainAsList(parseMiraiCode(ctx.getMessage()));
+            return buildMessageChainAsList(parseMiraiCode(ctx.getMessage(), event));
         } catch (CannotProceedException e) {
             e.printStackTrace();
             logError(event, StringUtil.getErrorInfoFromException(e));

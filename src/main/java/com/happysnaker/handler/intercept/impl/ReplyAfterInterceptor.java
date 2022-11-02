@@ -1,9 +1,8 @@
-package com.happysnaker.intercept.impl;
+package com.happysnaker.handler.intercept.impl;
 
 import com.happysnaker.config.ConfigManager;
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.intercept.intercept;
-import com.happysnaker.utils.RobotUtil;
+import com.happysnaker.handler.intercept.intercept;
 import com.happysnaker.utils.StringUtil;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
@@ -31,7 +30,7 @@ public class ReplyAfterInterceptor extends AdaptInterceptor {
             return null;
         }
         for (MessageChain chain : mc) {
-            String content = RobotUtil.getContent(chain);
+            String content = getContent(chain);
             boolean v = false;  // 是否做了替换
             for (Map<String, String> map : RobotConfig.replyReplace) {
                 for (Map.Entry<String, String> it : map.entrySet()) {
@@ -42,7 +41,7 @@ public class ReplyAfterInterceptor extends AdaptInterceptor {
                 }
             }
             try {
-                ans.add(v ? RobotUtil.parseMiraiCode(content) : chain);
+                ans.add(v ? parseMiraiCode(content, e) : chain);
             } catch (CannotProceedException ex) {
                 ConfigManager.recordFailLog(e, StringUtil.getErrorInfoFromException(ex));
                 ex.printStackTrace();

@@ -1,8 +1,7 @@
-package com.happysnaker.intercept.impl;
+package com.happysnaker.handler.intercept.impl;
 
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.intercept.intercept;
-import com.happysnaker.utils.RobotUtil;
+import com.happysnaker.handler.intercept.intercept;
 import com.happysnaker.utils.Trie;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -73,13 +72,13 @@ public class SensitiveAfterWordInterceptor extends AdaptInterceptor {
         if (!RobotConfig.enableSensitiveWordDetection.contains(gid)) {
             return false;
         }
-        char[] str = RobotUtil.getOnlyPlainContent(event).trim().toCharArray();
+        char[] str = getOnlyPlainContent(event).trim().toCharArray();
         int n = str.length, count = 0;
         for (int i = 0; i < n; i++) {
             if (containsSensitiveWord(str, i)) {
                 count++;
                 if (count >= RobotConfig.withdrawalThreshold) {
-                    MessageChain chain = RobotUtil.buildMessageChain(
+                    MessageChain chain = buildMessageChain(
                             new At(event.getSender().getId()),
                             "\n",
                             "警告，你的发言违反了群内相关规定，请不要发布色情及政治相关言论"

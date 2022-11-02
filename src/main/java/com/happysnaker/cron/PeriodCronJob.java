@@ -75,11 +75,16 @@ public class PeriodCronJob implements Job {
         }
 
         try {
-            if (jobData.messages == null && jobData.rawMessages != null) {
+            // 以 rawMessage 为准，后续都以原始码为准，暂时还是兼容原先的 messages，后续会逐步移除
+            if (jobData.rawMessages != null && !jobData.rawMessages.isEmpty()) {
                 jobData.messages = new ArrayList<>();
-                for (String rawMessage : jobData.rawMessages) {
-                    jobData.messages.add(RobotUtil.parseMiraiCode(rawMessage, jobData.contact));
-                }
+                String rawMessage = jobData.rawMessages.get((int) (jobData.rawMessages.size() * Math.random()));
+                jobData.messages.add(RobotUtil.parseMiraiCode(rawMessage, jobData.contact));
+            }
+
+            if (jobData.messages == null || jobData.messages.isEmpty()) {
+                RobotConfig.logger.info("没有任何消息需要发送，忽略本次任务，请检查是否配置了空消息或者无法解析的语义");
+                return;
             }
 
             Message message = jobData.messages.get((int) (jobData.messages.size() * Math.random()));

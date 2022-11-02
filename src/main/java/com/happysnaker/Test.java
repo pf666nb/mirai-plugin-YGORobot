@@ -6,6 +6,7 @@ package com.happysnaker;
  * @email happysnaker@foxmail.com
  */
 public class Test {
+
     public static void test(Object... args) throws Exception {
 
     }

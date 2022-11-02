@@ -106,13 +106,13 @@ russianRoulette:
 # 群内关键字以群号作为关键字，嵌套一层 map，如下所示
 # 回复允许以列表形式配置，机器人会进行随机回复
 customKeyword:
-  '全局关键字': '全局关键字回复 [$img](https://api.sunweihu.com/api/sjbz/api.php)'  # 使用内部标签 img 返回图片，可参考配置手册
+  '全局关键字': '全局关键字回复 [hrobot::$img](https://tenapi.cn/acg)'  # 使用内部标签 img 返回图片，可参考配置手册
   '#regex#全局正则表达式': '全局正则表达式回复'
   '群号':
     '群内关键字': '群内关键字回复'
     '#regex#群内正则表达式': '群内正则表达式回复'
   # 示例
-  '#regex#早.?.?': '早什么早，早上要说我爱你'              # 匹配以早开头、长度为 1-3 的句子
+  '#regex#早.?.?': '[hrobot::$quote](quote)早什么早，早上要说我爱你'    # 匹配以早开头、长度为 1-3 的句子，$quote 是内部标签，可引用触发消息
   '#regex#[\d]{11}': '这是谁的电话号码？'                 # 匹配 11 位数字
   '#regex#呜+': ['你呜你🐎呢', '怎么了，遇到伤心事了？']    # 匹配任意一个或多个呜
   # 下列配置只在群 903025723 生效
@@ -144,16 +144,17 @@ periodicTask:
     count: 0                # 一共持续几次，0 会被识别为最大次数 INT_MAX，可视为无限次
     content:           # 如果内容为列表，机器人会随机选择发送
       - |-             # 发布的内容，|- 是 yaml 的语法。这允许字符串换行
-        [mirai:face:317]
-        [$img](https://api.sunweihu.com/api/sjbz/api.php)
+        [mirai:face:317]  
+        [hrobot::$img](https://tenapi.cn/acg)
       - |-             # 发布的内容，|- 是 yaml 的语法。这允许字符串换行
         呃....
         额....
         饿....
-        [$img](https://api.sunweihu.com/api/sjbz/api.php)
-        [$img](http://h1.ioliu.cn/bing/HallesWood_ZH-CN9790575479_1920x1080.jpg?imageslim)
-        [$img](test.png)
-        上述演示了内部标签 img 的用法，可参考配置手册
+        [hrobot::$img](https://tenapi.cn/acg)
+        [hrobot::$img](http://h1.ioliu.cn/bing/HallesWood_ZH-CN9790575479_1920x1080.jpg?imageslim)
+        [hrobot::$img](/app/config/test.png)
+        [hrobot::$at](2199828958)
+        上述演示了内部标签 img、at 的用法，可参考配置手册
     image: false
 
 

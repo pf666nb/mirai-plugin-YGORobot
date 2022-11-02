@@ -34,6 +34,9 @@ import java.util.stream.Collectors;
  */
 public class RobotUtil {
 
+    public static final String TAG_PATTERN = "(\\[hrobot::\\$.*?])(\\((.*?)\\))";
+
+
     /**
      * 读取机器人所有的群
      *
@@ -119,40 +122,85 @@ public class RobotUtil {
         for (Bot bot : Bot.getInstances()) {
             return bot.getFriend(bot.getId());
         }
-
         return null;
     }
 
-    /**
-     * 从 mirai 编码转换为 MessageChain，并解析 HRobot 自带标签
-     *
-     * @param content
-     * @return
-     */
-    public static MessageChain parseMiraiCode(String content) throws CannotProceedException {
-        return parseMiraiCode(content, getAdaptContact());
+    private static Pair<String, String> findValidTagAndVal(Matcher matcher) {
+        String tag = matcher.group(1);
+        String val = matcher.group(2);
+        tag = tag.substring(10, tag.length() - 1);
+        val = val.substring(1, val.length() - 1);
+        if (tag.isEmpty()) {
+            return null;
+        }
+        return Pair.of(tag, val);
     }
 
     /**
      * 从 mirai 编码转换为 MessageChain，并解析 HRobot 自带标签
      *
      * @param content 编码内容
-     * @param contact HRobot 某些标签（例如图片）需要上传，使用的上传对象
+     * @param event 可为空，但某些 HRobot 解析时需要消息对应的消息事件，例如 at 发件人、引用发送消息等
      * @return MessageChain
      */
-    public static MessageChain parseMiraiCode(String content, Contact contact) throws CannotProceedException {
-        Pattern pattern = Pattern.compile("(\\[\\$.*?])(\\((.*?)\\))");
+    public static MessageChain parseMiraiCode(String content, MessageEvent event) throws CannotProceedException {
+        Pattern pattern = Pattern.compile(TAG_PATTERN);
         Matcher matcher = pattern.matcher(content);
         int fromIndex = 0;
         MessageChainBuilder builder = new MessageChainBuilder();
         while (matcher.find()) {
-            String tag = matcher.group(1);
-            String val = matcher.group(2);
-            tag = tag.substring(2, tag.length() - 1);
-            val = val.substring(1, val.length() - 1);
-            if (tag.isEmpty() || val.isEmpty()) {
-                continue;
+            Pair<String, String> pair = findValidTagAndVal(matcher);
+            if (pair == null)   continue;
+            String tag = pair.getKey(), val = pair.getValue();
+            builder.append(MiraiCode.deserializeMiraiCode(content.substring(fromIndex, matcher.start())));
+            fromIndex = matcher.end();
+            try {
+                switch (tag.toLowerCase()) {
+                    case "img":
+                        if (val.startsWith("http")) {
+                            builder.append(uploadImage(event, new URL(val)));
+                        } else {
+                            builder.append(uploadImage(event, val));
+                        }
+                        break;
+                    case "quote":
+                        builder.append(getQuoteReply(event));
+                        break;
+                    case "at":
+                        if (val.equals("sender")) {
+                            builder.append(new At(getSenderId2(event)));
+                        } else  {
+                            builder.append(Long.parseLong(val) == -1L ? AtAll.INSTANCE : new At(Long.parseLong(val)));
+                        }
+                        break;
+                    default:
+                        builder.append(MiraiCode.deserializeMiraiCode(content.substring(matcher.start(), matcher.end())));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new CannotProceedException(String.format("解析语义标签 %s 出错，异常原因 %s, 可能是网络超时或者值的格式不正确"
+                        , matcher.group(0), e.getCause()));
             }
+        }
+        builder.append(MiraiCode.deserializeMiraiCode(content.substring(fromIndex)));
+        return builder.build();
+    }
+
+    /**
+     * 从 mirai 编码转换为 MessageChain，并解析 HRobot 自带标签，此方法无法解析 At sender、Quote sender 等标签
+     * @param content 编码内容
+     * @param contact 可为空，但某些 HRobot 解析时需要消息对应的消息事件，例如发送图片，可引用机器人本身 {@link #getAdaptContact()}
+     * @return MessageChain
+     */
+    public static MessageChain parseMiraiCode(String content, Contact contact) throws CannotProceedException {
+        Pattern pattern = Pattern.compile(TAG_PATTERN);
+        Matcher matcher = pattern.matcher(content);
+        int fromIndex = 0;
+        MessageChainBuilder builder = new MessageChainBuilder();
+        while (matcher.find()) {
+            Pair<String, String> pair = findValidTagAndVal(matcher);
+            if (pair == null)   continue;
+            String tag = pair.getKey(), val = pair.getValue();
             builder.append(MiraiCode.deserializeMiraiCode(content.substring(fromIndex, matcher.start())));
             fromIndex = matcher.end();
             try {
@@ -164,8 +212,14 @@ public class RobotUtil {
                             builder.append(uploadImage(contact, val));
                         }
                         break;
-                    case "face":
+                    case "at":
+                        if (val.equals("sender")) {
+                            throw new CannotProceedException("没有消息源，无法引用发送人");
+                        }
+                        builder.append(Long.parseLong(val) == -1L ? AtAll.INSTANCE : new At(Long.parseLong(val)));
                         break;
+                    case "quote":
+                        throw new CannotProceedException("没有消息源，无法引用发送人");
                     default:
                         builder.append(MiraiCode.deserializeMiraiCode(content.substring(matcher.start(), matcher.end())));
                 }
@@ -351,7 +405,7 @@ public class RobotUtil {
      * @param event
      * @return MessageSource
      * @see #buildMessageChain(Object...)
-     * @see #quoteReply(MessageEvent, String)
+     * @see #quoteReply(MessageEvent, MessageChain)
      */
     public static QuoteReply getQuoteReply(MessageEvent event) {
         return new QuoteReply(event.getMessage());
@@ -365,6 +419,17 @@ public class RobotUtil {
      * @return
      */
     public static MessageChain quoteReply(MessageEvent event, String msg) {
+        return buildMessageChain(getQuoteReply(event), msg);
+    }
+
+    /**
+     * 引用回复一条消息
+     *
+     * @param event
+     * @param msg
+     * @return
+     */
+    public static MessageChain quoteReply(MessageEvent event, MessageChain msg) {
         return buildMessageChain(getQuoteReply(event), msg);
     }
 
@@ -457,7 +522,7 @@ public class RobotUtil {
      * @param count          执行次数
      * @throws CanNotSendMessageException
      */
-    public static void submitSendMsgTask(String cronExpression, int count, List<String> messages, Contact contact) throws CanNotSendMessageException, SchedulerException, InterruptedException {
+    public static void submitSendRandomMsgTask(String cronExpression, int count, List<String> messages, Contact contact) throws CanNotSendMessageException, SchedulerException, InterruptedException {
         JobDataMap jobData = PeriodCronJob.PeriodCronJobData.getJobDataMap(count, messages, contact);
         RobotCronJob.submitCronJob(PeriodCronJob.class,
                 CronScheduleBuilder.cronSchedule(cronExpression), jobData);
@@ -472,7 +537,8 @@ public class RobotUtil {
      * @param messages 消息列表，机器人会随机选择一条消息发送，消息为 mirai 编码
      * @throws CanNotSendMessageException
      */
-    public static void submitSendMsgTask(int hour, int minute, int count, List<String> messages, Contact contact) throws Exception {
+    @Deprecated
+    public static void submitSendRandomMsgTask(int hour, int minute, int count, List<String> messages, Contact contact) throws Exception {
         JobDataMap jobData = PeriodCronJob.PeriodCronJobData.getJobDataMap(count, messages, contact);
         RobotCronJob.submitCronJob(PeriodCronJob.class,
                 CronScheduleBuilder.dailyAtHourAndMinute(hour, minute), jobData);
@@ -486,7 +552,7 @@ public class RobotUtil {
      * @param waitTime 将要等待的事件
      * @return 返回 future，可以调用 future.cancel 以取消事件
      */
-    public static void submitSendMsgTask(MessageChain msg, Contact contact, long waitTime) throws CanNotSendMessageException {
+    public static void submitSendRandomMsgTask(MessageChain msg, Contact contact, long waitTime) throws CanNotSendMessageException {
         RobotCronJob.service.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -508,6 +574,7 @@ public class RobotUtil {
      * @param waitTime  周期时间
      * @return 返回 future，可以调用 future.cancel 以取消事件
      */
+    @Deprecated
     public static void submitSendMsgTaskAtFixRate(MessageChain msg, Contact contact, long initTTime, long waitTime) throws CanNotSendMessageException {
         RobotCronJob.service.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -543,6 +610,12 @@ public class RobotUtil {
         return getQuoteSource(event).getOriginalMessage();
     }
 
+    /**
+     * 比较两个消息源是否为同一个源
+     * @param source1
+     * @param source2
+     * @return
+     */
     public static boolean equals(MessageSource source1, MessageSource source2) {
         if (source1 == null && source2 == null) return true;
         if (source1 == null || source2 == null) return false;

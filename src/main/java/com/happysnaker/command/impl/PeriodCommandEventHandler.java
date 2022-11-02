@@ -50,9 +50,9 @@ public class PeriodCommandEventHandler extends DefaultCommandEventHandlerManager
                             OfUtil.ofList(hour, minute, getGroupId(event), 0, image == 1, keyVal.getValue())
                     )
             );
-            MessageChain message = parseMiraiCode(keyVal.getValue());
+            MessageChain message = parseMiraiCode(keyVal.getValue(), event);
             Contact contact = event.getSubject();
-            RobotUtil.submitSendMsgTask(hour, minute,
+            RobotUtil.submitSendRandomMsgTask(hour, minute,
                     count <= 0 ? Integer.MAX_VALUE : count,
                     Collections.singletonList(getContent(message)), contact);
             return buildMessageChainAsSingletonList("任务提交成功！");

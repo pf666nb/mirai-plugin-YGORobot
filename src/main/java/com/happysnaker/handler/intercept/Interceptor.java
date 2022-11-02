@@ -1,4 +1,4 @@
-package com.happysnaker.intercept;
+package com.happysnaker.handler.intercept;
 
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
