@@ -1,22 +1,19 @@
 package com.happysnaker.cron;
 
-import com.happysnaker.HelloJob;
+import com.happysnaker.api.PixivApi;
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.exception.CanNotParseCommandException;
 import com.happysnaker.utils.MapGetter;
-import com.happysnaker.utils.OfUtil;
 import com.happysnaker.utils.RobotUtil;
 import com.happysnaker.utils.StringUtil;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
-import net.mamoe.mirai.message.data.MessageChain;
 import org.quartz.*;
-import org.quartz.impl.StdScheduler;
 import org.quartz.impl.StdSchedulerFactory;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 
 /**
  * 机器人后台定时线程，每 3 分钟执行一次，用户可向此类提交后台任务
@@ -46,6 +43,9 @@ public class RobotCronJob implements Job {
      * @since v3.3
      */
     public volatile static org.quartz.Scheduler scheduler;
+    /**
+     * 机器人加载定时任务时只应该加载一次
+     */
     public static Set<Long> visited = new HashSet<>();
     public static final int PERIOD_MINUTE = 3;
 
@@ -99,19 +99,33 @@ public class RobotCronJob implements Job {
             int count = mg.getInt("count") <= 0 ? Integer.MAX_VALUE : mg.getInt("count");
             boolean plusImage = mg.getBoolean("image");
             Contact contact = instance.getGroups().getOrFail(gid);
-            List<String> contents = mg.getListOrSingleton("content", String.class);
-            List<MessageChain> messages = new ArrayList<>();
-            contents.forEach(c -> messages.add(RobotUtil.parseMiraiCode(c)));
+            List<String> messages = mg.getListOrWrapperSingleton("content", String.class);
+            if (plusImage) {
+                messages = messages.stream().map(str -> String.format("%s\n[hrobot::$img](%s)",
+                                str,
+                                PixivApi.beautifulImageUrl))
+                        .collect(Collectors.toList());
+            }
             if (instance.getGroups().contains(gid)) {
                 if (!StringUtil.isNullOrEmpty(mg.getString("cron"))) {
-                    RobotUtil.submitSendMsgTask(mg.getString("cron"), count, plusImage, messages, contact);
+                    RobotUtil.submitSendRandomMsgTask(mg.getString("cron"), count, messages, contact);
                 } else {
-                    RobotUtil.submitSendMsgTask(mg.getInt("hour"), mg.getInt("minute"), count, plusImage, messages, contact);
+                    RobotUtil.submitSendRandomMsgTask(mg.getInt("hour"), mg.getInt("minute"), count, messages, contact);
                 }
+            } else {
+                RobotConfig.logger.info(String.format("未检测到定时任务推送群号 %s", gid));
             }
         }
     }
 
+    /**
+     * 提交一个通用的、自定义触发时间的定时任务
+     *
+     * @param c               Class<? extends Job>
+     * @param scheduleBuilder 调度规则
+     * @param data            传递的数据
+     * @throws SchedulerException
+     */
     public static void submitCronJob(Class<? extends Job> c, ScheduleBuilder<? extends Trigger> scheduleBuilder, JobDataMap data) throws SchedulerException {
         if (data == null) {
             data = new JobDataMap();
@@ -128,10 +142,14 @@ public class RobotCronJob implements Job {
         RobotConfig.logger.info(String.format("提交任务 %s，下一次执行时间 %s", jobDetail.getKey().toString(), trigger.getNextFireTime().toString()));
     }
 
+    /**
+     * 添加机器人定时后台任务
+     *
+     * @param task
+     */
     public static void addCronTask(Runnable task) {
         tasks.add(task);
     }
-
 
     public static void addCronTask(List<? extends Runnable> tasks) {
         RobotCronJob.tasks.addAll(tasks);
@@ -141,6 +159,9 @@ public class RobotCronJob implements Job {
         tasks.remove(task);
     }
 
+    /**
+     * 机器人定时后台任务
+     */
     @Override
     public void execute(JobExecutionContext context) {
         try {

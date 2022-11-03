@@ -1,7 +1,7 @@
 package com.happysnaker.handler.impl;
 
 import com.happysnaker.api.BaiKeApi;
-import com.happysnaker.context.Context;
+import com.happysnaker.proxy.Context;
 import com.happysnaker.exception.CanNotSendMessageException;
 import com.happysnaker.exception.FileUploadException;
 import com.happysnaker.handler.handler;
@@ -24,7 +24,7 @@ import java.util.Map;
 public class KnowledgeSearchMessageEventHandler extends GroupMessageEventHandler {
     public static final String BAIDU_BAIKE = "百度百科";
 
-    private HashSet<String> keywords = new HashSet<>();
+    private final HashSet<String> keywords = new HashSet<>();
 
     public KnowledgeSearchMessageEventHandler() {
         keywords.add(BAIDU_BAIKE);

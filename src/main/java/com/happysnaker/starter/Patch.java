@@ -15,12 +15,12 @@ public class Patch {
 
     private static void dfs(File file) {
         if (file.isDirectory()) {
-            for (File listFile : file.listFiles()) {
+            for (File listFile : Objects.requireNonNull(file.listFiles())) {
                 dfs(listFile);
             }
         } else {
             if (file.isFile() && file.getName().contains(fileName)) {
-                file.delete();
+                boolean delete = file.delete();
             }
         }
     }

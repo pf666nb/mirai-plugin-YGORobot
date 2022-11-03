@@ -3,7 +3,7 @@ package com.happysnaker.command.impl;
 import com.happysnaker.command.CommandHandler;
 import com.happysnaker.command.CommandHandlerManager;
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.context.Context;
+import com.happysnaker.proxy.Context;
 import com.happysnaker.exception.CanNotParseCommandException;
 import com.happysnaker.exception.InsufficientPermissionsException;
 import com.happysnaker.handler.impl.GroupMessageEventHandler;
@@ -21,9 +21,6 @@ import java.util.List;
  * @email happysnaker@foxmail.com
  */
 public abstract class AbstractCommandEventHandler extends GroupMessageEventHandler implements CommandHandler, CommandHandlerManager {
-
-
-
     /**
      * 模板方法模式，命令处理的入口
      * @param event 经过 proxyContent 处理后的消息
@@ -40,7 +37,7 @@ public abstract class AbstractCommandEventHandler extends GroupMessageEventHandl
             return OfUtil.ofList(buildMessageChain(getQuoteReply(event),
                     "命令解析出错，错误原因：" + e.getMessage()));
         } catch (InsufficientPermissionsException e) {
-            recordFailLog(event, "权限不足：");
+            fail(event, "权限不足：" + e.getMessage());
             return OfUtil.ofList(buildMessageChain(getQuoteReply(event),
                     "对不起，您没有足够的权限，说明：" + e.getMessage()));
         } catch (Exception e) {

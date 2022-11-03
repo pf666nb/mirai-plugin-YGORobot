@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "com.happysnaker"
-version = "3.3-SNAPSHOT"
+version = "3.4-SNAPSHOT"
 
 repositories {
     maven("https://maven.aliyun.com/repository/public")

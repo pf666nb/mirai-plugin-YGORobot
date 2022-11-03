@@ -1,17 +1,21 @@
 package com.happysnaker.handler.impl;
 
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.cron.RobotCronJob;
-import com.happysnaker.context.Context;
+import com.happysnaker.proxy.Context;
 import com.happysnaker.handler.MessageEventHandler;
-import com.happysnaker.utils.*;
+import com.happysnaker.utils.RobotUtil;
+import com.happysnaker.utils.StringUtil;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.event.events.MessageEvent;
-import net.mamoe.mirai.message.data.*;
+import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import static com.happysnaker.config.ConfigManager.*;
 
 /**
  * 抽象的消息处理器，实现了 {@link MessageEventHandler#handleMessageEvent(MessageEvent, Context)} 的默认逻辑，抽象方法即可，此类继承了 {@link RobotUtil} 实用类，子类可以便捷地调用实用类中的方法
@@ -25,10 +29,11 @@ public abstract class AbstractMessageEventHandler extends RobotUtil implements M
 
 
     /**
-     *     当前机器人的 qq 号，注意可能有多个 qq（多个机器人）
-     */
+     * 当前机器人的 qq 号，注意可能有多个 qq（多个机器人）
+     * @deprecated 这个值可能是不准确的，需调用 {@link Bot#getInstances()} 方法获取机器人列表
+      */
+    @Deprecated
     public List<String> qqList = null;
-
 
 
     public MiraiLogger logger = RobotConfig.logger;
@@ -85,25 +90,21 @@ public abstract class AbstractMessageEventHandler extends RobotUtil implements M
     /**
      * 读取运行时机器人的 QQ，并初始化 qqs，此方法需动态调用，因为一开始用户可能未登录
      */
+    @Deprecated
     public void initBotQQ() {
-        info("init bot...");
         List<Bot> bots = Bot.getInstances();
         List<String> qqs = new ArrayList<>();
         for (Bot bot : bots) {
             qqs.add(String.valueOf(bot.getId()));
         }
         this.qqList = qqs;
-
-//        try {
-//            info("正在提交定期任务...");
-//            RobotCronJob.runCustomerPeriodTask();
-//            info("任务提交成功！");
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            error("定期任务提交失败，请检查配置是否成功，如有相关问题可前往 提出 ISSUE");
-//        }
     }
 
+    /**
+     * 提取纯文本消息，消息将不会包含图片、表情等任何非文字
+     * @param event 消息时间
+     * @return 纯文本
+     */
     public String getPlantContent(MessageEvent event) {
         return getOnlyPlainContent(event);
     }

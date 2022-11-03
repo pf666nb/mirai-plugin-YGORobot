@@ -4,7 +4,7 @@ package com.happysnaker.handler.impl;
 import com.happysnaker.api.BingApi;
 import com.happysnaker.api.PixivApi;
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.context.Context;
+import com.happysnaker.proxy.Context;
 import com.happysnaker.exception.CanNotSendMessageException;
 import com.happysnaker.exception.FileUploadException;
 import com.happysnaker.handler.handler;
@@ -37,9 +37,11 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
     public final String beautifulImageUrl = PixivApi.beautifulImageUrl;
     public final String chickenSoupUrl = PixivApi.chickenSoupUrl;
     public final String duChickenSoupUrl = PixivApi.duChickenSoupUrl;
+
+    @Deprecated
     public final String pixivSearchApi = PixivApi.pixivSearchApi;
 
-    private Set<String> keywords = new HashSet<>();
+    private final Set<String> keywords = new HashSet<>();
 
     public ImageShareMessageEventHandler() {
         keywords.add(chickenSoup);
@@ -102,7 +104,7 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
      */
     private List<String> getTags(String content, String tem) {
         List<String> tags = new ArrayList<>();
-        String[] strings = content.replace(tem, "").split("\\s+");
+        List<String> strings = StringUtil.splitSpaces(content.replace(tem, ""));
         for (String s : strings) {
             if (!s.isEmpty() && !s.equals(tem)) {
                 tags.add(s.trim());
@@ -152,37 +154,41 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
         if (!RobotConfig.colorSwitch) {
             return;
         }
-        long pid = PixivApi.getSeImagePid(tags);
-        if (pid == -1) {
+        String imgUrl = PixivApi.searchImage(tags, true, !isPlus);
+        if (StringUtil.isNullOrEmpty(imgUrl)) {
             buildMessageChain("查无此图");
             return;
         }
-        // 如果不是高清涩图加上 &web=true，表示请求一张更小的图片
-        String api = isPlus ? pixivSearchApi : pixivSearchApi + "&web=true";
-        String imgUrl = api.replace("IMGID", String.valueOf(pid));
-        info("source color img url = " + imgUrl);
+        info(String.format("R18 color image url: %s", imgUrl));
 
-        Image image = uploadImage(event, new URL(imgUrl));
-        // 可访问的地址，原地址可能会被腾讯视为恶意网站
-        String reachable_image_url = Image.queryUrl(image);
-        if (StringUtil.isNullOrEmpty(reachable_image_url)) {
-            reachable_image_url = imgUrl;
+        if (RobotConfig.colorStrategy == 4) {
+            sendMsg(buildMessageChain(getQuoteReply(event), "颜色图片原始链接：" + imgUrl), event);
+            return;
         }
+
+        // 可访问的地址，腾讯很恶心，原地址可能会被腾讯视为恶意网站，所以这里上传一下服务器，用腾讯内部地址
+        Image image = uploadImage(event, new URL(imgUrl));
+        String reachableImageUrl = Image.queryUrl(image);
+        if (StringUtil.isNullOrEmpty(reachableImageUrl)) {
+            reachableImageUrl = imgUrl;
+        }
+
         switch (RobotConfig.colorStrategy) {
             case 0:
                 return;
             case 1:
-                sendMsg(buildMessageChain(getQuoteReply(event), "颜色图片链接：" + reachable_image_url), event);
+                sendMsg(buildMessageChain(getQuoteReply(event), "颜色图片链接：" + reachableImageUrl), event);
                 break;
             case 2:
                 sendMsg(buildMessageChain(image), event, RobotConfig.pictureWithdrawalTime * 1000L);
                 break;
             case 3:
-                sendMsg(buildMessageChain(getQuoteReply(event), "颜色图片链接：" + reachable_image_url), event);
+                sendMsg(buildMessageChain(getQuoteReply(event), "颜色图片链接：" + reachableImageUrl), event);
                 sendMsg(buildMessageChain(image), event, RobotConfig.pictureWithdrawalTime * 1000L);
                 break;
         }
     }
+
 
     /**
      * 获取神秘代码
@@ -194,15 +200,11 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
      * @throws FileUploadException
      */
     private MessageChain doParseMysteriousImage(MessageEvent event, List<String> tags) throws IOException, FileUploadException {
-        if (tags.size() == 0) {
-            return buildMessageChain(uploadImage(event, new URL(PixivApi.randomUrl)));
-        }
-        long pid = PixivApi.getImagePid(tags);
-        if (pid == -1) {
+        String imgUrl = PixivApi.searchImage(tags, false, false);
+        if (StringUtil.isNullOrEmpty(imgUrl)) {
             return buildMessageChain("查无此图");
         }
-        String imgUrl = pixivSearchApi.replace("IMGID", String.valueOf(pid));
-        info("color img url = " + imgUrl);
+        info(String.format("Not r18 color image url: %s", imgUrl));
         return new MessageChainBuilder()
                 .append(uploadImage(event, new URL(imgUrl))).build();
     }
@@ -222,7 +224,7 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
             chickenSoupUrl = this.duChickenSoupUrl;
         }
         Map<String, Object> map = IOUtil.sendAndGetResponseMap(new URL(chickenSoupUrl), "GET", null, null);
-        String text = (String) ((Map) (map.get("data"))).get("text");
+        String text = (String) ((Map<?, ?>) (map.get("data"))).get("text");
         return new MessageChainBuilder()
                 .append(text)
                 .append(uploadImage(event, new URL(beautifulImageUrl)))

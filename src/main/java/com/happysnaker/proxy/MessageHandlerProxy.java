@@ -1,17 +1,18 @@
 package com.happysnaker.proxy;
 
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.context.Context;
-import com.happysnaker.intercept.Interceptor;
-import com.happysnaker.intercept.intercept;
 import com.happysnaker.handler.MessageEventHandler;
 import com.happysnaker.handler.handler;
+import com.happysnaker.handler.intercept.Interceptor;
+import com.happysnaker.handler.intercept.intercept;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 import org.reflections.Reflections;
 
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Happysnaker
@@ -22,43 +23,53 @@ import java.util.*;
 public class MessageHandlerProxy implements MessageEventHandler {
     // 扫描所有的类
     public final String packageName = "com.happysnaker";
-    private List<MessageEventHandler> handlers = new ArrayList<>();
-    private List<Interceptor> interceptors = new ArrayList<>();
+    private final List<MessageEventHandler> handlers = new ArrayList<>();
+    private final List<Interceptor> interceptors = new ArrayList<>();
+
+
+
 
     /**
      * 扫描 jar 包下的所有类，并添加 MessageHandler 和
      */
     public MessageHandlerProxy() throws Exception {
         Reflections reflections = new Reflections("com.happysnaker");
-        TreeMap<Integer, List<MessageEventHandler>> map = new TreeMap<>((a, b) -> b - a);
         Set<Class<?>> handlerCs = reflections.getTypesAnnotatedWith(handler.class);
         Set<Class<?>> inspectCs = reflections.getTypesAnnotatedWith(intercept.class);
+
+
         for (Class<?> c : handlerCs) {
             if (Modifier.isAbstract(c.getModifiers())) {
                 continue;
             }
             try {
-                handler annotation = c.getAnnotation(handler.class);
-                map.putIfAbsent(annotation.priority(), new ArrayList<>());
-                MessageEventHandler h = (MessageEventHandler) c.getConstructor().newInstance();
-                map.get(annotation.priority()).add(h);
+                handlers.add((MessageEventHandler) c.getConstructor().newInstance());
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
         for (Class<?> c : inspectCs) {
             try {
-                Interceptor it = (Interceptor) c.getConstructor().newInstance();
-                interceptors.add(it);
+                interceptors.add((Interceptor) c.getConstructor().newInstance());
             } catch (Exception e) {
                 e.printStackTrace();
                 throw  e;
             }
         }
 
-        for (Map.Entry<Integer, List<MessageEventHandler>> it : map.entrySet()) {
-            handlers.addAll(it.getValue());
-        }
+        handlers.sort((h1, h2) -> {
+            handler a1 = h1.getClass().getAnnotation(handler.class);
+            handler a2 = h2.getClass().getAnnotation(handler.class);
+            // 按照高 ->低排序
+            return a2.priority() - a1.priority();
+        });
+
+        interceptors.sort((i1, i2) -> {
+            intercept a1 = i1.getClass().getAnnotation(intercept.class);
+            intercept a2 = i2.getClass().getAnnotation(intercept.class);
+            // 按照高 ->低排序
+            return a2.order() - a1.order();
+        });
         RobotConfig.logger.info("HRobot handlers and filters loading finished, total " + handlers.size() + " handlers, " + interceptors.size() + " inspectors.");
     }
 

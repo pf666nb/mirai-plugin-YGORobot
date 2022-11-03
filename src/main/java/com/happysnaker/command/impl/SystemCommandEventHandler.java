@@ -6,13 +6,14 @@ import com.happysnaker.exception.InsufficientPermissionsException;
 import com.happysnaker.handler.handler;
 import com.happysnaker.permission.Permission;
 import com.happysnaker.starter.HRobotStarter;
-import com.happysnaker.utils.ConfigUtil;
+import com.happysnaker.config.ConfigManager;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 
 import java.util.List;
 
 /**
+ * 机器人整体性的配置
  * @author Happysnaker
  * @description
  * @date 2022/2/22
@@ -26,9 +27,7 @@ public class SystemCommandEventHandler extends DefaultCommandEventHandlerManager
     public static String showConfigLogCommand = "查看配置日志";
     public static String shutdown = "关机";
     public static String boot = "开机";
-    public static String openSe = "开启涩图";
-    public static String closeSe = "关闭涩图";
-    public static String updateSeStrategy = "设置涩图发送模式";
+
 
     public SystemCommandEventHandler() {
         super.registerKeywords(saveConfigCommand);
@@ -36,7 +35,6 @@ public class SystemCommandEventHandler extends DefaultCommandEventHandlerManager
         super.registerKeywords(showConfigLogCommand);
         super.registerKeywords(reloadConfigCommand);
         super.registerKeywords(shutdown).registerKeywords(boot);
-        super.registerKeywords(openSe).registerKeywords(closeSe).registerKeywords(updateSeStrategy);
     }
 
 
@@ -56,12 +54,6 @@ public class SystemCommandEventHandler extends DefaultCommandEventHandlerManager
                 return doShutDown(event);
             } else if (content.equals(boot)) {
                 return doBoot(event);
-            } else if (content.equals(openSe)) {
-                return doOpenSe(event);
-            } else if (content.equals(closeSe)) {
-                return doCloseSe(event);
-            } else if (content.startsWith(updateSeStrategy)) {
-                return doUpdateSeStrategy(event);
             }
         } catch (InsufficientPermissionsException e) {
             throw e;
@@ -72,52 +64,6 @@ public class SystemCommandEventHandler extends DefaultCommandEventHandlerManager
     }
 
 
-
-
-    private List<MessageChain> doUpdateSeStrategy(MessageEvent event) throws InsufficientPermissionsException {
-        if (!Permission.hasAdmin(getSenderId(event))) {
-            throw new InsufficientPermissionsException("您的权限不足，无法执行此操作");
-        }
-        int mode = -1;
-        try {
-            mode = Integer.parseInt(getPlantContent(event).replace(updateSeStrategy, ""));
-        } catch (Exception e) {
-            return buildMessageChainAsSingletonList("无法识别的模式，仅支持 0、1、2、3 模式");
-        }
-        String message = "无法识别的模式，仅支持 0、1、2、3 模式";
-        switch (mode) {
-            case 0:
-                message = "已设置模式：不发送任何消息";
-                break;
-            case 1:
-                message = "已设置模式：仅发送图片链接";
-                break;
-            case 2:
-                message = "已设置模式：仅发送图片";
-                break;
-            case 3:
-                message = "已设置模式：即发送图片，且发送图片链接";
-                break;
-        }
-        RobotConfig.colorStrategy = mode >= 0 && mode <= 3 ? mode : RobotConfig.colorStrategy;
-        return buildMessageChainAsSingletonList(getQuoteReply(event), message);
-    }
-
-    private List<MessageChain> doOpenSe(MessageEvent event) throws InsufficientPermissionsException {
-        if (!Permission.hasAdmin(getSenderId(event))) {
-            throw new InsufficientPermissionsException("您的权限不足，无法执行此操作");
-        }
-        RobotConfig.colorSwitch = true;
-        return buildMessageChainAsSingletonList("已开启颜色图片");
-    }
-
-    private List<MessageChain> doCloseSe(MessageEvent event) throws InsufficientPermissionsException {
-        if (!Permission.hasAdmin(getSenderId(event))) {
-            throw new InsufficientPermissionsException("您的权限不足，无法执行此操作");
-        }
-        RobotConfig.colorSwitch = false;
-        return buildMessageChainAsSingletonList("已关闭颜色图片");
-    }
 
     private List<MessageChain> doShutDown(MessageEvent event) throws InsufficientPermissionsException {
         if (!Permission.hasSuperAdmin(getSenderId(event))) {
@@ -175,7 +121,7 @@ public class SystemCommandEventHandler extends DefaultCommandEventHandlerManager
             throw new InsufficientPermissionsException("您的权限不足，无法执行此操作");
         }
         try {
-            ConfigUtil.writeConfig();
+            ConfigManager.writeConfig();
             flush();
         } catch (Exception e) {
             throw new CanNotParseCommandException(e);

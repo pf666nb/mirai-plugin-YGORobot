@@ -47,7 +47,7 @@ public class TongZhongApi {
             List<Map<String, Object>> s2 = getSongs(keyword, url4);
             List<Map<String, Object>> s3 = getSongs(keyword, url5);
             int n = Math.max(Math.max(s1.size(), s2.size()), s3.size());
-            // 从多个 URL 里搜索聚合
+            // 从多个 URL 里搜索聚合，并以 url2 （铜钟的聚合搜索）为主体
             for (int i = 0; i < n; i++) {
                 if (i < s1.size()) {
                     songs.add(s1.get(i));
@@ -63,14 +63,15 @@ public class TongZhongApi {
             for (int i = 0; i < songs.size(); i++) {
                 songs.get(i).put("index", i);
             }
-            // 按照名称相似程度排序
+            // 按照名称相似程度排序，大小写不敏感（3.3 以前是敏感的，但是很多人搜索的时候不会在意大小写）
             songs.sort((a, b) -> {
                 if (a == null || b == null) {
                     return a == null ? 1 : -1;
                 }
                 String aName = new MapGetter(a).getStringOrDefault("name", "");
                 String bName = new MapGetter(b).getStringOrDefault("name", "");
-                int adis = StringUtil.getEditDistance(aName, keyword), bdis = StringUtil.getEditDistance(bName, keyword);
+                int adis = StringUtil.getEditDistance(aName.toUpperCase(Locale.ROOT), keyword.toUpperCase(Locale.ROOT));
+                int bdis = StringUtil.getEditDistance(bName.toUpperCase(Locale.ROOT), keyword.toUpperCase(Locale.ROOT));
                 if (adis == bdis) {
                     // 如果名称优先度相同，则按照原本搜索的顺序排序
                     return (int) a.get("index") - (int) b.get("index");
@@ -100,7 +101,7 @@ public class TongZhongApi {
                     String songUrl = urlSource.getMapGetter("data").getString("songSource");
                     if (songUrl != null) {
                         String singer = "未知歌手";
-                        List artists = song.getList("artists");
+                        List<?> artists = song.getList("artists");
                         if (artists != null && artists.size() > 0) {
                             singer = new MapGetter(artists.get(0)).getStringOrDefault("name", "未知歌手");
                         }
@@ -114,6 +115,7 @@ public class TongZhongApi {
                         );
                     }
                 } catch (Exception ignored) {
+                    // 这首没有音源，下一首
                 }
             }
         } catch (Exception e) {
@@ -122,6 +124,7 @@ public class TongZhongApi {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     private static List<Map<String, Object>> getSongs(String keyword, String url) throws Exception {
         Map<String, Object> res = null;
         try {

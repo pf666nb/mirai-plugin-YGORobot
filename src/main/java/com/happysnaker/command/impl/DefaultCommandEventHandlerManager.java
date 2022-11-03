@@ -1,6 +1,7 @@
 package com.happysnaker.command.impl;
 
-import com.happysnaker.context.Context;
+import com.happysnaker.config.ConfigManager;
+import com.happysnaker.proxy.Context;
 import com.happysnaker.exception.CanNotParseCommandException;
 import com.happysnaker.exception.InsufficientPermissionsException;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -61,13 +62,13 @@ public class DefaultCommandEventHandlerManager extends AbstractCommandEventHandl
      */
     @Override
     public void success(MessageEvent event) {
-        log.append(getLog(event) + "\n");
+        log.append(ConfigManager.formatLog(event)).append("\n");
         successNum++;
     }
 
     @Override
     public void fail(MessageEvent event, String errorMsg) {
-        recordFailLog(event, errorMsg);
+        logError(event, errorMsg);
     }
 
 
@@ -86,6 +87,9 @@ public class DefaultCommandEventHandlerManager extends AbstractCommandEventHandl
      */
     @Override
     public boolean shouldHandle(MessageEvent event, Context ctx) {
+        if (keywords == null || keywords.isEmpty()) {
+            return false;
+        }
         if (super.shouldHandle(event, ctx)) {
             String content = getPlantContent(event);
             if (content != null) {

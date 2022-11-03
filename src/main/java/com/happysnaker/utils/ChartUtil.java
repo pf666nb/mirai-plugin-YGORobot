@@ -1,5 +1,6 @@
 package com.happysnaker.utils;
 
+import com.happysnaker.config.ConfigManager;
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.cron.RobotCronJob;
 import org.jfree.chart.ChartFactory;
@@ -33,7 +34,7 @@ public class ChartUtil {
     static {
         RobotConfig.logger.info("注册后台清理任务...");
         RobotCronJob.addCronTask(() -> {
-            File file = new File(ConfigUtil.getDataFilePath("img"));
+            File file = new File(ConfigManager.getDataFilePath("img"));
             if (!file.exists() || !file.isDirectory()) {
                 file.mkdir();
             } else {
@@ -47,7 +48,7 @@ public class ChartUtil {
         });
     }
 
-    public static final String directionPath = ConfigUtil.getDataFilePath("img/");
+    public static final String directionPath = ConfigManager.getDataFilePath("img/");
 
     public static String generateAPieChart(Map<String, Long> dataset, String title) throws IOException {
         try {

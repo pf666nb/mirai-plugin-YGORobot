@@ -71,14 +71,14 @@ public class AuthorityCommandEventHandler extends DefaultCommandEventHandlerMana
     private List<MessageChain> seePermission(MessageEvent event) throws CanNotParseCommandException, InsufficientPermissionsException {
         String content = getPlantContent(event);
         String qq = content.replace(SEE_PERMISSION, "").trim();
-        if (qq == null || qq.isEmpty()) {
+        if (qq.isEmpty()) {
             qq = getSenderId(event);
         } else if (!StringUtil.isNum(qq)) {
             throw new CanNotParseCommandException("不正确的 qq 格式");
         }
         StringBuilder sb = new StringBuilder();
         for (Integer p : Permission.getPermissionSet(qq)) {
-            sb.append("- " + permissionMap.get(p) + "\n");
+            sb.append("- ").append(permissionMap.get(p)).append("\n");
         }
         return sb.length() == 0 ?
                 buildMessageChainAsSingletonList("用户 " + qq + " 无任何权限") :
@@ -147,10 +147,8 @@ public class AuthorityCommandEventHandler extends DefaultCommandEventHandlerMana
         if (RobotConfig.gtAdministrator.contains(qq)) {
             return buildMessageChainAsSingletonList(qq + " 已是坎公管理员");
         }
-        if (RobotConfig.gtAdministrator.add(qq)) {
-            return buildMessageChainAsSingletonList("配置成功");
-        }
-        throw new CanNotParseCommandException("未知错误");
+        RobotConfig.gtAdministrator.add(qq);
+        return buildMessageChainAsSingletonList("配置成功");
     }
 
     private List<MessageChain> grantGroupAdmin(MessageEvent event) throws CanNotParseCommandException, InsufficientPermissionsException {
@@ -164,10 +162,8 @@ public class AuthorityCommandEventHandler extends DefaultCommandEventHandlerMana
         if (RobotConfig.groupAdministrator.contains(qq)) {
             return buildMessageChainAsSingletonList(qq + " 已是坎公管理员");
         }
-        if (RobotConfig.groupAdministrator.add(qq)) {
-            return buildMessageChainAsSingletonList("配置成功");
-        }
-        throw new CanNotParseCommandException("未知错误");
+        RobotConfig.groupAdministrator.add(qq);
+        return buildMessageChainAsSingletonList("配置成功");
     }
 
     private List<MessageChain> grantAdmin(MessageEvent event) throws CanNotParseCommandException, InsufficientPermissionsException {
@@ -181,10 +177,8 @@ public class AuthorityCommandEventHandler extends DefaultCommandEventHandlerMana
         if (RobotConfig.administrator.contains(qq)) {
             return buildMessageChainAsSingletonList(qq + " 已是管理员");
         }
-        if (RobotConfig.administrator.add(qq)) {
-            return buildMessageChainAsSingletonList("配置成功");
-        }
-        throw new CanNotParseCommandException("未知错误");
+        RobotConfig.administrator.add(qq);
+        return buildMessageChainAsSingletonList("配置成功");
     }
 
     private void assertPermission(String senderQQ, String qq, MessageEvent event) throws CanNotParseCommandException, InsufficientPermissionsException {

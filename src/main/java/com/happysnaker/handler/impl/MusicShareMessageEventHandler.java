@@ -2,7 +2,7 @@ package com.happysnaker.handler.impl;
 
 import com.happysnaker.api.MiguApi;
 import com.happysnaker.api.TongZhongApi;
-import com.happysnaker.context.Context;
+import com.happysnaker.proxy.Context;
 import com.happysnaker.handler.handler;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.*;
@@ -52,6 +52,7 @@ public class MusicShareMessageEventHandler extends GroupMessageEventHandler {
         return null;
     }
 
+    @Deprecated
     protected List<MessageChain> miguMusic(MessageEvent event) throws IOException {
         String content = getPlantContent(event);
         String name = content.substring(MIGU_MUSIC_KEYWORD.length()).trim();

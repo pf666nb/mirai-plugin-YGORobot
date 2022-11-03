@@ -21,7 +21,9 @@ import java.util.Map;
  */
 @handler(priority = 1024)
 public class GroupManageCommandEventHandler extends DefaultCommandEventHandlerManager {
+    @Deprecated
     public static final String ENABLE_AUTO_APPROVE = "开启自动审批";
+    @Deprecated
     public static final String DISABLE_AUTO_APPROVE = "关闭自动审批";
     public static final String ENABLE_SENSITIVE_WORD_DETECTION = "开启敏感词检测";
     public static final String DISABLE_SENSITIVE_WORD_DETECTION = "关闭敏感词检测";

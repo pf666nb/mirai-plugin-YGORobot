@@ -1,5 +1,28 @@
 # 登录步骤
 首先你需要前往[Releases · mzdluo123/TxCaptchaHelper (github.com)](https://github.com/mzdluo123/TxCaptchaHelper/releases)下载对应 apk 到你的手机上，注意是使用手机下载，不要下载到电脑上，后续我们需要使用此 apk。
+
+## 2022/10 出现版本过低请升级客户端问题解决方案
+Mirai 已有对应 issue，可查看 [issue#2298](https://github.com/mamoe/mirai/issues/2298)
+
+我自己也遇到了这个问题，我是使用容器部署机器人的，机器人是我 6 个月大的小号，我的解决方法是：
+1. 删除 `bot/qq号/device.json` 文件
+2. 手动在 `config/Console/AutoLogin.yml` 配置自动登录
+3. protocol 配置修改为 `protocol: ANDROID_PAD`
+4. 登陆时保持手机 QQ 同时在线
+```yaml
+# config/Console/AutoLogin.yml
+accounts:
+  - # 账号, 现只支持 QQ 数字账号
+    account: 102536847
+    password:
+      # 密码种类, 可选 PLAIN 或 MD5
+      kind: PLAIN
+      # 密码内容, PLAIN 时为密码文本, MD5 时为 16 进制
+      value: PASSWORD
+    configuration:
+      protocol: ANDROID_PAD
+```
+
 ## WINDOWS 登录
 1. 在命令行中输入`login 账号 密码`，然后回车。
 
