@@ -3,7 +3,7 @@ package com.happysnaker.proxy;
 import com.happysnaker.config.ConfigManager;
 import com.happysnaker.exception.CanNotSendMessageException;
 import com.happysnaker.handler.MessageEventHandler;
-import com.happysnaker.handler.intercept.Interceptor;
+import com.happysnaker.intercept.Interceptor;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;

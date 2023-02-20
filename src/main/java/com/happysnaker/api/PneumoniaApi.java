@@ -1,6 +1,7 @@
 package com.happysnaker.api;
 
 import com.happysnaker.utils.IOUtil;
+import com.happysnaker.utils.MapGetter;
 
 import java.io.IOException;
 import java.net.URL;
@@ -9,13 +10,16 @@ import java.util.Map;
 
 /**
  * 全国疫情 API
+ * @deprecated 疫情已经无了，已废弃
  */
+@SuppressWarnings("unchecked")
+@Deprecated
 public class PneumoniaApi {
     static String api = "https://c.m.163.com/ug/api/wuhan/app/data/list-total";
 
     public static Map<String, Object> queryPneumoniaMap(String area) throws IOException {
         String grt = IOUtil.sendAndGetResponseString(new URL(api), "GET", null, null);
-        Map<String, Object> map = (Map<String, Object>) IOUtil.sendAndGetResponseMap(new URL(api), "GET", null, null).get("data");
+        MapGetter map = IOUtil.sendAndGetResponseMapGetter(new URL(api), "GET", null, null).getMapGetter("data");
         if (area == null || area.isEmpty()) {
             area = "中国";
         }

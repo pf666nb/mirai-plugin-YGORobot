@@ -15,7 +15,7 @@ import java.net.URL;
 import java.util.List;
 
 /**
- * 哔哩哔哩订阅推送
+ * 哔哩哔哩订阅推送后台检测任务
  */
 public class BilibiliSubscribeCronJob extends SubscribeCronJob {
     public BilibiliSubscribeCronJob(long pushGroup, List<String> atMembers, int type, String key) {

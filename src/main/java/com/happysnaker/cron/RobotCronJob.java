@@ -1,6 +1,7 @@
 package com.happysnaker.cron;
 
 import com.happysnaker.api.PixivApi;
+import com.happysnaker.config.Logger;
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.exception.CanNotParseCommandException;
 import com.happysnaker.utils.MapGetter;
@@ -80,7 +81,7 @@ public class RobotCronJob implements Job {
         submitCronJob(RobotCronJob.class,
                 SimpleScheduleBuilder.repeatMinutelyForever(PERIOD_MINUTE), null
         );
-        // 注册后台任务
+        // 注册后台订阅任务
         addCronTask(parseSubscribeCronJobFromConfig());
     }
 
@@ -101,8 +102,7 @@ public class RobotCronJob implements Job {
             Contact contact = instance.getGroups().getOrFail(gid);
             List<String> messages = mg.getListOrWrapperSingleton("content", String.class);
             if (plusImage) {
-                messages = messages.stream().map(str -> String.format("%s\n[hrobot::$img](%s)",
-                                str,
+                messages = messages.stream().map(str -> String.format("%s\n[hrobot::$img](%s)", str,
                                 PixivApi.beautifulImageUrl))
                         .collect(Collectors.toList());
             }
@@ -139,7 +139,7 @@ public class RobotCronJob implements Job {
                 .withSchedule(scheduleBuilder)
                 .build();
         scheduler.scheduleJob(jobDetail, trigger);
-        RobotConfig.logger.info(String.format("提交任务 %s，下一次执行时间 %s", jobDetail.getKey().toString(), trigger.getNextFireTime().toString()));
+        Logger.info(String.format("提交一条任务 %s，下一次执行时间 %s", jobDetail.getKey().toString(), trigger.getNextFireTime().toString()));
     }
 
     /**
@@ -168,7 +168,7 @@ public class RobotCronJob implements Job {
             if (!RobotConfig.enableRobot) {
                 return;
             }
-            RobotConfig.logger.info(new Date() + ", run robot cron job...");
+            Logger.debug(new Date() + ", run robot cron job...");
             for (Runnable task : tasks) {
                 task.run();
             }

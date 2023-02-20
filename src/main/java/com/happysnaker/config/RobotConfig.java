@@ -17,7 +17,7 @@ public class RobotConfig {
     /**
      * 插件版本，每次更新请更新此配置
      */
-    public static final String CURRENT_VERSION = "3.4";
+    public static final String CURRENT_VERSION = "3.4.1";
     
     /**
      * 主配置文件名
@@ -55,6 +55,11 @@ public class RobotConfig {
      * 主菜单，回复 help 或 帮助 获取
      */
     public static String menu;
+
+    /**
+     * 日志级别
+     */
+    public static int logLevel = Logger.INFO;
 
     /**
      * 机器人管理员，索引 0 为超级管理员

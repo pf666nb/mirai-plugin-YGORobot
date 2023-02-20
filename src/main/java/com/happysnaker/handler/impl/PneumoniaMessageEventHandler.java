@@ -13,8 +13,10 @@ import java.util.Map;
 
 /**
  * 疫情统计
+ * @deprecated 疫情无了，万岁
  */
 @SuppressWarnings("unchecked")
+@Deprecated
 public class PneumoniaMessageEventHandler extends GroupMessageEventHandler {
     @Override
     public List<MessageChain> handleMessageEvent(MessageEvent event, Context ctx)  {

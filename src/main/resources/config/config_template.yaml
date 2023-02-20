@@ -1,6 +1,9 @@
 # 成员输入 帮助 或 help 或菜单后机器人回复的消息
 menu: '欢迎使用 HRobot v$CURRENT_VERSION，请前往 https://github.com/happysnaker/mirai-plugin-HRobot 查看相关信息'
 
+# 支持 -1, 0, 1, 2 四种配置，-1 表达不打印任何日志；0 会输出较多日志，用于 debug；1 仅会输出一些重要日志；2 会输出重要日志，并且会记录错误日志到文件中
+logLevel: 2
+
 # 指明机器人生效的群，include 和 exclude 只能配置一个而置另一个为空
 # include 表示机器人只在这些群内生效
 # exclude 表示机器人在除这些群外的所有群内生效
@@ -158,7 +161,7 @@ periodicTask:
     image: false
 
 
-# 订阅配置，一旦检测到订阅内容更新，机器人会进行通知（最多会存在 3 分钟延迟）
+# 订阅配置，一旦检测到订阅内容更新，机器人会进行通知（最多会存在 3 分钟延迟，重载配置无法使其生效）
 # 实验性功能，如有 BUG 请提 issue
 # 请注意如果 at 成员找不到，或者 at All 无权限或超过限制，消息会发送失败
 subscribe:

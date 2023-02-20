@@ -5,11 +5,7 @@
 
 mirai 群聊机器人插件，支持加群审批、敏感词检测撤回，支持每日定时发送，支持订阅番剧更新、UP 动态更新推送，支持发送涩图(可指定tag)、美图、风景图等，支持随机鸡汤发送，支持坎公骑冠剑会战统计、前线报道、会战报表等功能，支持在线点歌，综合多个音乐平台发送最佳音乐，支持对话聊天，支持自定义关键词回复、正则表达式匹配……更多功能正在开发。
 
-在一些情况下，发送涩图无反应，但查看控制台日志却发送图片已经发送，这种情况可能是由于图片被腾讯 ”拦截“ 了，属于正常现象，如果这种情况频繁发生，可以先暂停使用此号，过会时间再用，否则可能会封号危险。
-
-![image-20220703143852884](https://happysnaker-1306579962.cos.ap-nanjing.myqcloud.com/img/typora/image-20220703143852884.png)
-
-V3.3 版本后可以选择仅发送涩图链接，这或许是个不错的选项。
+在一些情况下，发送涩图无反应，但查看控制台日志却发送图片已经发送，这种情况可能是由于图片被腾讯 ”拦截“ 了，可以先暂时关闭涩图选项，否则有封号危险。V3.3 版本后可以选择仅发送涩图链接，这或许是个不错的选项。
 
 配置手册：[配置手册](version/CONFIG.md)
 
@@ -19,23 +15,19 @@ V3.3 版本后可以选择仅发送涩图链接，这或许是个不错的选项
 
 ## 快速使用
 
-机器人运行必须要求 Java 运行时环境版本大于等于 11。
+机器人运行必须要求 Java 运行时环境版本大于等于 11，经过测试，HRobot 适配 mcl-1.2.2、mcl-1.2.1、mcl-2.1.1 版本，其他版本暂未测试，但应该都是支持的。
 
 建议您使用 mirai-console-loader 快速启动 mirai 机器人，下载地址：[Releases · iTXTech/mirai-console-loader (github.com)](https://github.com/iTXTech/mirai-console-loader/releases)，下载后解压文件。
 
-如果你会使用 Docker，并且没有 Java 环境，强烈建议你使用 Docker 运行，可参考 [使用 Docker 运行](#使用-Docker-运行)
+前往[Releases · happysnaker/mirai-plugin-HRobot (github.com)](https://github.com/happysnaker/mirai-plugin-HRobot/releases)选择对应版本下载插件 jar 包 plugin-SNAPSHOT.mirai.jar，将该 jar 包移动至 mcl 文件下的 plugins 文件夹下，然后无须配置任何文件，点击 mcl.cmd 即可启动机器人，注意如果你是第一次下载，你必须先启动一次 mcl.cmd 才会有 plugins 相关文件夹生成。 在 Linux 下需要在当前文件下输入 `./mcl` 命令运行可执行文件启动。
 
-经过测试，HRobot 适配 mcl-1.2.2、mcl-1.2.1、mcl-2.1.1 版本，其他版本暂未测试，但应该都是支持的。
-
-前往[Releases · happysnaker/mirai-plugin-HRobot (github.com)](https://github.com/happysnaker/mirai-plugin-HRobot/releases)选择对应版本下载插件 jar 包 plugin-SNAPSHOT.mirai.jar，将该 jar 包移动至 mcl 文件下的 plugins 文件夹下，然后无须配置任何文件，点击 mcl.cmd 即可启动机器人，注意如果你是第一次下载，你必须先启动一次 mcl.cmd 才会有 plugins 相关文件夹生成。
-
-在 Linux 下需要在当前文件下输入 ./mcl 命令运行可执行文件启动.
+> **如果无限出现 mcl 更新请重启，可尝试使用 `./mcl -u` 更新 mcl packages 后重试，可参考 [issue149](https://github.com/iTXTech/mirai-console-loader/issues/149)**
 
 启动后在命令行中键入：`login QQ账号 QQ密码` 即可登录机器人，登录相关步骤请参考：[登录步骤](./STEP.md)
 
 更多信息请移步[mamoe/mirai: 高效率 QQ 机器人支持库 (github.com)](https://github.com/mamoe/mirai) 和  [iTXTech/mirai-console-loader: 模块化、轻量级且支持完全自定义的 mirai 加载器。 (github.com)](https://github.com/iTXTech/mirai-console-loader)
 
-如果你需要砍公骑冠剑相关或**更多高级功能**，那么您必须配置相关信息，请移步 [配置文件手册](version/CONFIG.md)
+您可以进行相关配置以获得更多高级功能，请移步 [配置文件手册](version/CONFIG.md)
 
 **更多功能正在开发，请 STAR 持续关注此项目**
 
@@ -67,14 +59,15 @@ Docker 是每一位程序员必备的技能，如果你的机器上没有安装 
    在终端与容器交互，你所在的目录应该是 /app 目录，容器已经下载好了 mcl 以及对应版本插件，可以直接运行。
 
    在第一次运行 `./mcl` 启动机器人后，会自动生成模板配置文件，如有需要可以进行配置。随后重新启动一次机器人，参考上述使用说明登录机器人。
+   > **如果无限出现 mcl 更新请重启，可尝试使用 `./mcl -u` 更新 mcl packages 后重试，可参考 [issue149](https://github.com/iTXTech/mirai-console-loader/issues/149)**
 
-   当然你可以使用 `docker cp` 命令复制配置文件到容器中。
-> 在我的云服务器上，我似乎没法用 docker logs 查看对应命令，因此我使用了 ./mcl | tee -a log.log 将输出同时定向到文件中查看，如果你也存在这个问题，可以参考这个做法
+   当然你也可以使用 `docker cp` 命令复制配置文件到容器中，这样可以免去登录时可能出现的问题
+
 4. 第四步：退出容器但不终止机器人
 
    键入快捷键 `ctrl p q` 退出容器但不终止容器。当然你也可以使用 `nohup` 或 `screen` 等相关工具来完成此目的。
 
-> 虽然 Docker 镜像版本与插件版本对应，但在升级插件时建议你在直接在容器内更换插件版本，并重新启动机器人，而不是重新拉取最新版本镜像运行，因为重新运行容器需要重新登录、重新配置机器人，浪费精力。
+> 虽然 Docker 镜像版本与插件版本对应，但在升级插件时建议你在直接在容器内更换插件版本，并重新启动机器人，而不是重新拉取最新版本镜像运行，因为重新运行容器需要重新登录、重新配置机器人，并且可能会出现安全问题。
 
 ## 关键字示例
 
@@ -183,7 +176,6 @@ HRobot 支持配置文件，配置文件在 mcl/config/com.happysnaker.HRobot/co
 
 > - 智能聊天：[青云客智能聊天机器人API (qingyunke.com)](http://api.qingyunke.com/)
 > - Bing 壁纸：[必应每日高清壁纸 - 精彩，从这里开始 (ioliu.cn)](https://bing.ioliu.cn/)
-> - ~~咪咕音乐：[咪咕音乐链接歌词封面接口API - 刘明野的博客 (liumingye.cn)](https://www.liumingye.cn/archives/304.html)~~
 > - 聚合音乐：[铜钟 - 在一处聆听所有音乐 (tonzhon.com)](https://tonzhon.com/)
 > - Pivix 涩图：[Lolicon API](https://api.lolicon.app/#/)
 > - 坎公骑冠剑：[坎公百宝袋-bigfun社区](https://www.bigfun.cn/tools/gt/)

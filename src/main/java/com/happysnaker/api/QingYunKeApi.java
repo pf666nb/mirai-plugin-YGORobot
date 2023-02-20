@@ -26,5 +26,4 @@ public class QingYunKeApi {
             return "理解不了呢";
         }
     }
-
 }

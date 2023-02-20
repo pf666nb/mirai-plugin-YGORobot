@@ -41,7 +41,6 @@ public abstract class AbstractCommandEventHandler extends GroupMessageEventHandl
             return OfUtil.ofList(buildMessageChain(getQuoteReply(event),
                     "对不起，您没有足够的权限，说明：" + e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             fail(event, e);
             return OfUtil.ofList(buildMessageChain(getQuoteReply(event),
                     "异常错误，错误原因：" + e.getMessage()));
