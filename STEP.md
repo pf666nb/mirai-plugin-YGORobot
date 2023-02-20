@@ -1,6 +1,26 @@
 # 登录步骤
 首先你需要前往[Releases · mzdluo123/TxCaptchaHelper (github.com)](https://github.com/mzdluo123/TxCaptchaHelper/releases)下载对应 apk 到你的手机上，注意是使用手机下载，不要下载到电脑上，后续我们需要使用此 apk。
 
+## 2023/2 无限提示 QQ 安全问题，需要设备锁解决方案
+这个是由于在不常用设备上登录导致的问题，推荐使用一个非常好使的工具：[Aoki](https://github.com/MrXiaoM/Aoki)
+
+在手机上下载 APK，这个工具会引导你登录 QQ，然后会收集你的设备信息，将以你 QQ 为名的文件打包覆盖到项目 bots 目录下，目录树如下：
+```shell
+root@e991610e2656:/app# tree
+.
+├── LICENSE
+├── README.md
+├── bots
+│   └── 2199828958
+│       ├── cache
+│       │   ├── account.secrets
+│       │   ├── session.bin
+│       │   └── validator.bin
+│       ├── device.json
+│       └── logs
+```
+随后启动机器人即可，这个 device.json 保存了你常用设备的信息，可以复用。
+
 ## 2022/10 出现版本过低请升级客户端问题解决方案
 Mirai 已有对应 issue，可查看 [issue#2298](https://github.com/mamoe/mirai/issues/2298)
 

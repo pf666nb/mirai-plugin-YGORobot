@@ -1,6 +1,7 @@
 package com.happysnaker.starter;
 
 import com.alibaba.fastjson.JSONObject;
+import com.happysnaker.config.Logger;
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.utils.IOUtil;
 
@@ -11,6 +12,7 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Happysnaker
@@ -69,10 +71,10 @@ public class HRobotVersionChecker {
             Map<String, Object> map = IOUtil.sendAndGetResponseMap(new URL(api), "GET", null, null);
             String latestVersion = (String) map.get("name");
 
-            RobotConfig.logger.info("Github 最新发行版本 " + latestVersion);
-            RobotConfig.logger.info("当前版本 " + VERSION);
+            Logger.info("Github 最新发行版本 " + latestVersion);
+            Logger.info("当前版本 " + VERSION);
             if (compareVersion(VERSION, latestVersion) >= 0) {
-                RobotConfig.logger.info("当前 HRobot 插件已为最新版");
+                Logger.debug("当前 HRobot 插件已为最新版");
                 return;
             }
 
@@ -84,8 +86,8 @@ public class HRobotVersionChecker {
             String downLoadUrl = (String) lists.get(0).get("browser_download_url");
             String downloadName = (String) lists.get(0).get("name");
 
-            RobotConfig.logger.info("检测到新版本: " + latestVersion + ", 请前往 " + map.get("html_url") + " 查看详情");
-            RobotConfig.logger.info("如您使用的已经是最新版插件请忽略此消息");
+            Logger.info("检测到新版本: " + latestVersion + ", 请前往 " + map.get("html_url") + 
+                    " 查看详情, 如您使用的已经是最新版插件请忽略此消息" );
 
             // 只有 windows 才自动更新，linux 仅提示
             if (isWindows()) {
@@ -93,38 +95,32 @@ public class HRobotVersionChecker {
                 // 自动更新
                 if (n == 0) {
                     try {
-                        RobotConfig.logger.info("正在检索当前版本文件： " + fileName);
+                        Logger.info("正在检索当前版本文件： " + fileName);
                         String plugins = RobotConfig.dataFolder.getParentFile().getParentFile() + "/" + "plugins";
                         File file = new File(plugins);
                         File oldFile = null;
-                        for (File listFile : file.listFiles()) {
+                        for (File listFile : Objects.requireNonNull(file.listFiles())) {
                             if (listFile.getName().equals(fileName)) {
                                 oldFile = listFile;
                                 break;
                             }
                         }
                         if (oldFile == null) {
-                            JOptionPane.showMessageDialog(null, "更新失败，未检测到当前版本插件文件，请手动尝试", "提示", JOptionPane.PLAIN_MESSAGE);
+                            JOptionPane.showMessageDialog(null, "更新失败，无法卸载当前版本插件，请手动尝试", "提示", JOptionPane.PLAIN_MESSAGE);
                             return;
                         }
-                        RobotConfig.logger.info("检索成功，开始下载新版本文件，下载链接：" + downLoadUrl);
+                        Logger.info("检索成功，开始下载新版本文件，下载链接：" + downLoadUrl);
                         try (InputStream in = IOUtil.sendAndGetResponseStream(new URL(downLoadUrl), "GET", null, null, 1000 * 15)) {
-                            RobotConfig.logger.info("下载新版本完成，正在创建文件夹：" + plugins + "/" + downloadName);
+                            Logger.info("下载新版本完成，正在安装：" + plugins + "/" + downloadName);
                             File newFile = new File(plugins + "/" + downloadName);
                             boolean b = newFile.createNewFile();
-                            if (b) {
-                                RobotConfig.logger.info("文件创建成功，正在写入文件...");
-                            } else {
-                                RobotConfig.logger.info("创建文件失败");
-                            }
                             IOUtil.writeToFile(newFile, in);
-                            RobotConfig.logger.info("写入成功，请重启机器人");
+                            Logger.info("新版本安装成功，正在卸载旧版本插件");
                         }
-                        RobotConfig.logger.info("插件下载成功！");
                         System.gc();
                         Thread.sleep(2000);
                         if (oldFile.delete()) {
-                            RobotConfig.logger.info("旧版本插件已成功从您的电脑中移除.");
+                            Logger.info("旧版本插件已成功从您的电脑中移除.");
                         } else {
                             JOptionPane.showMessageDialog(null, "无法删除旧版本文件，请手动删除", "提示", JOptionPane.PLAIN_MESSAGE);
                         }
@@ -142,7 +138,7 @@ public class HRobotVersionChecker {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        RobotConfig.logger.info("已取消下载");
+        Logger.info("已取消下载");
     }
 
     public static boolean isWindows() {

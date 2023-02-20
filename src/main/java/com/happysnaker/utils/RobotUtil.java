@@ -383,8 +383,7 @@ public class RobotUtil {
         )) {
             return Contact.uploadImage(contact, stream);
         } catch (IOException e) {
-            e.printStackTrace();
-            throw new FileUploadException("Can not upload the image from the url: " + url + ", cause by " + e.getCause().toString());
+            throw new FileUploadException(e);
         }
     }
 

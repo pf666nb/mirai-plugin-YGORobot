@@ -37,7 +37,6 @@ public class KnowledgeSearchMessageEventHandler extends GroupMessageEventHandler
             return parseBaidu(event);
         } catch (Exception e) {
             logError(event, e);
-            e.printStackTrace();
             return buildMessageChainAsSingletonList("发生了错误，错误原因：" + e.getMessage());
         }
     }

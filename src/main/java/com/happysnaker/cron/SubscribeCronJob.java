@@ -1,6 +1,7 @@
 package com.happysnaker.cron;
 
 import com.happysnaker.config.ConfigManager;
+import com.happysnaker.config.Logger;
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.exception.FileUploadException;
 import com.happysnaker.utils.MapGetter;
@@ -68,11 +69,11 @@ public abstract class SubscribeCronJob implements Runnable {
         if (!RobotConfig.enableRobot) {
             return;
         }
-        RobotConfig.logger.info("run subscribe cron job...");
+        Logger.debug("机器人后台订阅检测任务开始运行");
         Group contact = null;
 
         if (Bot.getInstances().isEmpty()) {
-            RobotConfig.logger.info("未检查到任何 Bot 登录，忽略此次订阅检测");
+            Logger.debug("未检查到任何 Bot 登录，忽略此次订阅检测");
             return;
         }
 
@@ -83,7 +84,7 @@ public abstract class SubscribeCronJob implements Runnable {
         }
 
         if (contact == null) {
-            RobotConfig.logger.info(String.format("未检查到任何 Contact，请检查推送群号 %s 是否正确", pushGroup));
+            Logger.debug(String.format("在机器人好友内未检查待推送群组，请检查推送群号 %s 是否正确", pushGroup));
             return;
         }
 
@@ -107,7 +108,7 @@ public abstract class SubscribeCronJob implements Runnable {
             builder.add(message);
             contact.sendMessage(builder.build());
         } catch (Exception e) {
-            ConfigManager.recordFailLog(null, new Date() + ": 推送订阅消息失败 \n" + StringUtil.getErrorInfoFromException(e));
+            ConfigManager.recordFailLog(null, new Date() + ": 后台任务推送订阅消息失败 \n" + StringUtil.getErrorInfoFromException(e));
         }
     }
 
