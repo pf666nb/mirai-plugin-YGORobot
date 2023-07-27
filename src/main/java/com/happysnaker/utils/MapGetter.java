@@ -2,6 +2,9 @@ package com.happysnaker.utils;
 
 import java.util.*;
 
+/**
+ * 提供字段自动转换，嵌套 MAP 调用等实用功能
+ */
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class MapGetter implements Cloneable {
     private Map<Object, Object> map;
@@ -95,7 +98,6 @@ public class MapGetter implements Cloneable {
     public<T> T get(Object key, Class<T> tClass) {
         return (T) map.get(key);
     }
-
 
     public<T> T getOrDefault(Object key, T defVal, Class<T> tClass) {
         return (T) map.getOrDefault(key, defVal);

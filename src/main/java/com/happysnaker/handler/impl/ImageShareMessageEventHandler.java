@@ -1,7 +1,7 @@
 package com.happysnaker.handler.impl;
 
 
-import com.happysnaker.api.BingApi;
+import com.happysnaker.api.BingWallpaperAPI;
 import com.happysnaker.api.PixivApi;
 import com.happysnaker.api.YgoApi;
 import com.happysnaker.config.RobotConfig;
@@ -41,8 +41,6 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
     public final String chickenSoupUrl = PixivApi.chickenSoupUrl;
     public final String duChickenSoupUrl = PixivApi.duChickenSoupUrl;
 
-    @Deprecated
-    public final String pixivSearchApi = PixivApi.pixivSearchApi;
 
     private final Set<String> keywords = new HashSet<>();
 
@@ -98,9 +96,11 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
                 ans.add(doParseLandscapeImage(event));
             }
         } catch (Exception e) {
-            e.printStackTrace();
             logError(event, e);
-            ans.add(new MessageChainBuilder().append("意外地失去了与地球上的通信...\n错误原因：").append(e.getMessage()).build());
+            ans.add(new MessageChainBuilder()
+                    .append("意外地失去了与地球上的通信...\n错误原因：")
+                    .append(e.getMessage() == null ? e.getCause().toString() : e.getMessage())
+                    .build());
         }
         return ans;
     }
@@ -141,7 +141,7 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
      */
     private MessageChain doParseLandscapeImage(MessageEvent event) throws MalformedURLException, FileUploadException {
         return new MessageChainBuilder()
-                .append(uploadImage(event, new URL(BingApi.getRandomImageUrl())))
+                .append(uploadImage(event, new URL(BingWallpaperAPI.getRandomImageUrl())))
                 .build();
     }
 
@@ -177,7 +177,6 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
             buildMessageChain("查无此图");
             return;
         }
-        info(String.format("R18 color image url: %s", imgUrl));
 
         if (RobotConfig.colorStrategy == 4) {
             sendMsg(buildMessageChain(getQuoteReply(event), "颜色图片原始链接：" + imgUrl), event);

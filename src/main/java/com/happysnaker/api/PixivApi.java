@@ -1,5 +1,6 @@
 package com.happysnaker.api;
 
+import com.happysnaker.config.Logger;
 import com.happysnaker.utils.IOUtil;
 import com.happysnaker.utils.MapGetter;
 
@@ -9,47 +10,27 @@ import java.net.URLEncoder;
 import java.util.List;
 
 /**
- * P 站
+ * P 站 API
  * @author Happysnaker
  * @description
  * @date 2022/1/20
  * @email happysnaker@foxmail.com
  */
 public class PixivApi {
-    /**
-     * 能用 HTTP 的就用 HTTP，HTTPS 性能比较低，延迟比较大
-     */
     public static final String pidApi = "https://api.lolicon.app/setu/v2?size=original&size=small";
-    public static final String beautifulImageUrl = "https://tenapi.cn/acg";
-    public static final String chickenSoupUrl = "https://api.shadiao.app/chp/";
-    public static final String duChickenSoupUrl = "https://api.shadiao.app/du";
-    @Deprecated
-    public static final String pixivSearchApi = "http://pximg.rainchan.win/img?img_id=IMGID";
 
-
-
+    // ---------------- 一些其他直接使用的 API ---------------
     /**
-     * 根据 tag 获取 p 站图片 url 地址
-     * @param tags
-     * @return
-     * @throws IOException
+     * 二次元图片 API
      */
-    @Deprecated
-    public static String getImagePid(List<String> tags) throws IOException {
-        return searchImage(tags, false, false);
-    }
-
-
+    public static final String beautifulImageUrl = "https://api.vvhan.com/api/acgimg";
     /**
-     * 根据 tag 获取 p '涩' 图片 pid
-     * @param tags
-     * @return
-     * @throws IOException
+     * 鸡汤与毒鸡汤 API
      */
-    @Deprecated
-    public static String getSeImagePid(List<String> tags, boolean small) throws IOException {
-        return searchImage(tags, true, small);
-    }
+    public static final String chickenSoupUrl = "https://api.shadiao.pro/chp/";
+    public static final String duChickenSoupUrl = "https://api.shadiao.pro/du";
+
+
 
     public static String searchImage(List<String> tags, boolean r18, boolean small) throws IOException {
         StringBuilder url = new StringBuilder(pidApi);
@@ -63,7 +44,7 @@ public class PixivApi {
             }
             url = new StringBuilder(url.substring(0, url.length() - 1));
         }
-        System.out.println("url = " + url);
+        Logger.debug("pixiv search url = " + url);
         List<MapGetter> map = IOUtil.sendAndGetResponseMapGetter(new URL(url.toString()), "GET", null, null).getMapGetterList("data");
         if (map == null || map.isEmpty()) {
             return null;

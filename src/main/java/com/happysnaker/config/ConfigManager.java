@@ -1,7 +1,5 @@
 package com.happysnaker.config;
 
-import com.happysnaker.cron.RobotCronJob;
-import com.happysnaker.utils.IOUtil;
 import com.happysnaker.utils.OfUtil;
 import com.happysnaker.utils.StringUtil;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
@@ -14,17 +12,28 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 
+import static com.happysnaker.config.Logger.logErrorAndRecord;
 import static com.happysnaker.utils.RobotUtil.getContent;
 import static com.happysnaker.utils.RobotUtil.getSenderId;
 
 /**
+ * 配置管理者，这里和日志设计的有点烂
  * @author Happysnaker
  * @description
  * @date 2022/2/15
  * @email happysnaker@foxmail.com
  */
 public class ConfigManager {
-    public static Set<String> configNames = OfUtil.ofSet(
+    public static Set<String> systemConfig = OfUtil.ofSet(
+            "CURRENT_VERSION",
+            "mainConfigPathName",
+            "sensitiveWordPathName",
+            "configFolder",
+            "dataFolder",
+            "logger");
+
+    @Deprecated
+    public static List<String> configNames = OfUtil.ofList(
             "administrator",
             "gtAdministrator",
             "groupAdministrator",
@@ -49,7 +58,8 @@ public class ConfigManager {
             "colorSwitch",
             "russianRoulette",
             "colorStrategy",
-            "subscribe"
+            "subscribe",
+            "logLevel"
     );
 
 
@@ -60,19 +70,19 @@ public class ConfigManager {
      * @param errorMsg
      */
     public static void recordFailLog(MessageEvent event, String errorMsg) {
-        RobotCronJob.service.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                String filePath = ConfigManager.getDataFilePath("error.log");
-                try {
-                    IOUtil.writeToFile(new File(filePath), formatLog(event) + "\n错误日志：" + errorMsg + "\n\n");
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, 0);
+        String message = formatLog(event) + "\n错误日志：" + errorMsg + "\n\n";
+        try {
+            logErrorAndRecord(message);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
+    /**
+     * 格式化日志
+     * @param event 事件
+     * @return
+     */
     public static String formatLog(MessageEvent event) {
         if (event == null) return "[" + StringUtil.formatTime() + "]";
         String content = getContent(event);
@@ -83,6 +93,8 @@ public class ConfigManager {
         long groupId = ((GroupMessageEvent) event).getGroup().getId();
         return "[sender:" + sender + " - group:" + groupId + " - " + StringUtil.formatTime() + "] -> " + content;
     }
+
+
 
     /**
      * 获取主配置文件路径
@@ -123,7 +135,7 @@ public class ConfigManager {
             Field[] fields = RobotConfig.class.getDeclaredFields();
             Map<String, Object> map = new HashMap<>();
             for (Field field : fields) {
-                if (configNames.contains(field.getName())) {
+                if (!systemConfig.contains(field.getName())) {
                     map.put(field.getName(), field.get(null));
                 }
             }

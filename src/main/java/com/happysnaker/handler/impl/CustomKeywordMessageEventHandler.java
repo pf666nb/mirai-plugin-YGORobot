@@ -29,9 +29,8 @@ public class CustomKeywordMessageEventHandler extends GroupMessageEventHandler {
         try {
             return buildMessageChainAsList(parseMiraiCode(ctx.getMessage(), event));
         } catch (CannotProceedException e) {
-            e.printStackTrace();
             logError(event, StringUtil.getErrorInfoFromException(e));
-            throw new  RuntimeException(e);
+            throw new RuntimeException(e);
         }
     }
 

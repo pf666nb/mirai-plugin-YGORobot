@@ -2,10 +2,11 @@ package com.happysnaker.starter;
 
 import com.happysnaker.CustomRegistry;
 import com.happysnaker.Test;
+import com.happysnaker.config.ConfigManager;
+import com.happysnaker.config.Logger;
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.cron.RobotCronJob;
 import com.happysnaker.proxy.MessageHandlerProxy;
-import com.happysnaker.config.ConfigManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.event.Event;
 import net.mamoe.mirai.event.EventChannel;
@@ -99,7 +100,7 @@ public class HRobotStarter {
         Field[] fields = c.getDeclaredFields();
         // 如果配置文件存在
         if (file.exists()) {
-            RobotConfig.logger.info("正在初始化机器人配置");
+            Logger.info("正在读取化机器人配置文件...");
             Map<?, ?> map = null;
             try (FileInputStream in = new FileInputStream(file)) {
                 map = yaml.loadAs(in, Map.class);
@@ -117,25 +118,26 @@ public class HRobotStarter {
                     }
                 }
             }
-            RobotConfig.logger.info("配置初始化完成");
+            Logger.info("机器人配置配置初始化完成");
         }
         // 文件不存在，创建文件并填写模板
         else {
-            RobotConfig.logger.info("未检测到配置文件，创建配置文件模板");
+            Logger.info("未检测到配置文件，正在创建配置文件模板");
             boolean newFile = file.createNewFile();
             try (FileOutputStream fileOutputStream = new FileOutputStream(file, false)) {
                 String template = ConfigManager.TEMPLATE;
                 fileOutputStream.write(template.getBytes(StandardCharsets.UTF_8));
-                RobotConfig.logger.info("成功创建配置文件初始模板，重启机器人生效");
+                Logger.info("成功创建配置文件初始模板，请你填写配置文件，重启机器人生效");
+                Thread.sleep(1500);
 //                System.exit(100);
             } catch (Exception e) {
                 e.printStackTrace();
-                RobotConfig.logger.info("配置文件填充错误，请手动配置");
+                Logger.error("配置文件模板填充错误，请手动配置，可前往 Github 官网查询");
             }
         }
     }
 
-    public static void loadSensitiveWord() throws IOException {
+    public static void loadSensitiveWord() throws IOException, InterruptedException {
         File file = new File(ConfigManager.getConfigFilePath(RobotConfig.sensitiveWordPathName));
 
         RobotConfig.sensitiveWord = new HashSet<>();
@@ -150,7 +152,7 @@ public class HRobotStarter {
         // 文件不存在，创建文件并填写模板
         else {
             boolean newFile = file.createNewFile();
-            RobotConfig.logger.info("创建敏感词库文件");
+            Logger.info("敏感词库文件不存在，正在创建敏感词库文件，你可添加敏感词到此文件中，路径：config/sensitiveWord.txt");
 
             InputStream inputStream = ConfigManager.class.getClassLoader().getResourceAsStream("config/sensitiveWord.txt");
             assert inputStream != null;
@@ -162,7 +164,8 @@ public class HRobotStarter {
             inputStream.close();
             outputStream.close();
 
-            RobotConfig.logger.info("成功生成默认敏感词库，重启机器人生效");
+            Logger.info("成功生成默认敏感词库，重启机器人生效");
+            Thread.sleep(1500);
         }
     }
 }

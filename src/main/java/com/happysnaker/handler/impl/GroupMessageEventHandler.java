@@ -2,10 +2,9 @@ package com.happysnaker.handler.impl;
 
 import com.happysnaker.api.QingYunKeApi;
 import com.happysnaker.config.RobotConfig;
-import com.happysnaker.proxy.Context;
-import com.happysnaker.exception.FileUploadException;
 import com.happysnaker.exception.InsufficientPermissionsException;
 import com.happysnaker.handler.handler;
+import com.happysnaker.proxy.Context;
 import com.happysnaker.utils.OfUtil;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.ContactList;
@@ -19,7 +18,6 @@ import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageSource;
 import net.mamoe.mirai.message.data.SingleMessage;
 
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -64,7 +62,6 @@ public class GroupMessageEventHandler extends AbstractMessageEventHandler {
      * @return
      */
     protected boolean isAt(MessageEvent event, String qq) {
-        if (qqList == null || qqList.isEmpty()) initBotQQ();
         for (SingleMessage message : event.getMessage()) {
             if (message instanceof At) {
                 At at = (At) message;
@@ -83,9 +80,6 @@ public class GroupMessageEventHandler extends AbstractMessageEventHandler {
      * @return
      */
     protected boolean isAtBot(MessageEvent event) {
-        if (qqList == null) {
-            initBotQQ();
-        }
         for (Bot bot : Bot.getInstances()) {
             if (isAt(event, String.valueOf(bot.getId()))) {
                 return true;
@@ -196,15 +190,13 @@ public class GroupMessageEventHandler extends AbstractMessageEventHandler {
         String content = getPlantContent(event);
         String help1 = "帮助", help2 = "help", help3 = "菜单";
         if (help1.equals(content) || help2.equals(content) || help3.equals(content)) {
-            try {
-                if (!RobotConfig.menu.isEmpty()) {
-                    return buildMessageChainAsSingletonList(RobotConfig.menu);
-                }
-                return doHelp(event);
-            } catch (FileUploadException | MalformedURLException e) {
-                e.printStackTrace();
+            if (!RobotConfig.menu.isEmpty()) {
+                return buildMessageChainAsSingletonList(RobotConfig.menu);
+            } else {
+                return buildMessageChainAsSingletonList("暂未配置相关信息，请即使配置");
             }
         }
+//        logError(event, StringUtil.getErrorInfoFromException(new PermissionDeniedException("权限不足")));
         return OfUtil.ofList(replaceFaceFromContent(QingYunKeApi.getMessage(content)));
     }
 

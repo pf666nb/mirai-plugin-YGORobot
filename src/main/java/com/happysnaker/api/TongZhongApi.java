@@ -18,10 +18,25 @@ import java.util.*;
  */
 public class TongZhongApi {
     public static String ok = "ok";
-    public static String url1 = "https://tonzhon.com/secondhand_api/song_source/platform/id";
+    /**
+     * 获取音乐源 url 的 api
+     */
+    public static String url1 = "https://music-api.tonzhon.com/song_source/platform/id";
+    /**
+     * 获取音乐信息 API 之一
+     */
     public static String url2 = "https://tonzhon.com/api/exact_search?keyword=";
+    /**
+     * 获取音乐信息 API 之一
+     */
     public static String url3 = "https://tonzhon.com/api/fuzzy_search?keyword=";
+    /**
+     * 获取音乐信息 API 之一
+     */
     public static String url4 = "https://tonzhon.com/secondhand_api/search?platform=qq&keyword=";
+    /**
+     * 获取音乐信息 API 之一
+     */
     public static String url5 = "https://tonzhon.com/secondhand_api/search?platform=netease&keyword=";
     public static String neteaseJumpUrl = "http://music.163.com/#/song?id=originalId";
     public static String qqJumpUrl = "http://y.qq.com/n/yqq/song/originalId.html";

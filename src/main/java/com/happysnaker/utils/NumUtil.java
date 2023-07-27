@@ -6,7 +6,7 @@ import java.text.NumberFormat;
  * 一些基础的数字处理程序
  *
  * @author Happysnaker
- * @description
+ * @description 请使用 {@link MapGetter} 解析 JSON 字段
  * @date 2022/1/17
  * @email happysnaker@foxmail.com
  */

@@ -62,6 +62,9 @@ public class DefaultCommandEventHandlerManager extends AbstractCommandEventHandl
      */
     @Override
     public void success(MessageEvent event) {
+        if (super.getPlantContent(event).startsWith("查看")) {
+            return;
+        }
         log.append(ConfigManager.formatLog(event)).append("\n");
         successNum++;
     }
