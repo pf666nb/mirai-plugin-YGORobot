@@ -28,7 +28,11 @@ dependencies{
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     implementation("org.apache.commons:commons-lang3:3.12.0")
     implementation("org.quartz-scheduler:quartz:2.2.1")
-
+    implementation("org.xerial:sqlite-jdbc:3.30.1")
+    implementation("org.apache.httpcomponents:httpclient:4.5.12")
+    implementation("org.apache.httpcomponents:httpmime:4.5.12")
+    implementation("it.grabz.grabzit:grabzit:3.5.3")
+    implementation("org.htmlunit:htmlunit:3.3.0")
 }
 
 val compileKotlin: KotlinCompile by tasks

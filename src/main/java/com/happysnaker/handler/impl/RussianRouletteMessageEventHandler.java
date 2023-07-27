@@ -6,6 +6,9 @@ import com.happysnaker.handler.handler;
 import com.happysnaker.permission.Permission;
 import com.happysnaker.utils.OfUtil;
 import com.happysnaker.utils.StringUtil;
+import net.mamoe.mirai.contact.Member;
+import net.mamoe.mirai.contact.PermissionDeniedException;
+import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 
@@ -151,6 +154,14 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
                     sb.append("boom！一朵绚烂的血花盛开，你送走了你自己！\n");
                     sb.append("『扣除积分").append(v).append("』\n");
                     helper.shotMan.add(qq);
+                    Member sender =(Member) event.getSender();
+                    try {
+                        sender.mute(300);
+                    }catch ( PermissionDeniedException e){
+                        sb.append("可恶！他是不死的");
+                    }
+
+
                 } else {
                     helper.updateIncome(qq, v);
                     sb.append("有惊无险，这是一个空枪！\n");
