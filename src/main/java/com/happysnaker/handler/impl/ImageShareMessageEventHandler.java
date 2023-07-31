@@ -107,7 +107,6 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
 
     private MessageChain doParseYgoImage(MessageEvent event, List<String> ygotags) throws MalformedURLException, FileUploadException {
         String image = YgoApi.getImage(ygotags);
-        logger.info(image);
         return new MessageChainBuilder()
                 .append(uploadImage(event, new URL(image))).build();
 

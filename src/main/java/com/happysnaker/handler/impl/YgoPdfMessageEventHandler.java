@@ -23,8 +23,13 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
+/**
+ *
+ * 请不要再使用该功能，后端api已经移除，以后某个版本将会彻底移除这个功能
+ *
+ * */
 @handler(priority = 1)
+@Deprecated
 public class YgoPdfMessageEventHandler extends GroupMessageEventHandler{
 
 
@@ -82,7 +87,7 @@ public class YgoPdfMessageEventHandler extends GroupMessageEventHandler{
             System.out.println(response.getStatusLine());
             HttpEntity responseEntity = response.getEntity();
             responseString = EntityUtils.toString(responseEntity);
-            logger.info(responseString);
+
         } finally {
             response.close();
             httpclient.close();
