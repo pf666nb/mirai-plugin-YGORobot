@@ -53,4 +53,8 @@ public class YgoSearchApi {
     }
 
 
+    public static String getImageByKeyWord(List<String> tags) {
+
+        return null;
+    }
 }

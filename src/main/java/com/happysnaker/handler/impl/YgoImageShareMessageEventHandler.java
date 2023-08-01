@@ -100,9 +100,8 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
                     .build();
         }
 
-        return new MessageChainBuilder()
-                .append(card.getId())
-                .append(card.getName())
+        return new MessageChainBuilder().append(card.getId()).append("\n")
+                .append(card.getName()).append("\n")
                 .append(image)
                 .build();
     }
@@ -115,7 +114,7 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
      * @return 返回消息链
      */
     private MessageChain doParseYgoImage(MessageEvent event, List<String> tags) throws MalformedURLException, FileUploadException {
-        String image = YgoApi.getImage(tags);
+        String image = YgoSearchApi.getImageByKeyWord(tags);
         return new MessageChainBuilder()
                 .append(uploadImage(event, new URL(image))).build();
 
