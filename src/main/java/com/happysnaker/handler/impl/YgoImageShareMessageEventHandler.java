@@ -1,13 +1,18 @@
 package com.happysnaker.handler.impl;
 
 import com.happysnaker.api.YgoApi;
+import com.happysnaker.api.YgoSearchApi;
+import com.happysnaker.entry.CardEntry;
 import com.happysnaker.exception.FileUploadException;
 import com.happysnaker.handler.handler;
 import com.happysnaker.proxy.Context;
+import com.happysnaker.utils.RobotUtil;
 import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.message.data.Image;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -20,12 +25,14 @@ import java.util.Set;
  */
 @handler(priority = 1)
 public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
-
+    public final String cardPicPath = "";
     public final String randomCard = "抽一张卡";
 
     public final String getOneCard = "查卡";
 
     public final String guessCard = "猜一张卡";
+
+    public final String todayCardLuck = "今日牌运";
     private final Set<String> keywords = new HashSet<>();
 
 
@@ -33,10 +40,11 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
         keywords.add(randomCard);
         keywords.add(getOneCard);
         keywords.add(guessCard);
+        keywords.add(todayCardLuck);
     }
 
     /**
-     * 将要回复的消息，默认使用青云客 API 消息回复，允许子类进行扩展，如果此消息返回 null，则不会尝试回复该消息
+     *
      *
      * @param event 经过 proxyContent 处理后的消息
      * @param ctx
@@ -58,6 +66,9 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
             if(content.startsWith(guessCard)){
 
             }
+            if (content.startsWith(todayCardLuck)){
+
+            }
 
 
         }catch (Exception e){
@@ -77,11 +88,23 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
      * @param event 消息事件
      * @return MessageChain
      */
-    private MessageChain doParseYgoImage(MessageEvent event) {
+    private MessageChain doParseYgoImage(MessageEvent event) throws IOException, FileUploadException {
         //获取一张随机的游戏王卡片
+        CardEntry card = YgoSearchApi.RandomImage();
+        Image image = null;
+        if(card!=null) {
+             image = RobotUtil.uploadImage(event, cardPicPath + card.getId() + ".jpg");
+        }else {
+            return new MessageChainBuilder()
+                    .append("零依网络的随机一卡出现了未知错误！请联系本初")
+                    .build();
+        }
 
-
-        return null;
+        return new MessageChainBuilder()
+                .append(card.getId())
+                .append(card.getName())
+                .append(image)
+                .build();
     }
 
     /**
