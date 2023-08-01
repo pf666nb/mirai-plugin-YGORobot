@@ -25,14 +25,14 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
 
     public final String getOneCard = "查卡";
 
-
+    public final String guessCard = "猜一张卡";
     private final Set<String> keywords = new HashSet<>();
 
 
     public YgoImageShareMessageEventHandler(){
         keywords.add(randomCard);
         keywords.add(getOneCard);
-
+        keywords.add(guessCard);
     }
 
     /**
@@ -49,10 +49,13 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
         try{
             //随机抽一张卡返回
             if(content.startsWith(randomCard)){
-
+                ans.add(doParseYgoImage(event));
             }
             //根据查卡后面的关键字返回对应的列表
             if(content.startsWith(getOneCard)){
+
+            }
+            if(content.startsWith(guessCard)){
 
             }
 
@@ -66,6 +69,19 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
         }
 
         return ans;
+    }
+
+
+    /**
+     * 生成一张随机的游戏王卡片加入MessageChain中返回
+     * @param event 消息事件
+     * @return MessageChain
+     */
+    private MessageChain doParseYgoImage(MessageEvent event) {
+        //获取一张随机的游戏王卡片
+
+
+        return null;
     }
 
     /**

@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+@Deprecated
 public class YgoApi {
 
     public static final String NEW = "new";
