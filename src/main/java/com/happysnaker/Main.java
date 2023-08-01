@@ -14,8 +14,8 @@ public final class Main extends JavaPlugin {
 
     private Main() {
         super(new JvmPluginDescriptionBuilder("com.happysnaker.HRobot", RobotConfig.CURRENT_VERSION)
-                .name("HRobot")
-                .author("Happysnaker")
+                .name("零依网络")
+                .author("本初")
                 .build());
     }
 

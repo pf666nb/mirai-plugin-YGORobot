@@ -6,7 +6,9 @@ import com.happysnaker.utils.IOUtil;
 import com.happysnaker.utils.MapGetter;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -53,8 +55,15 @@ public class YgoSearchApi {
     }
 
 
-    public static String getImageByKeyWord(List<String> tags) {
+    public static List<String> getImageByKeyWord(List<String> tags) throws IOException {
+        List<MapGetter> map = IOUtil.sendAndGetResponseMapGetter(new URL(SearchCardApi + tags.get(0)), "GET", null, null).getMapGetterList("result");
 
-        return null;
+        if (map == null || map.isEmpty()) {
+            return null;
+        }
+         String id = map.get(0).getString("id");
+         ArrayList<String> objects = new ArrayList<>();
+         objects.add(id);
+        return objects;
     }
 }

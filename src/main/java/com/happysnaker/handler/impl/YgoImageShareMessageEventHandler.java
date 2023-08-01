@@ -1,12 +1,14 @@
 package com.happysnaker.handler.impl;
 
-import com.happysnaker.api.YgoApi;
 import com.happysnaker.api.YgoSearchApi;
+import com.happysnaker.config.RobotConfig;
+import com.happysnaker.entry.CardBeanByBaige;
 import com.happysnaker.entry.CardEntry;
 import com.happysnaker.exception.FileUploadException;
 import com.happysnaker.handler.handler;
 import com.happysnaker.proxy.Context;
 import com.happysnaker.utils.RobotUtil;
+import com.happysnaker.utils.StringUtil;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.Image;
 import net.mamoe.mirai.message.data.MessageChain;
@@ -23,7 +25,7 @@ import java.util.Set;
 /**
  * @author apple
  */
-@handler(priority = 1)
+@handler(priority = 5)
 public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
     public final String cardPicPath = "";
     public final String randomCard = "抽一张卡";
@@ -61,7 +63,8 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
             }
             //根据查卡后面的关键字返回对应的列表
             if(content.startsWith(getOneCard)){
-
+                List<String> tags = getTags(content, getOneCard);
+                ans.add(doParseYgoImage(event,tags));
             }
             if(content.startsWith(guessCard)){
 
@@ -93,7 +96,7 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
         CardEntry card = YgoSearchApi.RandomImage();
         Image image = null;
         if(card!=null) {
-             image = RobotUtil.uploadImage(event, cardPicPath + card.getId() + ".jpg");
+             image = RobotUtil.uploadImage(event, RobotConfig.configFolder+"/card/" + card.getId() + ".jpg");
         }else {
             return new MessageChainBuilder()
                     .append("零依网络的随机一卡出现了未知错误！请联系本初")
@@ -113,10 +116,27 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
      * @param tags     关键词
      * @return 返回消息链
      */
-    private MessageChain doParseYgoImage(MessageEvent event, List<String> tags) throws MalformedURLException, FileUploadException {
-        String image = YgoSearchApi.getImageByKeyWord(tags);
+    private MessageChain doParseYgoImage(MessageEvent event, List<String> tags) throws IOException, FileUploadException {
+        List<String> idList = YgoSearchApi.getImageByKeyWord(tags);
+        //TODO 目前优先只返回第一个最接近的卡片
+        Image image = null;
+        if (idList != null) {
+            image = RobotUtil.uploadImage(event, RobotConfig.configFolder+"/card/"+ idList.get(0) + ".jpg");
+        }
         return new MessageChainBuilder()
-                .append(uploadImage(event, new URL(image))).build();
+                .append(image)
+                .build();
 
+    }
+
+    private List<String> getTags(String content, String tem) {
+        List<String> tags = new ArrayList<>();
+        List<String> strings = StringUtil.splitSpaces(content.replace(tem, ""));
+        for (String s : strings) {
+            if (!s.isEmpty() && !s.equals(tem)) {
+                tags.add(s.trim());
+            }
+        }
+        return tags;
     }
 }
