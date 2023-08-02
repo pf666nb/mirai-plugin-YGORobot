@@ -72,7 +72,7 @@ public class HRobotStarter {
         RobotCronJob.cron();
 
         // 测试
-        Test.test();
+     //   Test.test();
 
         // 检查版本
         HRobotVersionChecker.checkVersion();

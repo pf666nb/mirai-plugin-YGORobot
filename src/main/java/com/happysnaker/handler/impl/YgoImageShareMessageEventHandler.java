@@ -139,11 +139,11 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
 
     }
 
-    private List<String> getTags(String content, String tem) {
+    private List<String> getTags(String content, String tag) {
         List<String> tags = new ArrayList<>();
-        List<String> strings = StringUtil.splitSpaces(content.replace(tem, ""));
+        List<String> strings = StringUtil.splitSpaces(content.replace(tag, ""));
         for (String s : strings) {
-            if (!s.isEmpty() && !s.equals(tem)) {
+            if (!s.isEmpty() && !s.equals(tag)) {
                 tags.add(s.trim());
             }
         }
