@@ -257,4 +257,5 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
     public boolean shouldHandle(MessageEvent event, Context ctx) {
         return startWithKeywords(event, keywords);
     }
+
 }

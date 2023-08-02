@@ -1,5 +1,6 @@
 package com.happysnaker.handler.impl;
 
+import cn.hutool.http.HttpUtil;
 import com.happysnaker.api.YgoSearchApi;
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.entry.CardBeanByBaige;
@@ -117,15 +118,24 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
      * @return 返回消息链
      */
     private MessageChain doParseYgoImage(MessageEvent event, List<String> tags) throws IOException, FileUploadException {
-        List<String> idList = YgoSearchApi.getImageByKeyWord(tags);
+        CardBeanByBaige imageByKeyWord = YgoSearchApi.getImageByKeyWord(tags);
         //TODO 目前优先只返回第一个最接近的卡片
         Image image = null;
-        if (idList != null) {
-            image = RobotUtil.uploadImage(event, RobotConfig.configFolder+"/card/"+ idList.get(0) + ".jpg");
+        if (imageByKeyWord != null) {
+            image = RobotUtil.uploadImage(event, RobotConfig.configFolder+"/card/"+ imageByKeyWord.getId() + ".jpg");
         }
-        return new MessageChainBuilder()
-                .append(image)
-                .build();
+        if (image != null) {
+            return new MessageChainBuilder()
+                    .append(imageByKeyWord.getCn_name())
+                    .append("\n")
+                    .append(image)
+                    .append("\n")
+                    .append(imageByKeyWord.getText().getTypes())
+                    .append("\n")
+                    .append(imageByKeyWord.getText().getDesc())
+                    .build();
+        }
+        return null;
 
     }
 
@@ -139,4 +149,17 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
         }
         return tags;
     }
+
+    /**
+     * 注册应该监听的关键字
+     * @param event
+     * @param ctx
+     * @return
+     */
+    @Override
+    public boolean shouldHandle(MessageEvent event, Context ctx) {
+        return startWithKeywords(event, keywords);
+    }
+
+
 }

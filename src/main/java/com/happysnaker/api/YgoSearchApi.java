@@ -1,6 +1,12 @@
 package com.happysnaker.api;
 
+import cn.hutool.core.util.CharsetUtil;
+import cn.hutool.http.HttpUtil;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.happysnaker.config.Logger;
+import com.happysnaker.entry.CardBeanByBaige;
 import com.happysnaker.entry.CardEntry;
 import com.happysnaker.utils.IOUtil;
 import com.happysnaker.utils.MapGetter;
@@ -8,6 +14,7 @@ import com.happysnaker.utils.MapGetter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,37 +40,30 @@ public class YgoSearchApi {
      * @throws IOException
      */
     public static CardEntry RandomImage() throws IOException {
-        StringBuilder url = new StringBuilder(RandomApi);
-        Logger.debug("randomImage get "+ url);
-        List<MapGetter> map = IOUtil.sendAndGetResponseMapGetter(new URL(url.toString()), "GET", null, null).getMapGetterList("data");
-        if (map == null || map.isEmpty()) {
-            return null;
-        }
-        //TODO 待优化，暂时冗余
-        CardEntry cardEntry = new CardEntry();
-        cardEntry.setId(map.get(0).getString("id"));
-        cardEntry.setName(map.get(0).getString("name"));
-        cardEntry.setDesc(map.get(0).getString("desc"));
-        cardEntry.setAtk(Integer.parseInt(map.get(0).getString("atk")));
-        cardEntry.setDef(Integer.parseInt(map.get(0).getString("def")));
-        cardEntry.setType(Integer.parseInt(map.get(0).getString("type")));
-        cardEntry.setRace(Integer.parseInt(map.get(0).getString("race")));
-        cardEntry.setLevel(Integer.parseInt(map.get(0).getString("level")));
-        cardEntry.setAttribute(Integer.parseInt(map.get(0).getString("attribute")));
-
-        return cardEntry;
+        Logger.debug("randomImage get "+ RandomApi);
+        String s = HttpUtil.get(RandomApi, CharsetUtil.CHARSET_UTF_8);
+        return JSONUtil.toBean(JSONUtil.parseObj(s).getStr("data"), CardEntry.class);
     }
 
 
-    public static List<String> getImageByKeyWord(List<String> tags) throws IOException {
-        List<MapGetter> map = IOUtil.sendAndGetResponseMapGetter(new URL(SearchCardApi + tags.get(0)), "GET", null, null).getMapGetterList("result");
+    public static CardBeanByBaige getImageByKeyWord(List<String> tags) throws IOException {
+        String s = HttpUtil.get(SearchCardApi+tags.get(0), CharsetUtil.CHARSET_UTF_8);
+        final JSONArray result1 = JSONUtil.parseObj(s).getJSONArray("result");
 
-        if (map == null || map.isEmpty()) {
-            return null;
-        }
-         String id = map.get(0).getString("id");
-         ArrayList<String> objects = new ArrayList<>();
-         objects.add(id);
-        return objects;
+        return result1.get(0, CardBeanByBaige.class);
     }
+    public static void main(String[] args) {
+        //测试随机api的使用
+//        final String s = HttpUtil.get(RandomApi, CharsetUtil.CHARSET_UTF_8);
+//        final CardEntry bean = JSONUtil.toBean(JSONUtil.parseObj(s).getStr("data"), CardEntry.class);
+//        System.out.println(bean.getName());
+//        System.out.println(bean.getId());
+        String s = HttpUtil.get(SearchCardApi+"青眼", CharsetUtil.CHARSET_UTF_8);
+        System.out.println(s);
+        final JSONArray result1 = JSONUtil.parseObj(s).getJSONArray("result");
+        final CardBeanByBaige cardBeanByBaige = result1.get(0, CardBeanByBaige.class);
+        System.out.println(cardBeanByBaige.getId());
+
+    }
+
 }

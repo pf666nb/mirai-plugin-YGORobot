@@ -32,7 +32,7 @@ dependencies{
     implementation("org.apache.httpcomponents:httpclient:4.5.12")
     implementation("org.apache.httpcomponents:httpmime:4.5.12")
     implementation("it.grabz.grabzit:grabzit:3.5.3")
-    implementation("org.htmlunit:htmlunit:3.3.0")
+    implementation("cn.hutool:hutool-all:5.8.21")
 }
 
 val compileKotlin: KotlinCompile by tasks
