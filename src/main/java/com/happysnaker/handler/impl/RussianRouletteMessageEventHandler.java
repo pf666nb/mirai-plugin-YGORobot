@@ -24,7 +24,7 @@ import java.util.*;
 @handler
 @SuppressWarnings("unchecked")
 public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler {
-    public final String reload = "装弹";
+    public final String reload = "黑暗游戏";
     public final String shot = "开枪";
     public final String stop = "卸下弹夹";
 
@@ -134,7 +134,7 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
             // 开枪命令
             Helper helper;
             if ((helper = map.get(groupId)) == null) {
-                return buildMessageChainAsSingletonList("群暂未开启游戏，发送 装弹 来填充弹夹!");
+                return buildMessageChainAsSingletonList("群暂未开启游戏，发送 黑暗游戏 来填充弹夹!");
             }
             if (helper.shotMan.contains(qq)) {
                 return buildMessageChainAsSingletonList(getQuoteReply(event), "你已经中弹一次了，想学安倍身中两弹？我看你还是老老实实等待游戏结束吧！");
@@ -151,8 +151,7 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
                 if (shot) {
                     helper.realNum--;
                     helper.updateIncome(qq, -v);
-                    sb.append("boom！一朵绚烂的血花盛开，你送走了你自己！\n");
-                    sb.append("『扣除积分").append(v).append("』\n");
+                    sb.append("boom！黑暗游戏失败！，他离开了我们！\n");
                     helper.shotMan.add(qq);
                     Member sender =(Member) event.getSender();
                     try {
@@ -165,7 +164,6 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
                 } else {
                     helper.updateIncome(qq, v);
                     sb.append("有惊无险，这是一个空枪！\n");
-                    sb.append("『增加积分").append(v).append("』\n");
                 }
                 sb.append("剩余总弹数: ").append(helper.totalNum).append("\n");
                 sb.append("剩余真弹数: ").append(helper.realNum).append("\n");
@@ -176,18 +174,6 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
                         sb.append("弹夹已无空弹，剩下的人都将被子弹穿膛，游戏结束\n");
                     }
                     map.remove(groupId);
-                    int max = helper.income.values().stream().max(Comparator.comparingInt(a -> a)).get();
-                    int min = helper.income.values().stream().min(Comparator.comparingInt(a -> a)).get();
-                    for (Map.Entry<String, Integer> it : helper.income.entrySet()) {
-                        if (it.getValue() == max) {
-                            sb.append("本次游戏最大获益人：").append(it.getKey()).append("，总计").append(max).append(" 积分\n");
-                            max = Integer.MAX_VALUE;
-                        }
-                        if (it.getValue() == min) {
-                            sb.append("本次游戏最大倒霉蛋：").append(it.getKey()).append("，总计").append(min).append(" 积分\n");
-                            min = Integer.MAX_VALUE;
-                        }
-                    }
                 }
                 if (helper.realNum == 1) {
                     sb.append("最后一个倒霉鬼是谁呢？");

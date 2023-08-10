@@ -48,8 +48,7 @@ public class YgoSearchApi {
 
     public static CardBeanByBaige getImageByKeyWord(List<String> tags) throws IOException {
         String s = HttpUtil.get(SearchCardApi+tags.get(0), CharsetUtil.CHARSET_UTF_8);
-        final JSONArray result1 = JSONUtil.parseObj(s).getJSONArray("result");
-
+        JSONArray result1 = JSONUtil.parseObj(s).getJSONArray("result");
         return result1.get(0, CardBeanByBaige.class);
     }
     public static void main(String[] args) {
