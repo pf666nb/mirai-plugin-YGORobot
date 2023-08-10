@@ -51,6 +51,9 @@ public class YgoSearchApi {
         JSONArray result1 = JSONUtil.parseObj(s).getJSONArray("result");
         return result1.get(0, CardBeanByBaige.class);
     }
+
+
+
     public static void main(String[] args) {
         //测试随机api的使用
 //        final String s = HttpUtil.get(RandomApi, CharsetUtil.CHARSET_UTF_8);

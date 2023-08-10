@@ -1,5 +1,6 @@
 package com.happysnaker.handler.impl;
 
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.http.HttpUtil;
 import com.happysnaker.api.YgoSearchApi;
 import com.happysnaker.config.RobotConfig;
@@ -18,16 +19,14 @@ import net.mamoe.mirai.message.data.MessageChainBuilder;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author apple
  */
 @handler(priority = 5)
 public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
+
     public final String cardPicPath = "";
     public final String randomCard = "抽一张卡";
 
@@ -38,6 +37,19 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
     public final String todayCardLuck = "今日牌运";
     private final Set<String> keywords = new HashSet<>();
 
+    private  static   HashMap<String,Integer> todayMap = new HashMap<>();
+    static {
+        todayMap.put("顶G",0);
+        todayMap.put("神抽",0);
+        todayMap.put("解场",0);
+        todayMap.put("削手",0);
+        todayMap.put("封锁",0);
+        todayMap.put("除外",0);
+        todayMap.put("做康",0);
+        todayMap.put("烧血",0);
+        todayMap.put("擦牌",0);
+        todayMap.put("堆墓",0);
+    }
 
     public YgoImageShareMessageEventHandler(){
         keywords.add(randomCard);
@@ -71,7 +83,7 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
 
             }
             if (content.startsWith(todayCardLuck)){
-
+                ans.add(doDayCardLuck(event));
             }
 
 
@@ -85,6 +97,46 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
 
         return ans;
     }
+
+    private MessageChain doDayCardLuck(MessageEvent event) throws IOException, FileUploadException {
+        CardEntry card = YgoSearchApi.RandomImage();
+        Image image = null;
+        if(card!=null) {
+            image = RobotUtil.uploadImage(event, RobotConfig.configFolder+"/card-pic/" + card.getId() + ".jpg");
+        }else {
+            return new MessageChainBuilder()
+                    .append("零依网络的今日牌运出现了未知错误！请联系本初")
+                    .build();
+        }
+        todayMap.forEach((k,v)->{
+            todayMap.put(k, RandomUtil.randomInt(0,2));
+        });
+        StringBuilder trueBuilder = new StringBuilder();
+        trueBuilder.append("宜：");
+        StringBuilder falseBuilder = new StringBuilder();
+        falseBuilder.append("禁：");
+        todayMap.forEach((k,v)->{
+             Integer i = todayMap.get(k);
+             if(i==1){
+                 trueBuilder.append(k).append(",");
+             }else{
+                 falseBuilder.append(k).append(",");
+             }
+        });
+        return new MessageChainBuilder()
+                .append("今日牌运--今日命卡：")
+                .append(card.getName()).append("\n")
+                .append(image)
+                .append("\n")
+                .append(trueBuilder).append("\n")
+                .append(falseBuilder)
+                .build();
+    }
+
+
+
+
+
 
 
     /**

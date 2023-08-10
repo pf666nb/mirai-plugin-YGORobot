@@ -1,9 +1,12 @@
 package com.happysnaker;
 
 
+import cn.hutool.core.util.RandomUtil;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.WebClient;
 import org.htmlunit.html.HtmlPage;
+
+import java.util.HashMap;
 
 /**
  * @author happysnaker
@@ -11,13 +14,26 @@ import org.htmlunit.html.HtmlPage;
  * @email happysnaker@foxmail.com
  */
 public class Test {
-
-    public static void main(String[] args) {
-        // 这里举例找了个vue页面（小牛翻译、b站页面）的来测试
-        String nowHtml = "https://kooriookami.github.io/yugioh-card/";
-//		String nowHtml = "https://www.bilibili.com";
-        getWebBody(nowHtml);
+    private  static HashMap<String,Integer> todayMap = new HashMap<>();
+    static {
+        todayMap.put("顶G",0);
+        todayMap.put("神抽",0);
+        todayMap.put("解场",0);
+        todayMap.put("削手",0);
+        todayMap.put("封锁",0);
+        todayMap.put("除外",0);
+        todayMap.put("做康",0);
+        todayMap.put("烧血",0);
+        todayMap.put("擦牌",0);
+        todayMap.put("堆墓",0);
     }
+
+//    public static void main(String[] args) {
+//        // 这里举例找了个vue页面（小牛翻译、b站页面）的来测试
+//        String nowHtml = "https://kooriookami.github.io/yugioh-card/";
+////		String nowHtml = "https://www.bilibili.com";
+//        getWebBody(nowHtml);
+//    }
     public static void getWebBody(String nowHtml) {
         WebClient webClient = new WebClient(BrowserVersion.CHROME);
         webClient.getOptions().setActiveXNative(false);// 不启用ActiveX
@@ -41,6 +57,27 @@ public class Test {
         }
         String htmlStr = page.getBody().asXml();
         System.out.println(htmlStr);
+    }
+
+    public static void main(String[] args) {
+        StringBuilder trueBuilder = new StringBuilder();
+        trueBuilder.append("宜：");
+        StringBuilder falseBuilder = new StringBuilder();
+        falseBuilder.append("禁：");
+        todayMap.forEach((k,v)->{
+            todayMap.put(k, RandomUtil.randomInt(0,2));
+        });
+        todayMap.forEach((k,v)->{
+            Integer i = todayMap.get(k);
+            if(i==1){
+                trueBuilder.append(k).append(",");
+            }else{
+                falseBuilder.append(k).append(",");
+            }
+        });
+        trueBuilder.append("\n");
+        System.out.print(trueBuilder.toString());
+        System.out.print(falseBuilder.toString());
     }
 
 
