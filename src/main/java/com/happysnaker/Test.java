@@ -4,11 +4,16 @@ package com.happysnaker;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.RandomUtil;
+import com.happysnaker.Selector.Imp.*;
+import com.happysnaker.config.WebClientConfig;
+import com.happysnaker.entry.DataBean;
+import com.happysnaker.utils.GenerateYgoPieChartUtil;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.WebClient;
 import org.htmlunit.html.HtmlPage;
 
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * @author happysnaker
@@ -61,7 +66,7 @@ public class Test {
         System.out.println(htmlStr);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
 //        StringBuilder trueBuilder = new StringBuilder();
 //        trueBuilder.append("宜：");
 //        StringBuilder falseBuilder = new StringBuilder();
@@ -81,8 +86,39 @@ public class Test {
 //        System.out.print(trueBuilder.toString());
 //        System.out.print(falseBuilder.toString());
 
-        System.out.println(  DateUtil.getZodiac(DateUtil.month(DateUtil.date()),DateUtil.dayOfMonth(DateUtil.date())));
+//        System.out.println(  DateUtil.getZodiac(DateUtil.month(DateUtil.date()),DateUtil.dayOfMonth(DateUtil.date())));
 
+//
+//                String nowHtml = "https://kooriookami.github.io/yugioh-card/";
+//
+//        getWebBody(nowHtml);
+        WebClient webClient = WebClientConfig.GetClient();
+        HtmlPage page = null;
+        try {
+            page = webClient.getPage("https://mycard.moe/ygopro/arena/#/cards");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            webClient.close();
+        }
+
+        webClient.waitForBackgroundJavaScript(5000);//异步JS执行需要耗时,所以这里线程要阻塞30秒,等待异步JS执行结束
+//        DeckTag deckTag = new DeckTag();
+//        deckTag.SelectTag(page);
+//        deckTag.getElements(page);
+
+//        MonsterTag monsterTag = new MonsterTag();
+//        monsterTag.SelectTag(page);
+//        monsterTag.getElements(page);
+
+//        SpellTag spellTag = new SpellTag();
+//        spellTag.SelectTag(page);
+//        spellTag.getElements(page);
+
+        ExTag trapTag = new ExTag();
+        trapTag.SelectTag(page);
+        List<DataBean> elements = trapTag.getElements(page);
+        GenerateYgoPieChartUtil.generateYgoPie(elements,"额外");
     }
 
 

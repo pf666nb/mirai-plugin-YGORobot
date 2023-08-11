@@ -25,8 +25,8 @@ public class SystemCommandEventHandler extends DefaultCommandEventHandlerManager
     public static String saveConfigCommand = "保存配置";
     public static String showConfigStatusCommand = "查看配置状态";
     public static String showConfigLogCommand = "查看配置日志";
-    public static String shutdown = "关机";
-    public static String boot = "开机";
+    public static String shutdown = "闪刀关闭";
+    public static String boot = "闪刀启动";
 
 
     public SystemCommandEventHandler() {

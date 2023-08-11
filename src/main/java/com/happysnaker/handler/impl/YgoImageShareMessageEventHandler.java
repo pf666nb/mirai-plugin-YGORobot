@@ -11,10 +11,9 @@ import com.happysnaker.handler.handler;
 import com.happysnaker.proxy.Context;
 import com.happysnaker.utils.RobotUtil;
 import com.happysnaker.utils.StringUtil;
+import net.mamoe.mirai.contact.NormalMember;
 import net.mamoe.mirai.event.events.MessageEvent;
-import net.mamoe.mirai.message.data.Image;
-import net.mamoe.mirai.message.data.MessageChain;
-import net.mamoe.mirai.message.data.MessageChainBuilder;
+import net.mamoe.mirai.message.data.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -34,6 +33,24 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
     public final String guessCard = "猜一张卡";
 
     public final String todayCardLuck = "今日牌运";
+
+    public final String silence = "因果切断";
+
+    public final String  unmute = "死者苏生";
+
+
+    public final String MonsterTag = "怪兽饼图";
+
+    public final String DeckTag = "卡组饼图";
+
+    public final String ExTag = "额外饼图";
+
+    public final String SideTag = "SIDE饼图";
+
+    public final String SpellTag = "魔法饼图";
+
+    public final String TrapTag = "陷阱饼图";
+
     private final Set<String> keywords = new HashSet<>();
 
     private  static   HashMap<String,Integer> todayMap = new HashMap<>();
@@ -55,6 +72,14 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
         keywords.add(getOneCard);
         keywords.add(guessCard);
         keywords.add(todayCardLuck);
+        keywords.add(unmute);
+        keywords.add(silence);
+        keywords.add(MonsterTag);
+        keywords.add(ExTag);
+        keywords.add(DeckTag);
+        keywords.add(SideTag);
+        keywords.add(TrapTag);
+        keywords.add(SpellTag);
     }
 
     /**
@@ -84,6 +109,19 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
             if (content.startsWith(todayCardLuck)){
                 ans.add(doDayCardLuck(event));
             }
+            //娱乐卡片，禁言和解禁
+            if(content.startsWith(unmute) || content.startsWith(silence)){
+                ans.add(doSilence(event,content));
+            }
+            if (content.startsWith(DeckTag)
+            ||content.startsWith(ExTag)
+            ||content.startsWith(MonsterTag)
+            ||content.startsWith(SideTag)
+            ||content.startsWith(SpellTag)
+            ||content.startsWith(TrapTag)){
+                ans.add(doYgoPie(event,content));
+            }
+
 
 
         }catch (Exception e){
@@ -95,6 +133,46 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
         }
 
         return ans;
+    }
+
+    private MessageChain doYgoPie(MessageEvent event,String content) {
+        Image image = null;
+        try {
+            image = RobotUtil.uploadImage(event, RobotConfig.configFolder+"/pic/YGO"+content+".jpeg");
+        } catch (FileUploadException e) {
+            throw new RuntimeException(e);
+        }
+        return new MessageChainBuilder().append(image).build();
+    }
+
+    private MessageChain doSilence(MessageEvent event,String content) throws FileUploadException {
+        Image image = null;
+        for (SingleMessage message : event.getMessage()) {
+            if (message instanceof At) {
+                At at = (At) message;
+                 long target = at.getTarget();
+                 if(content.startsWith(silence)){
+                     mute(String.valueOf(target),getGroupMessageEvent(event).getGroup(),180);
+                     image = RobotUtil.uploadImage(event, RobotConfig.configFolder+"/card/71587526.jpg");
+                     return new MessageChainBuilder().append("因果切断！")
+                             .append("\n")
+                             .append(image)
+                             .build();
+                 }else {
+                     for (NormalMember member : getGroupMessageEvent(event).getGroup().getMembers()) {
+                         if (member.getId() == Long.parseLong(String.valueOf(target))) {
+                             member.unmute();
+                             image = RobotUtil.uploadImage(event, RobotConfig.configFolder+"/card/83764718.jpg");
+                             return new MessageChainBuilder().append("死者苏生！")
+                                     .append("\n")
+                                     .append(image).build();
+                         }
+                     }
+                 }
+
+            }
+        }
+        return new MessageChainBuilder().append("发动失败！").build();
     }
 
     private MessageChain doDayCardLuck(MessageEvent event) throws IOException, FileUploadException {
@@ -113,7 +191,7 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
         StringBuilder trueBuilder = new StringBuilder();
         trueBuilder.append("宜：");
         StringBuilder falseBuilder = new StringBuilder();
-        falseBuilder.append("禁：");
+        falseBuilder.append("忌：");
         AtomicInteger trueFlag = new AtomicInteger();
         AtomicInteger falseFlag = new AtomicInteger();
         todayMap.forEach((k,v)->{

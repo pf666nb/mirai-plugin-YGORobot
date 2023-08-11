@@ -79,13 +79,12 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
                 return null;
             }
 
+
             if (content.startsWith(ygoImage)){
                 List<String> ygotags = getTags(content,ygoImage);
                 ans.add(doParseYgoImage(event,ygotags));
 
             }
-
-
             // 美图
             if (content.contains(beautifulImage)) {
                 ans.add(doParseBeautifulImage(event));
@@ -98,7 +97,7 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
         } catch (Exception e) {
             logError(event, e);
             ans.add(new MessageChainBuilder()
-                    .append("意外地失去了与地球上的通信...\n错误原因：")
+                    .append("闪刀网络出现问题...请联系本初\n错误原因：")
                     .append(e.getMessage() == null ? e.getCause().toString() : e.getMessage())
                     .build());
         }
