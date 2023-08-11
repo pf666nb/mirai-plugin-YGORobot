@@ -157,7 +157,7 @@ public class RussianRouletteMessageEventHandler extends GroupMessageEventHandler
                     try {
                         sender.mute(300);
                     }catch ( PermissionDeniedException e){
-                        sb.append("可恶！他是不死的");
+                        sb.append("可恶！他是不死的 \n");
                     }
 
 

@@ -1,7 +1,7 @@
 package com.happysnaker.handler.impl;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.RandomUtil;
-import cn.hutool.http.HttpUtil;
 import com.happysnaker.api.YgoSearchApi;
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.entry.CardBeanByBaige;
@@ -17,9 +17,8 @@ import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author apple
@@ -115,17 +114,28 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
         trueBuilder.append("宜：");
         StringBuilder falseBuilder = new StringBuilder();
         falseBuilder.append("禁：");
+        AtomicInteger trueFlag = new AtomicInteger();
+        AtomicInteger falseFlag = new AtomicInteger();
         todayMap.forEach((k,v)->{
              Integer i = todayMap.get(k);
-             if(i==1){
+             if(i==1&& trueFlag.get() <3){
+                 trueFlag.getAndIncrement();
                  trueBuilder.append(k).append(",");
-             }else{
+             }else if(falseFlag.get() <3){
+                 falseFlag.getAndIncrement();
                  falseBuilder.append(k).append(",");
              }
         });
+        DateUtil.today();
         return new MessageChainBuilder()
-                .append("今日牌运--今日命卡：")
-                .append(card.getName()).append("\n")
+                .append("今日牌运:").append("\n")
+                .append("今天是星期").append(DateUtil.thisDayOfWeek()-1+"  ").append("人品值：")
+                .append(RandomUtil.randomInt(0,101)+"")
+                .append("\n")
+                .append("星座: ").append(DateUtil.getZodiac(DateUtil.month(DateUtil.date()),DateUtil.dayOfMonth(DateUtil.date()))).append("\n")
+                .append("今日命卡：").append(card.getName()).append("\n")
+                .append("神碑YYDS！").append("\n")
+                .append("打卡成功，零依提醒你要多运动哦~~")
                 .append(image)
                 .append("\n")
                 .append(trueBuilder).append("\n")

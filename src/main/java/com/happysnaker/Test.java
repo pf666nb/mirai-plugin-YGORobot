@@ -1,6 +1,8 @@
 package com.happysnaker;
 
 
+import cn.hutool.core.date.DateUnit;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.RandomUtil;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.WebClient;
@@ -60,24 +62,27 @@ public class Test {
     }
 
     public static void main(String[] args) {
-        StringBuilder trueBuilder = new StringBuilder();
-        trueBuilder.append("宜：");
-        StringBuilder falseBuilder = new StringBuilder();
-        falseBuilder.append("禁：");
-        todayMap.forEach((k,v)->{
-            todayMap.put(k, RandomUtil.randomInt(0,2));
-        });
-        todayMap.forEach((k,v)->{
-            Integer i = todayMap.get(k);
-            if(i==1){
-                trueBuilder.append(k).append(",");
-            }else{
-                falseBuilder.append(k).append(",");
-            }
-        });
-        trueBuilder.append("\n");
-        System.out.print(trueBuilder.toString());
-        System.out.print(falseBuilder.toString());
+//        StringBuilder trueBuilder = new StringBuilder();
+//        trueBuilder.append("宜：");
+//        StringBuilder falseBuilder = new StringBuilder();
+//        falseBuilder.append("禁：");
+//        todayMap.forEach((k,v)->{
+//            todayMap.put(k, RandomUtil.randomInt(0,2));
+//        });
+//        todayMap.forEach((k,v)->{
+//            Integer i = todayMap.get(k);
+//            if(i==1){
+//                trueBuilder.append(k).append(",");
+//            }else{
+//                falseBuilder.append(k).append(",");
+//            }
+//        });
+//        trueBuilder.append("\n");
+//        System.out.print(trueBuilder.toString());
+//        System.out.print(falseBuilder.toString());
+
+        System.out.println(  DateUtil.getZodiac(DateUtil.month(DateUtil.date()),DateUtil.dayOfMonth(DateUtil.date())));
+
     }
 
 
