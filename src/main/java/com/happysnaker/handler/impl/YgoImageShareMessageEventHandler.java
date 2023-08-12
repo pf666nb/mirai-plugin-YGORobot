@@ -3,6 +3,7 @@ package com.happysnaker.handler.impl;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.happysnaker.api.YgoSearchApi;
+import com.happysnaker.config.Logger;
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.entry.CardBeanByBaige;
 import com.happysnaker.entry.CardEntry;
@@ -51,6 +52,10 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
 
     public final String TrapTag = "陷阱饼图";
 
+    public final String withdrawMessage = "灰";
+
+    public final String proliferation = "G";
+
     private final Set<String> keywords = new HashSet<>();
 
     private  static   HashMap<String,Integer> todayMap = new HashMap<>();
@@ -80,6 +85,8 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
         keywords.add(SideTag);
         keywords.add(TrapTag);
         keywords.add(SpellTag);
+        keywords.add(withdrawMessage);
+        keywords.add(proliferation);
     }
 
     /**
@@ -113,6 +120,7 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
             if(content.startsWith(unmute) || content.startsWith(silence)){
                 ans.add(doSilence(event,content));
             }
+            //发送饼图
             if (content.startsWith(DeckTag)
             ||content.startsWith(ExTag)
             ||content.startsWith(MonsterTag)
@@ -120,6 +128,10 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
             ||content.startsWith(SpellTag)
             ||content.startsWith(TrapTag)){
                 ans.add(doYgoPie(event,content));
+            }
+            //灰流丽 --- 撤回消息
+            if(content.startsWith(withdrawMessage)){
+               ans.add(doWithdrawMessage(event,content));
             }
 
 
@@ -133,6 +145,22 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
         }
 
         return ans;
+    }
+
+    private MessageChain doWithdrawMessage(MessageEvent event, String content) throws FileUploadException {
+
+        MessageChain res = null;
+        MessageSource quoteSource = RobotUtil.getQuoteSource(event);
+        res = new MessageChainBuilder().append(event.getSender().getNick())
+                    .append("对")
+                    .append(getGroupMessageEvent(event).getGroup().get(quoteSource.getFromId()).getNick())
+                    .append("使用了灰流丽，灰掉了他的一条消息")
+                    .build();
+        if (!cancelMessage(quoteSource)) {
+            return new MessageChainBuilder().append("对方发动了指名者,你的灰流丽被除外了").build();
+        }
+        return res;
+
     }
 
     private MessageChain doYgoPie(MessageEvent event,String content) {
