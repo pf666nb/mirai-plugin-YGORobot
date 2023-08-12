@@ -170,7 +170,7 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
         if (!RobotConfig.colorSwitch) {
             return;
         }
-        String imgUrl = PixivApi.searchImage(tags, true, !isPlus);
+        String imgUrl = PixivApi.searchImage(tags, false, !isPlus);
         if (StringUtil.isNullOrEmpty(imgUrl)) {
             buildMessageChain("查无此图");
             return;

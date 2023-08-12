@@ -154,7 +154,12 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
                  if(content.startsWith(silence)){
                      mute(String.valueOf(target),getGroupMessageEvent(event).getGroup(),180);
                      image = RobotUtil.uploadImage(event, RobotConfig.configFolder+"/card/71587526.jpg");
-                     return new MessageChainBuilder().append("因果切断！")
+
+                     return new MessageChainBuilder()
+                             .append(event.getSender().getNick())
+                             .append("对")
+                             .append(getGroupMessageEvent(event).getGroup().get(target).getNick())
+                             .append("使用了因果切断！")
                              .append("\n")
                              .append(image)
                              .build();
@@ -163,7 +168,11 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
                          if (member.getId() == Long.parseLong(String.valueOf(target))) {
                              member.unmute();
                              image = RobotUtil.uploadImage(event, RobotConfig.configFolder+"/card/83764718.jpg");
-                             return new MessageChainBuilder().append("死者苏生！")
+                             return new MessageChainBuilder()
+                                     .append(event.getSender().getNick())
+                                     .append("对")
+                                     .append(getGroupMessageEvent(event).getGroup().get(target).getNick())
+                                     .append("使用了死者苏生！")
                                      .append("\n")
                                      .append(image).build();
                          }
@@ -172,7 +181,7 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
 
             }
         }
-        return new MessageChainBuilder().append("发动失败！").build();
+        return new MessageChainBuilder().append("因为法老王的诅咒！发动失败！").build();
     }
 
     private MessageChain doDayCardLuck(MessageEvent event) throws IOException, FileUploadException {
