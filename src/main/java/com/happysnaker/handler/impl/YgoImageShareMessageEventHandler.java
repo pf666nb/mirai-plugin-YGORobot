@@ -152,7 +152,12 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
                 At at = (At) message;
                  long target = at.getTarget();
                  if(content.startsWith(silence)){
-                     mute(String.valueOf(target),getGroupMessageEvent(event).getGroup(),180);
+                     try {
+                         mute(String.valueOf(target),getGroupMessageEvent(event).getGroup(),180);
+                     }catch (Exception e){
+                         return new MessageChainBuilder().append("该单位不取对象，无法发动！").build();
+                     }
+
                      image = RobotUtil.uploadImage(event, RobotConfig.configFolder+"/card/71587526.jpg");
 
                      return new MessageChainBuilder()
@@ -166,7 +171,12 @@ public class YgoImageShareMessageEventHandler extends GroupMessageEventHandler{
                  }else {
                      for (NormalMember member : getGroupMessageEvent(event).getGroup().getMembers()) {
                          if (member.getId() == Long.parseLong(String.valueOf(target))) {
-                             member.unmute();
+                             try {
+                                 member.unmute();
+                             }catch (Exception e){
+                                 return new MessageChainBuilder().append("该单位不取对象，无法发动！").build();
+                             }
+
                              image = RobotUtil.uploadImage(event, RobotConfig.configFolder+"/card/83764718.jpg");
                              return new MessageChainBuilder()
                                      .append(event.getSender().getNick())
