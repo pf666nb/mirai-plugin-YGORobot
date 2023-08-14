@@ -3,7 +3,6 @@ package com.happysnaker.handler.impl;
 
 import com.happysnaker.api.BingWallpaperAPI;
 import com.happysnaker.api.PixivApi;
-import com.happysnaker.api.YgoApi;
 import com.happysnaker.config.RobotConfig;
 import com.happysnaker.proxy.Context;
 import com.happysnaker.exception.CanNotSendMessageException;
@@ -36,7 +35,7 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
     public final String seImage = "涩图";
     public final String seImagePlus = "高清涩图";
 
-    public final String ygoImage = "ygo";
+
     public final String beautifulImageUrl = PixivApi.beautifulImageUrl;
     public final String chickenSoupUrl = PixivApi.chickenSoupUrl;
     public final String duChickenSoupUrl = PixivApi.duChickenSoupUrl;
@@ -51,7 +50,7 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
         keywords.add(beautifulImage);
         keywords.add(seImage);
         keywords.add(seImagePlus);
-        keywords.add(ygoImage);
+
     }
 
     @Override
@@ -80,11 +79,7 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
             }
 
 
-            if (content.startsWith(ygoImage)){
-                List<String> ygotags = getTags(content,ygoImage);
-                ans.add(doParseYgoImage(event,ygotags));
 
-            }
             // 美图
             if (content.contains(beautifulImage)) {
                 ans.add(doParseBeautifulImage(event));
@@ -104,12 +99,7 @@ public class ImageShareMessageEventHandler extends GroupMessageEventHandler {
         return ans;
     }
 
-    private MessageChain doParseYgoImage(MessageEvent event, List<String> ygotags) throws MalformedURLException, FileUploadException {
-        String image = YgoApi.getImage(ygotags);
-        return new MessageChainBuilder()
-                .append(uploadImage(event, new URL(image))).build();
 
-    }
 
     /**
      * 根据 plantContent 获取 tag
